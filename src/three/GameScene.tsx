@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import { CHARS } from "../config/balance";
 import type { BiteId, GameState } from "../game";
 import { color as token, playerColor } from "../ui/theme";
@@ -82,8 +83,43 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Pr
           // headband = which character; body = which player (distinct per seat)
           const accent = p.char ? ACCENT[p.char] ?? token(CHARS[p.char].colorKey) : "#9b8675";
           const body = playerColor(i);
+          
+          let bodyColor: string = body;
+          if (p.burns && p.burns > 0) {
+            if (p.burns === 1) {
+              bodyColor = "#7f7872"; // ash grey
+            } else if (p.burns === 2) {
+              bodyColor = "#4a423d"; // dark soot
+            } else {
+              bodyColor = "#1f1a17"; // charred black
+            }
+          }
+
           return (
             <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, seatFacing(i, n), 0]}>
+              {state.screen !== "shop" && (
+                <Html
+                  position={[0, 0.85, 0]}
+                  center
+                  distanceFactor={5.5}
+                  style={{
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    userSelect: "none",
+                  }}
+                >
+                  <div
+                    className="px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-lg border border-line/10 flex items-center gap-1.5"
+                    style={{
+                      backgroundColor: "rgba(30, 19, 13, 0.85)",
+                      color: "var(--c-cream)",
+                    }}
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: body }} />
+                    {p.name}
+                  </div>
+                </Html>
+              )}
               <ChiliHead
                 heat={isActive ? state.heat : 0}
                 accent={accent}
@@ -91,12 +127,13 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Pr
                 bust={isActive && busted}
                 anim={isActive ? anim ?? null : null}
                 char={p.char}
+                burns={p.burns}
               />
               <Chair />
               {/* simple body so heads aren't floating — coloured per player */}
               <mesh position={[0, -0.95, 0]} castShadow>
                 <cylinderGeometry args={[0.4, 0.55, 1.1, 16]} />
-                <meshStandardMaterial color={body} roughness={0.8} />
+                <meshStandardMaterial color={bodyColor} roughness={0.8} />
               </mesh>
             </group>
           );

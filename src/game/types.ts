@@ -35,6 +35,7 @@ export interface Player {
   tameng: number; // remaining shields
   susu: number; // remaining milk
   isBot: boolean; // controlled by the AI (solo mode)
+  burns?: number; // count of fire blast burns received
 }
 
 /** Per-spectator settlement line shown on the result screen. */

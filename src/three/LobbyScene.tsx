@@ -11,7 +11,7 @@ import { TableMilkBottle } from "./MilkBottle";
 const LOBBY_CHARS = ["baja", "kompor", "pendingin", "hemat"];
 const LOBBY_ACCENTS = ["#3e7cb1", "#f26419", "#4e7410", "#6fa315"];
 
-function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: number; bust: boolean; charred: boolean }[], activeIndex: number }) {
+function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: number; bust: boolean; burns: number }[], activeIndex: number }) {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
@@ -55,7 +55,7 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
                 accent={accent}
                 active={false}
                 bust={state.bust}
-                charred={state.charred}
+                burns={state.burns}
                 anim={null}
                 char={char}
               />
@@ -63,7 +63,7 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
               {/* body */}
               <mesh position={[0, -0.95, 0]} castShadow>
                 <cylinderGeometry args={[0.4, 0.55, 1.1, 16]} />
-                <meshStandardMaterial color={state.charred ? "#1f1a17" : bodyColor} roughness={0.8} />
+                <meshStandardMaterial color={state.burns >= 3 ? "#1f1a17" : bodyColor} roughness={0.8} />
               </mesh>
             </group>
           );
@@ -80,10 +80,10 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
 export function LobbyScene() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [eaterStates, setEaterStates] = useState([
-    { heat: 0, bust: false, charred: false }, // seat 0
-    { heat: 0, bust: false, charred: false }, // seat 1
-    { heat: 0, bust: false, charred: false }, // seat 2
-    { heat: 0, bust: false, charred: false }, // seat 3
+    { heat: 0, bust: false, burns: 0 }, // seat 0
+    { heat: 0, bust: false, burns: 0 }, // seat 1
+    { heat: 0, bust: false, burns: 0 }, // seat 2
+    { heat: 0, bust: false, burns: 0 }, // seat 3
   ]);
 
   useEffect(() => {
@@ -95,10 +95,10 @@ export function LobbyScene() {
       const currentActive = elapsed < 6.0 ? 0 : 1;
       
       const states = [
-        { heat: 0, bust: false, charred: false },
-        { heat: 0, bust: false, charred: false },
-        { heat: 0, bust: false, charred: false },
-        { heat: 0, bust: false, charred: false },
+        { heat: 0, bust: false, burns: 0 },
+        { heat: 0, bust: false, burns: 0 },
+        { heat: 0, bust: false, burns: 0 },
+        { heat: 0, bust: false, burns: 0 },
       ];
 
       if (elapsed < 3.0) {
@@ -108,11 +108,11 @@ export function LobbyScene() {
         // Seat 0 breathing fire! Seat 2 charred! (3s to 5s)
         states[0].heat = 100;
         states[0].bust = true;
-        states[2].charred = true;
+        states[2].burns = 3;
       } else if (elapsed < 6.0) {
         // Seat 0 cools down. Seat 2 slowly recovers (5s to 6s)
         states[0].heat = 0;
-        states[2].charred = (elapsed - 5.0) < 0.7; // fade back
+        states[2].burns = (elapsed - 5.0) < 0.7 ? 3 : 0; // fade back
       } else if (elapsed < 9.0) {
         // Seat 1 spicing up (6s to 9s)
         const progress = (elapsed - 6.0) / 3.0;
@@ -121,11 +121,11 @@ export function LobbyScene() {
         // Seat 1 breathing fire! Seat 3 charred! (9s to 11s)
         states[1].heat = 100;
         states[1].bust = true;
-        states[3].charred = true;
+        states[3].burns = 3;
       } else if (elapsed < 12.0) {
         // Seat 1 cools down. Seat 3 slowly recovers (11s to 12s)
         states[1].heat = 0;
-        states[3].charred = (elapsed - 11.0) < 0.7;
+        states[3].burns = (elapsed - 11.0) < 0.7 ? 3 : 0;
       }
 
       setActiveIndex(currentActive);

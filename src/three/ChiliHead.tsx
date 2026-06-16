@@ -13,7 +13,7 @@ interface Props {
   bust: boolean; // fire-breathing trigger
   anim: ActionAnim | null; // active player's eat/drink gesture
   char?: string | null; // character type for custom 3D traits
-  charred?: boolean; // is the head burnt/charred?
+  burns?: number; // count of burns received
 }
 
 const CALM = new THREE.Color("#e8b98c"); // tan skin
@@ -25,7 +25,7 @@ const tmp = new THREE.Color();
  * zero rigging. Everything (skin colour, brow angle, mouth, jitter, particles)
  * is driven continuously by `heat`, so the face is also a danger read-out.
  */
-export function ChiliHead({ heat, accent, active, bust, anim, char = null, charred = false }: Props) {
+export function ChiliHead({ heat, accent, active, bust, anim, char = null, burns = 0 }: Props) {
   const group = useRef<THREE.Group>(null);
   const skin = useRef<THREE.MeshStandardMaterial>(null);
   const browL = useRef<THREE.Mesh>(null);
@@ -36,8 +36,14 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null, charr
     const t = Math.min(1, Math.max(0, heat / 100)); // 0..1
     // Skin reddens past ~40 heat (lerp, never a hard switch).
     if (skin.current) {
-      if (charred) {
-        tmp.set("#1f1a17"); // Dark charred charcoal skin
+      if (burns > 0) {
+        if (burns === 1) {
+          tmp.set("#a59d96"); // Ashy grey skin
+        } else if (burns === 2) {
+          tmp.set("#5c544e"); // Blackened soot skin
+        } else {
+          tmp.set("#1f1a17"); // Completely charred charcoal skin
+        }
       } else {
         const redness = Math.min(1, Math.max(0, (heat - 30) / 60));
         tmp.copy(CALM).lerp(HOT, redness);
@@ -193,7 +199,7 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null, charr
       )}
 
       {/* sweat / steam / fire / milk splash */}
-      <Particles heat={charred ? 100 : heat} bust={bust} anim={anim} />
+      <Particles heat={burns >= 3 ? 100 : heat} bust={bust} anim={anim} />
 
       {/* Dynamic fire light glow */}
       {bust && (

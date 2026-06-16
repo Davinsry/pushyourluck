@@ -629,7 +629,7 @@ export default function App() {
       setOnline(false);
     };
 
-    if (room.gameState && room.gameState.screen === "play") {
+    if (room.gameState && (room.gameState.screen === "play" || room.gameState.screen === "shop")) {
       const activeIdx = getGameActiveIndex(room.gameState);
       const isFinalRondeActive = isFinalRonde(room.gameState);
       const totalTurnsCount = getGameTotalTurns(room.gameState);
@@ -674,19 +674,21 @@ export default function App() {
           </div>
 
           {/* Emote Panel (Middle Right) */}
-          <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 bg-bg2/95 border border-line/10 p-2 rounded-2xl shadow-xl backdrop-blur-md">
-            <span className="text-[9px] uppercase tracking-wider text-muted font-bold text-center mb-1">Emote</span>
-            {EMOTES.map(({ id, emoji, label }) => (
-              <button
-                key={id}
-                onClick={() => room.sendEmote(id)}
-                className="tp-btn h-10 w-10 text-xl rounded-xl bg-cream-2 hover:bg-cream hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-                title={label}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
+          {room.gameState.screen === "play" && (
+            <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 bg-bg2/95 border border-line/10 p-2 rounded-2xl shadow-xl backdrop-blur-md">
+              <span className="text-[9px] uppercase tracking-wider text-muted font-bold text-center mb-1">Emote</span>
+              {EMOTES.map(({ id, emoji, label }) => (
+                <button
+                  key={id}
+                  onClick={() => room.sendEmote(id)}
+                  className="tp-btn h-10 w-10 text-xl rounded-xl bg-cream-2 hover:bg-cream hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                  title={label}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* top-left vertical scoreboard & ID badge */}
           <div className="absolute left-4 top-4 z-50 pointer-events-none flex flex-col gap-2">
@@ -717,7 +719,8 @@ export default function App() {
           {/* top-right HUD controls */}
           <div className="absolute right-4 top-4 z-50 pointer-events-auto flex items-center gap-2">
             {((room.gameState.settings.turnTimerLimit && room.gameState.settings.turnTimerLimit > 0 && room.gameState.phase === "active") ||
-              (room.gameState.phase === "preturn" && !room.gameState.blockAsk)) && (
+              (room.gameState.phase === "preturn" && !room.gameState.blockAsk) ||
+              room.gameState.screen === "shop") && (
               <TurnTimer secondsLeft={onlineSecondsLeft} onPause={undefined} />
             )}
             <button
@@ -731,48 +734,72 @@ export default function App() {
           </div>
 
           {/* side HUD: controls live in left/right panels so the centre stays clear */}
-          <Hud3D
-            state={room.gameState}
-            activeIndex={activeIdx}
-            isFinal={isFinalRondeActive}
-            isLastTurn={room.gameState.turn + 1 >= totalTurnsCount}
-            onToggleBet={(player, bet) => {
-              play("click");
-              room.sendAction({ type: "TOGGLE_BET", player, bet });
-            }}
-            onAddSabo={(player) => {
-              play("sabotage");
-              room.sendAction({ type: "ADD_SABO", player });
-            }}
-            onConfirm={() => {
-              play("click");
-              room.sendAction({ type: "CONFIRM_PRETURN" });
-            }}
-            onUseTameng={() => {
-              play("click");
-              room.sendAction({ type: "USE_TAMENG" });
-            }}
-            onAcceptHeat={() => {
-              play("click");
-              room.sendAction({ type: "ACCEPT_HEAT" });
-            }}
-            onSuap={(bite) => {
-              if (isHumanActiveTurn) {
-                animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
-              }
-            }}
-            onMinumSusu={() => {
-              if (isHumanActiveTurn) {
-                animateThen("milk", undefined, () => room.sendAction({ type: "MINUM_SUSU" }));
-              }
-            }}
-            onSajikan={() => room.sendAction({ type: "SAJIKAN" })}
-            busy={busy || !isHumanActiveTurn}
-            onNext={() => {
-              play("click");
-              room.sendAction({ type: "NEXT" });
-            }}
-          />
+          {room.gameState.screen === "play" ? (
+            <Hud3D
+              state={room.gameState}
+              activeIndex={activeIdx}
+              isFinal={isFinalRondeActive}
+              isLastTurn={room.gameState.turn + 1 >= totalTurnsCount}
+              onToggleBet={(player, bet) => {
+                play("click");
+                room.sendAction({ type: "TOGGLE_BET", player, bet });
+              }}
+              onAddSabo={(player) => {
+                play("sabotage");
+                room.sendAction({ type: "ADD_SABO", player });
+              }}
+              onConfirm={() => {
+                play("click");
+                room.sendAction({ type: "CONFIRM_PRETURN" });
+              }}
+              onUseTameng={() => {
+                play("click");
+                room.sendAction({ type: "USE_TAMENG" });
+              }}
+              onAcceptHeat={() => {
+                play("click");
+                room.sendAction({ type: "ACCEPT_HEAT" });
+              }}
+              onSuap={(bite) => {
+                if (isHumanActiveTurn) {
+                  animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
+                }
+              }}
+              onMinumSusu={() => {
+                if (isHumanActiveTurn) {
+                  animateThen("milk", undefined, () => room.sendAction({ type: "MINUM_SUSU" }));
+                }
+              }}
+              onSajikan={() => room.sendAction({ type: "SAJIKAN" })}
+              busy={busy || !isHumanActiveTurn}
+              onNext={() => {
+                play("click");
+                room.sendAction({ type: "NEXT" });
+              }}
+            />
+          ) : (
+            <div className="min-h-full bg-transparent p-5 text-cream relative flex items-center justify-start md:pl-20 z-40">
+              <div className="w-full max-w-[500px] relative z-10 pointer-events-auto">
+                <ShopScreen
+                  players={room.gameState.players}
+                  cycle={getGameCurrentCycle(room.gameState) - 1}
+                  secondsLeft={onlineSecondsLeft}
+                  onBuy={(_, item) => {
+                    if (room.youSeat !== null) {
+                      play("click");
+                      room.sendAction({ type: "BUY", player: room.youSeat, item });
+                    }
+                  }}
+                  onClose={() => {
+                    if (room.youSeat === 0) {
+                      play("click");
+                      room.sendAction({ type: "CLOSE_SHOP" });
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -797,7 +824,7 @@ export default function App() {
   }
 
   // ── 3D: full-screen "game" layout with the controls overlaid on top ──
-  if (state.screen === "play") {
+  if (state.screen === "play" || state.screen === "shop") {
     return (
       <div 
         className={`fixed inset-0 z-40 bg-bg text-cream ${shakeAmount > 0 ? "animate-shake" : ""}`}
@@ -852,8 +879,8 @@ export default function App() {
 
         {/* top-right HUD controls */}
         <div className="absolute right-4 top-4 z-50 pointer-events-auto flex items-center gap-2">
-          {(timerType === "preturn" || timerType === "active") && (
-            <TurnTimer secondsLeft={secondsLeft} onPause={() => setPaused(true)} />
+          {(timerType === "preturn" || timerType === "active" || timerType === "shop") && (
+            <TurnTimer secondsLeft={secondsLeft} onPause={state.screen === "play" ? () => setPaused(true) : undefined} />
           )}
           <button
             className="tp-btn rounded-full bg-bg2/90 p-2.5 text-cream border border-line/10 shadow-lg backdrop-blur-md"
@@ -868,40 +895,60 @@ export default function App() {
         {paused && <PauseOverlay onResume={() => setPaused(false)} onRestart={restart} onMenu={toMenu} />}
 
         {/* side HUD: controls live in left/right panels so the centre stays clear */}
-        <Hud3D
-          state={state}
-          activeIndex={activeIndex}
-          isFinal={isFinal}
-          isLastTurn={state.turn + 1 >= totalTurns}
-          onToggleBet={(player, bet) => {
-            play("click");
-            dispatch({ type: "TOGGLE_BET", player, bet });
-          }}
-          onAddSabo={(player) => {
-            play("sabotage");
-            dispatch({ type: "ADD_SABO", player });
-          }}
-          onConfirm={() => {
-            play("click");
-            dispatch({ type: "CONFIRM_PRETURN" });
-          }}
-          onUseTameng={() => {
-            play("click");
-            dispatch({ type: "USE_TAMENG" });
-          }}
-          onAcceptHeat={() => {
-            play("click");
-            dispatch({ type: "ACCEPT_HEAT" });
-          }}
-          onSuap={suap}
-          onMinumSusu={minum}
-          onSajikan={() => dispatch({ type: "SAJIKAN" })}
-          busy={busy}
-          onNext={() => {
-            play("click");
-            dispatch({ type: "NEXT" });
-          }}
-        />
+        {state.screen === "play" ? (
+          <Hud3D
+            state={state}
+            activeIndex={activeIndex}
+            isFinal={isFinal}
+            isLastTurn={state.turn + 1 >= totalTurns}
+            onToggleBet={(player, bet) => {
+              play("click");
+              dispatch({ type: "TOGGLE_BET", player, bet });
+            }}
+            onAddSabo={(player) => {
+              play("sabotage");
+              dispatch({ type: "ADD_SABO", player });
+            }}
+            onConfirm={() => {
+              play("click");
+              dispatch({ type: "CONFIRM_PRETURN" });
+            }}
+            onUseTameng={() => {
+              play("click");
+              dispatch({ type: "USE_TAMENG" });
+            }}
+            onAcceptHeat={() => {
+              play("click");
+              dispatch({ type: "ACCEPT_HEAT" });
+            }}
+            onSuap={suap}
+            onMinumSusu={minum}
+            onSajikan={() => dispatch({ type: "SAJIKAN" })}
+            busy={busy}
+            onNext={() => {
+              play("click");
+              dispatch({ type: "NEXT" });
+            }}
+          />
+        ) : (
+          <div className="min-h-full bg-transparent p-5 text-cream relative flex items-center justify-start md:pl-20 z-40">
+            <div className="w-full max-w-[500px] relative z-10 pointer-events-auto">
+              <ShopScreen
+                players={state.players}
+                cycle={cycle - 1}
+                secondsLeft={secondsLeft}
+                onBuy={(player, item) => {
+                  play("click");
+                  dispatch({ type: "BUY", player, item });
+                }}
+                onClose={() => {
+                  play("click");
+                  dispatch({ type: "CLOSE_SHOP" });
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -1001,24 +1048,6 @@ export default function App() {
             onChoose={(char) => {
               play("click");
               dispatch({ type: "CHOOSE_CHAR", char });
-            }}
-          />
-        )}
-
-
-
-        {state.screen === "shop" && (
-          <ShopScreen
-            players={state.players}
-            cycle={cycle - 1}
-            secondsLeft={secondsLeft}
-            onBuy={(player, item) => {
-              play("click");
-              dispatch({ type: "BUY", player, item });
-            }}
-            onClose={() => {
-              play("click");
-              dispatch({ type: "CLOSE_SHOP" });
             }}
           />
         )}

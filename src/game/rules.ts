@@ -106,5 +106,6 @@ export function makePlayer(index: number, name?: string, isBot = false): Player 
     tameng: STARTING_KIT.tameng,
     susu: STARTING_KIT.susu,
     isBot,
+    burns: 0,
   };
 }

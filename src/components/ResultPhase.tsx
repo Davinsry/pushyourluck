@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { CheckCheck, Flame } from "lucide-react";
 import { BET_STAKE, FINAL_MULT } from "../config/balance";
 import type { Outcome } from "../game";
@@ -12,6 +13,26 @@ interface Props {
 
 export function ResultPhase({ outcome, playerName, isLastTurn, onNext, canAdvance = true }: Props) {
   const { busted, gained, raw, mult, hematBonus, final, bets } = outcome;
+  const [secondsLeft, setSecondsLeft] = useState(5);
+
+  useEffect(() => {
+    setSecondsLeft(5);
+  }, [outcome]);
+
+  useEffect(() => {
+    if (!canAdvance) return;
+    const timer = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(timer);
+          onNext();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [onNext, canAdvance]);
 
   return (
     <div className="animate-pop py-1 text-center">
@@ -52,7 +73,7 @@ export function ResultPhase({ outcome, playerName, isLastTurn, onNext, canAdvanc
           className="tp-btn mt-4 rounded-[14px] bg-flame px-10 py-3 text-[17px] font-extrabold text-white"
           onClick={onNext}
         >
-          {isLastTurn ? "Lihat hasil" : "Lanjut"}
+          {isLastTurn ? "Lihat hasil" : `Lanjut (${secondsLeft}s)`}
         </button>
       ) : (
         <p className="m-0 mt-4 text-[13px] font-semibold text-muted">Menunggu {playerName} lanjut...</p>

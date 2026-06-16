@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { CheckCheck, Coins, Flame, FlameKindling, Hand, Milk, Shield, Sparkles } from "lucide-react";
 import { BET_STAKE, BITES, CHARS, FINAL_MULT } from "../config/balance";
 import type { Bet, BiteId, GameState } from "../game";
@@ -232,9 +233,28 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
   const outcome = state.outcome!;
   const me = state.players[activeIndex];
   const { busted, gained, raw, mult, hematBonus, final, bets } = outcome;
+  const [secondsLeft, setSecondsLeft] = useState(5);
+
+  useEffect(() => {
+    setSecondsLeft(5);
+  }, [outcome]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(timer);
+          onNext();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [onNext]);
 
   return (
-    <div className={`absolute bottom-4 right-4 w-[min(46vw,340px)] ${panel}`}>
+    <div className={`absolute bottom-4 right-4 w-[min-46vw,340px] ${panel}`}>
       <div className="text-center">
         {busted ? (
           <>
@@ -270,7 +290,7 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
         className="tp-btn mt-3 w-full rounded-xl bg-flame py-3 text-[15px] font-extrabold text-white"
         onClick={onNext}
       >
-        {isLastTurn ? "Lihat hasil" : "Lanjut"}
+        {isLastTurn ? "Lihat hasil" : `Lanjut (${secondsLeft}s)`}
       </button>
     </div>
   );
