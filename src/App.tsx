@@ -27,7 +27,7 @@ import { OnlinePlay } from "./components/online/OnlinePlay";
 // The whole 3D layer (three.js) is code-split so the 2D game loads fast and
 // devices that never open 3D never pay for it.
 const GameScene = lazy(() => import("./three/GameScene").then((m) => ({ default: m.GameScene })));
-const LobbyScene = lazy(() => import("./three/LobbyScene").then((m) => ({ default: m.LobbyScene })));
+import { LobbyScene } from "./three/LobbyScene";
 
 export default function App() {
   const game = useGame();
@@ -309,9 +309,7 @@ export default function App() {
   // ── 2D: the regular padded, scrollable layout (aligned left to show off 3D background) ──
   return (
     <>
-      <Suspense fallback={null}>
-        <LobbyScene />
-      </Suspense>
+      <LobbyScene />
       <div className="min-h-full bg-transparent p-5 text-cream relative flex items-center justify-start md:pl-20">
         <div className="w-full max-w-[500px] relative z-10">
         <Header muted={muted} onToggleMute={toggleMute} />
