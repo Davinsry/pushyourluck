@@ -328,6 +328,7 @@ export function actionAllowed(state: GameState, seat: number, a: Action): boolea
     case "MINUM_SUSU":
     case "SAJIKAN":
     case "NEXT":
+    case "SKIP_TURN":
       return activeIndex(state) === seat;
     default:
       return false; // lobby/menu actions are never sent over the wire

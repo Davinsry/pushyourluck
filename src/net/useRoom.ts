@@ -53,6 +53,8 @@ export function useRoom() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [seatIds, setSeatIds] = useState<string[]>([]);
   const [started, setStarted] = useState(false);
+  const [roomSettings, setRoomSettings] = useState({ cycles: 3, turnTimerLimit: 30 });
+  const roomSettingsRef = useRef({ cycles: 3, turnTimerLimit: 30 });
 
   const myId = useRef(generateUUID()).current;
   const myName = useRef("Pemain");
@@ -82,6 +84,18 @@ export function useRoom() {
       /* ignore */
     }
   }, []);
+
+  const broadcastSettings = useCallback((settings: { cycles: number; turnTimerLimit: number }) => {
+    ch.current?.send({ type: "broadcast", event: "settings", payload: settings });
+  }, []);
+
+  const updateSettings = useCallback((cycles: number, turnTimerLimit: number) => {
+    if (!isHostRef.current) return;
+    const next = { cycles, turnTimerLimit };
+    roomSettingsRef.current = next;
+    setRoomSettings(next);
+    broadcastSettings(next);
+  }, [broadcastSettings]);
 
   const broadcastState = useCallback((state: GameState) => {
     ch.current?.send({ type: "broadcast", event: "state", payload: { state, seatIds: seatIdsRef.current } });
@@ -136,13 +150,27 @@ export function useRoom() {
           setStarted(true);
           startedRef.current = true;
         })
+        .on("broadcast", { event: "settings" }, ({ payload }) => {
+          const s = {
+            cycles: payload.cycles as number,
+            turnTimerLimit: payload.turnTimerLimit as number,
+          };
+          roomSettingsRef.current = s;
+          setRoomSettings(s);
+        })
         .on("broadcast", { event: "action" }, ({ payload }) => {
           if (isHostRef.current) applyAsHost(payload.fromId as string, payload.action as Action);
         })
         .on("presence", { event: "sync" }, handlePresence)
         .on("presence", { event: "join" }, () => {
-          // re-sync a late joiner / reconnect by re-sending the current state
-          if (isHostRef.current && hostState.current) broadcastState(hostState.current);
+          // re-sync a late joiner / reconnect by re-sending the current state or settings
+          if (isHostRef.current) {
+            if (hostState.current) {
+              broadcastState(hostState.current);
+            } else {
+              broadcastSettings(roomSettingsRef.current);
+            }
+          }
         })
         .subscribe(async (s) => {
           if (s === "SUBSCRIBED") {
@@ -156,7 +184,7 @@ export function useRoom() {
 
       ch.current = channel;
     },
-    [applyAsHost, broadcastState, handlePresence, myId, upsertRoom]
+    [applyAsHost, broadcastSettings, broadcastState, handlePresence, myId, upsertRoom]
   );
 
   const create = useCallback(
@@ -201,6 +229,9 @@ export function useRoom() {
       ms.map((m) => m.name),
       Math.random
     );
+    s.settings.cycles = roomSettingsRef.current.cycles;
+    s.settings.turnTimerLimit = roomSettingsRef.current.turnTimerLimit;
+
     hostState.current = s;
     setGameState(s);
     setStarted(true);
@@ -237,6 +268,8 @@ export function useRoom() {
     setSeatIds([]);
     setStarted(false);
     setError(null);
+    roomSettingsRef.current = { cycles: 3, turnTimerLimit: 30 };
+    setRoomSettings({ cycles: 3, turnTimerLimit: 30 });
   }, [deleteRoom]);
 
   // Tidy up on unmount.
@@ -258,6 +291,8 @@ export function useRoom() {
     rooms,
     gameState,
     youSeat,
+    roomSettings,
+    updateSettings,
     create,
     join,
     refreshRooms,

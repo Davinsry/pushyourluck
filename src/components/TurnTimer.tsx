@@ -2,7 +2,7 @@ import { Clock, Pause } from "lucide-react";
 
 interface Props {
   secondsLeft: number;
-  onPause: () => void;
+  onPause?: () => void;
 }
 
 /** Small countdown pill + pause button shown during a timed human turn. */

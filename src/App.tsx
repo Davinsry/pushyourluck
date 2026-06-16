@@ -322,18 +322,21 @@ export default function App() {
       setOnline(false);
     };
     return (
-      <div className="min-h-full bg-bg p-5 text-cream">
-        <div className="mx-auto max-w-[560px]">
-          <Header muted={muted} onToggleMute={toggleMute} />
-          {room.gameState ? (
-            <OnlinePlay room={room} onExit={exit} />
-          ) : room.code ? (
-            <WaitingRoom room={room} />
-          ) : (
-            <OnlineLobby room={room} onBack={exit} />
-          )}
+      <>
+        <LobbyScene />
+        <div className="min-h-full bg-transparent p-5 text-cream relative flex items-center justify-start md:pl-20">
+          <div className="w-full max-w-[500px] relative z-10">
+            <Header />
+            {room.gameState ? (
+              <OnlinePlay room={room} onExit={exit} />
+            ) : room.code ? (
+              <WaitingRoom room={room} />
+            ) : (
+              <OnlineLobby room={room} onBack={exit} />
+            )}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -438,7 +441,7 @@ export default function App() {
       <LobbyScene />
       <div className="min-h-full bg-transparent p-5 text-cream relative flex items-center justify-start md:pl-20">
         <div className="w-full max-w-[500px] relative z-10">
-        <Header muted={muted} onToggleMute={toggleMute} />
+        <Header />
 
         {state.screen === "intro" && (
           <IntroScreen

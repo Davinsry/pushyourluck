@@ -60,6 +60,7 @@ export interface Outcome {
 export interface Settings {
   cycles: number; // rondes per player (defaults to balance CYCLES)
   shop: boolean; // open the shop between rondes (off for online)
+  turnTimerLimit?: number; // turn timer limit in seconds (0 = unlimited)
 }
 
 export interface GameState {

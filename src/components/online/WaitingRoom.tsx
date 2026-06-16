@@ -17,6 +17,59 @@ export function WaitingRoom({ room }: Props) {
         <p className="mb-3 rounded-lg bg-[#FBE0D6] px-3 py-2 text-[13px] font-semibold text-chili-dark">{room.error}</p>
       )}
 
+      {/* Game Settings Panel */}
+      <div className="mb-5 rounded-xl border-[1.5px] border-line bg-cream p-4">
+        <h3 className="m-0 mb-3 text-sm font-extrabold text-chili-dark uppercase tracking-wider">
+          Pengaturan Game
+        </h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-[11px] font-bold text-muted uppercase tracking-wider">
+              Jumlah Ronde
+            </label>
+            <select
+              value={room.roomSettings.cycles}
+              onChange={(e) => room.updateSettings(Number(e.target.value), room.roomSettings.turnTimerLimit)}
+              disabled={!room.isHost}
+              className="w-full rounded-xl border-[1.5px] border-line bg-cream-2 px-3 py-2 text-[14px] font-bold text-ink outline-none disabled:opacity-80 disabled:cursor-not-allowed"
+            >
+              {[1, 2, 3, 4, 5].map((val) => (
+                <option key={val} value={val}>
+                  {val} Ronde
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-[11px] font-bold text-muted uppercase tracking-wider">
+              Waktu Berpikir
+            </label>
+            <select
+              value={room.roomSettings.turnTimerLimit}
+              onChange={(e) => room.updateSettings(room.roomSettings.cycles, Number(e.target.value))}
+              disabled={!room.isHost}
+              className="w-full rounded-xl border-[1.5px] border-line bg-cream-2 px-3 py-2 text-[14px] font-bold text-ink outline-none disabled:opacity-80 disabled:cursor-not-allowed"
+            >
+              <option value={15}>15 Detik</option>
+              <option value={30}>30 Detik</option>
+              <option value={45}>45 Detik</option>
+              <option value={60}>1 Menit</option>
+              <option value={90}>1.5 Menit</option>
+              <option value={120}>2 Menit</option>
+              <option value={0}>Tanpa Batas</option>
+            </select>
+          </div>
+        </div>
+        
+        {!room.isHost && (
+          <p className="m-0 mt-3 text-[11px] font-semibold text-muted italic">
+            * Hanya Host yang dapat mengubah pengaturan game.
+          </p>
+        )}
+      </div>
+
       <div className="mb-5 grid gap-2">
         {room.members.map((m, i) => (
           <div

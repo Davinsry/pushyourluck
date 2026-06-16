@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, DoorOpen, Plus, RefreshCw, Users } from "lucide-react";
+import { ArrowLeft, Plus, RefreshCw, Users } from "lucide-react";
 import type { UseRoom } from "../../net/useRoom";
 
 interface Props {
@@ -7,10 +7,9 @@ interface Props {
   onBack: () => void;
 }
 
-/** Create a room, join by code, or pick from the list of open rooms. */
+/** Create a room or pick from the list of open rooms. */
 export function OnlineLobby({ room, onBack }: Props) {
   const [name, setName] = useState("Pemain");
-  const [code, setCode] = useState("");
 
   // Poll the open-room list while we sit in the lobby.
   useEffect(() => {
@@ -52,24 +51,7 @@ export function OnlineLobby({ room, onBack }: Props) {
         <Plus size={20} /> Buat room baru
       </button>
 
-      <div className="mb-2 flex items-center gap-2">
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="KODE"
-          maxLength={4}
-          className="w-32 rounded-xl border-[1.5px] border-line bg-cream px-3.5 py-3 text-center text-lg font-extrabold tracking-[0.2em] text-ink outline-none"
-        />
-        <button
-          className="tp-btn flex flex-1 items-center justify-center gap-2 rounded-xl bg-steel py-3 text-[15px] font-extrabold text-white disabled:opacity-40"
-          onClick={() => room.join(code.trim(), name.trim() || "Pemain")}
-          disabled={code.trim().length !== 4}
-        >
-          <DoorOpen size={18} /> Gabung pakai kode
-        </button>
-      </div>
-
-      <div className="mt-5 flex items-center justify-between">
+      <div className="mt-5 flex items-center justify-between border-t border-line/10 pt-4">
         <span className="text-[13px] font-bold text-muted">
           <Users size={14} className="mr-1 inline-block align-[-2px]" /> Room tersedia
         </span>
@@ -86,7 +68,7 @@ export function OnlineLobby({ room, onBack }: Props) {
         {room.rooms.map((r) => (
           <button
             key={r.code}
-            className="tp-btn flex items-center justify-between rounded-xl border-[1.5px] border-line bg-cream px-4 py-2.5 text-left"
+            className="tp-btn flex items-center justify-between rounded-xl border-[1.5px] border-line bg-cream px-4 py-2.5 text-left transition-colors hover:bg-cream-2"
             onClick={() => room.join(r.code, name.trim() || "Pemain")}
           >
             <span className="text-lg font-extrabold tracking-[0.15em] text-chili-dark">{r.code}</span>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { activeIndex, currentCycle, isFinalRonde, totalTurns } from "../../game";
 import type { UseRoom } from "../../net/useRoom";
@@ -7,6 +8,7 @@ import { PreturnPhase } from "../PreturnPhase";
 import { ActivePhase } from "../ActivePhase";
 import { ResultPhase } from "../ResultPhase";
 import { GameOverScreen } from "../GameOverScreen";
+import { TurnTimer } from "../TurnTimer";
 
 interface Props {
   room: UseRoom;
@@ -19,6 +21,53 @@ export function OnlinePlay({ room, onExit }: Props) {
   const youSeat = room.youSeat;
   const send = room.sendAction;
   const ai = activeIndex(state);
+
+  const limit = state.settings.turnTimerLimit ?? 0;
+  const [secondsLeft, setSecondsLeft] = useState(limit);
+
+  // Reset the timer when active turn, phase, or limit changes
+  useEffect(() => {
+    if (limit > 0 && state.phase === "active") {
+      setSecondsLeft(limit);
+    }
+  }, [state.turn, state.phase, limit]);
+
+  // Tick the countdown
+  useEffect(() => {
+    if (limit <= 0 || state.phase !== "active") return;
+
+    const id = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          if (youSeat === ai) {
+            send({ type: "SKIP_TURN" });
+          }
+
+          if (room.isHost && youSeat !== ai) {
+            if (s === 1) return 0;
+          } else {
+            return limit;
+          }
+        }
+
+        if (s <= 0) {
+          if (room.isHost && youSeat !== ai) {
+            if (s <= -3) {
+              // Host forces SKIP_TURN for the AFK player
+              room.sendAction({ type: "SKIP_TURN" });
+              return limit;
+            }
+            return s - 1;
+          }
+          return limit;
+        }
+
+        return s - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [state.phase, youSeat, ai, limit, send, room.isHost, room.sendAction]);
 
   return (
     <>
@@ -43,13 +92,24 @@ export function OnlinePlay({ room, onExit }: Props) {
 
       {state.screen === "play" && (
         <>
-          <Scoreboard
-            players={state.players}
-            activeIndex={ai}
-            cycle={currentCycle(state)}
-            cycles={state.settings.cycles}
-            isFinal={isFinalRonde(state)}
-          />
+          <div className="flex gap-4 items-start mb-4">
+            <div className="flex-1">
+              <Scoreboard
+                players={state.players}
+                activeIndex={ai}
+                cycle={currentCycle(state)}
+                cycles={state.settings.cycles}
+                isFinal={isFinalRonde(state)}
+              />
+            </div>
+            {limit > 0 && state.phase === "active" && (
+              <div className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-bg2/90 border border-line/10 shadow-lg backdrop-blur-md text-cream min-w-[105px]">
+                <span className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1.5">Sisa Waktu</span>
+                <TurnTimer secondsLeft={Math.max(0, secondsLeft)} onPause={undefined} />
+              </div>
+            )}
+          </div>
+          
           <div className="rounded-[20px] bg-card p-6 text-ink">
             {state.phase === "preturn" && (
               <PreturnPhase
