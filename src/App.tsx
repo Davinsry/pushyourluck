@@ -3,8 +3,17 @@ import { Volume2, VolumeX } from "lucide-react";
 import { useGame } from "./hooks/useGame";
 import { useSound } from "./hooks/useSound";
 import type { BiteId } from "./game";
-import { botActiveDecision, botBlockDecision, botSpectatorActions } from "./game";
+import {
+  botActiveDecision,
+  botBlockDecision,
+  botSpectatorActions,
+  isFinalRonde,
+  totalTurns as getGameTotalTurns,
+  activeIndex as getGameActiveIndex,
+  currentCycle as getGameCurrentCycle
+} from "./game";
 import { ACTION_ANIM_MS, BOT, TURN_SECONDS } from "./config/balance";
+import { EMOTES } from "./config/emotes";
 import type { ActionAnim } from "./three/GameScene";
 import { Header } from "./components/Header";
 import { IntroScreen } from "./components/IntroScreen";
@@ -256,6 +265,80 @@ export default function App() {
     return () => clearInterval(id);
   }, [timerType, paused, dispatch, currentLimit]);
 
+  // Online timer countdown.
+  const onlineLimit = room.gameState?.settings.turnTimerLimit ?? 0;
+  const [onlineSecondsLeft, setOnlineSecondsLeft] = useState(onlineLimit);
+
+  useEffect(() => {
+    if (!online || !room.gameState) return;
+    const p = room.gameState.phase;
+    const blockAsk = room.gameState.blockAsk;
+    
+    if (p === "active" && onlineLimit > 0) {
+      setOnlineSecondsLeft(onlineLimit);
+    } else if (p === "preturn" && !blockAsk) {
+      setOnlineSecondsLeft(30);
+    }
+  }, [online, room.gameState?.turn, room.gameState?.phase, room.gameState?.blockAsk, onlineLimit]);
+
+  useEffect(() => {
+    if (!online || !room.gameState) return;
+    const p = room.gameState.phase;
+    const blockAsk = room.gameState.blockAsk;
+    const ai = getGameActiveIndex(room.gameState);
+    
+    if (p !== "active" && (p !== "preturn" || blockAsk)) return;
+    if (p === "active" && onlineLimit <= 0) return;
+
+    const phaseLimit = p === "active" ? onlineLimit : 30;
+
+    const id = setInterval(() => {
+      setOnlineSecondsLeft((s) => {
+        if (s <= 1) {
+          if (p === "active") {
+            if (room.youSeat === ai) {
+              room.sendAction({ type: "SKIP_TURN" });
+            }
+            if (room.isHost && room.youSeat !== ai) {
+              if (s === 1) return 0;
+            } else {
+              return onlineLimit;
+            }
+          } else if (p === "preturn") {
+            if (room.youSeat === ai) {
+              room.sendAction({ type: "CONFIRM_PRETURN" });
+            }
+            if (room.isHost && room.youSeat !== ai) {
+              if (s === 1) return 0;
+            } else {
+              return 30;
+            }
+          }
+        }
+
+        if (s <= 0) {
+          if (room.isHost && room.youSeat !== ai) {
+            if (s <= -3) {
+              if (p === "active") {
+                room.sendAction({ type: "SKIP_TURN" });
+                return onlineLimit;
+              } else if (p === "preturn") {
+                room.sendAction({ type: "CONFIRM_PRETURN" });
+                return 30;
+              }
+            }
+            return s - 1;
+          }
+          return phaseLimit;
+        }
+
+        return s - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [online, room.gameState?.phase, room.gameState?.blockAsk, room.youSeat, room.gameState ? getGameActiveIndex(room.gameState) : -1, onlineLimit, room.isHost]);
+
   // Outcome / game-over SFX are driven by state transitions so we don't have
   // to guess the post-dispatch result synchronously.
   useEffect(() => {
@@ -366,6 +449,142 @@ export default function App() {
       room.leave();
       setOnline(false);
     };
+
+    if (room.gameState && room.gameState.screen === "play") {
+      const activeIdx = getGameActiveIndex(room.gameState);
+      const isFinalRondeActive = isFinalRonde(room.gameState);
+      const totalTurnsCount = getGameTotalTurns(room.gameState);
+      const activePlayerObj = room.gameState.players[activeIdx];
+      const isHumanActiveTurn = activePlayerObj && !activePlayerObj.isBot && room.youSeat === activeIdx;
+
+      return (
+        <div className="fixed inset-0 z-40 bg-bg text-cream">
+          <div className="absolute inset-0">
+            <Suspense
+              fallback={
+                <div className="flex h-full items-center justify-center text-sm text-muted">
+                  Memuat panggung 3D…
+                </div>
+              }
+            >
+              <GameScene
+                state={room.gameState}
+                activeIndex={activeIdx}
+                onPick={(bite) => {
+                  if (isHumanActiveTurn) {
+                    animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
+                  }
+                }}
+                anim={anim}
+                busy={busy}
+              />
+            </Suspense>
+          </div>
+
+          {/* Emote Panel (Middle Right) */}
+          <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 bg-bg2/95 border border-line/10 p-2 rounded-2xl shadow-xl backdrop-blur-md">
+            <span className="text-[9px] uppercase tracking-wider text-muted font-bold text-center mb-1">Emote</span>
+            {EMOTES.map(({ id, emoji, label }) => (
+              <button
+                key={id}
+                onClick={() => room.sendEmote(id)}
+                className="tp-btn h-10 w-10 text-xl rounded-xl bg-cream-2 hover:bg-cream hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                title={label}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          {/* top-left vertical scoreboard & ID badge */}
+          <div className="absolute left-4 top-4 z-50 pointer-events-none flex flex-col gap-2">
+            <Scoreboard
+              players={room.gameState.players}
+              activeIndex={activeIdx}
+              cycle={getGameCurrentCycle(room.gameState)}
+              cycles={room.gameState.settings.cycles}
+              isFinal={isFinalRondeActive}
+              activeEmotes={room.activeEmotes}
+            />
+            <div
+              className="rounded-2xl px-3 py-1.5 text-center border border-line/10 shadow-lg backdrop-blur-md pointer-events-auto"
+              style={{
+                backgroundColor: "rgba(30, 19, 13, 0.85)",
+                color: "var(--c-cream)",
+              }}
+            >
+              <div className="text-[9px] uppercase tracking-wider text-muted font-bold">
+                ID Room
+              </div>
+              <div className="text-xs font-extrabold leading-none mt-0.5 text-amber">
+                {room.code}
+              </div>
+            </div>
+          </div>
+
+          {/* top-right HUD controls */}
+          <div className="absolute right-4 top-4 z-50 pointer-events-auto flex items-center gap-2">
+            {((room.gameState.settings.turnTimerLimit && room.gameState.settings.turnTimerLimit > 0 && room.gameState.phase === "active") ||
+              (room.gameState.phase === "preturn" && !room.gameState.blockAsk)) && (
+              <TurnTimer secondsLeft={onlineSecondsLeft} onPause={undefined} />
+            )}
+            <button
+              className="tp-btn rounded-full bg-bg2/90 p-2.5 text-cream border border-line/10 shadow-lg backdrop-blur-md"
+              style={{ backgroundColor: "rgba(42, 27, 18, 0.85)" }}
+              onClick={toggleMute}
+              aria-label={muted ? "Nyalakan suara" : "Bisukan suara"}
+            >
+              {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          </div>
+
+          {/* side HUD: controls live in left/right panels so the centre stays clear */}
+          <Hud3D
+            state={room.gameState}
+            activeIndex={activeIdx}
+            isFinal={isFinalRondeActive}
+            isLastTurn={room.gameState.turn + 1 >= totalTurnsCount}
+            onToggleBet={(player, bet) => {
+              play("click");
+              room.sendAction({ type: "TOGGLE_BET", player, bet });
+            }}
+            onAddSabo={(player) => {
+              play("sabotage");
+              room.sendAction({ type: "ADD_SABO", player });
+            }}
+            onConfirm={() => {
+              play("click");
+              room.sendAction({ type: "CONFIRM_PRETURN" });
+            }}
+            onUseTameng={() => {
+              play("click");
+              room.sendAction({ type: "USE_TAMENG" });
+            }}
+            onAcceptHeat={() => {
+              play("click");
+              room.sendAction({ type: "ACCEPT_HEAT" });
+            }}
+            onSuap={(bite) => {
+              if (isHumanActiveTurn) {
+                animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
+              }
+            }}
+            onMinumSusu={() => {
+              if (isHumanActiveTurn) {
+                animateThen("milk", undefined, () => room.sendAction({ type: "MINUM_SUSU" }));
+              }
+            }}
+            onSajikan={() => room.sendAction({ type: "SAJIKAN" })}
+            busy={busy || !isHumanActiveTurn}
+            onNext={() => {
+              play("click");
+              room.sendAction({ type: "NEXT" });
+            }}
+          />
+        </div>
+      );
+    }
+
     return (
       <>
         <LobbyScene />
