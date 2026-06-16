@@ -34,6 +34,7 @@ export default function App() {
   const { state, dispatch, activeIndex, cycle, isFinal, totalTurns, activePlayer } = game;
   const { play, muted, toggleMute } = useSound();
   const [online, setOnline] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const room = useRoom();
 
   // Generate or reset local game ID
@@ -125,17 +126,19 @@ export default function App() {
 
   // Sync state to URL
   useEffect(() => {
+    if (!isInitialized) return;
     const targetPath = getPathForState(state.screen, online, room.code, !!room.gameState, gameId);
     const currentPath = window.location.pathname + window.location.search;
     if (targetPath !== currentPath) {
       window.history.pushState({ screen: state.screen, online, roomCode: room.code, roomHasGame: !!room.gameState, gameId }, "", targetPath);
     }
-  }, [state.screen, online, room.code, room.gameState, gameId]);
+  }, [isInitialized, state.screen, online, room.code, room.gameState, gameId]);
 
   // Initial URL parsing
   useEffect(() => {
     syncUrlToState(window.location.pathname, window.location.search);
-  }, []);
+    setIsInitialized(true);
+  }, [syncUrlToState]);
 
   // Popstate listener for back/forward navigation
   useEffect(() => {
