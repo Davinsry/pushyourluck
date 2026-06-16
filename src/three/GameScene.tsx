@@ -83,17 +83,6 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Pr
           // headband = which character; body = which player (distinct per seat)
           const accent = p.char ? ACCENT[p.char] ?? token(CHARS[p.char].colorKey) : "#9b8675";
           const body = playerColor(i);
-          
-          let bodyColor: string = body;
-          if (p.burns && p.burns > 0) {
-            if (p.burns === 1) {
-              bodyColor = "#7f7872"; // ash grey
-            } else if (p.burns === 2) {
-              bodyColor = "#4a423d"; // dark soot
-            } else {
-              bodyColor = "#1f1a17"; // charred black
-            }
-          }
 
           return (
             <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, seatFacing(i, n), 0]}>
@@ -127,13 +116,12 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Pr
                 bust={isActive && busted}
                 anim={isActive ? anim ?? null : null}
                 char={p.char}
-                burns={p.burns}
               />
               <Chair />
               {/* simple body so heads aren't floating — coloured per player */}
               <mesh position={[0, -0.95, 0]} castShadow>
                 <cylinderGeometry args={[0.4, 0.55, 1.1, 16]} />
-                <meshStandardMaterial color={bodyColor} roughness={0.8} />
+                <meshStandardMaterial color={body} roughness={0.8} />
               </mesh>
             </group>
           );

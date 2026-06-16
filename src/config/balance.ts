@@ -22,7 +22,7 @@ export const BUST = { offset: 10, cap: 95 } as const;
 export const MULT = { t15: 50, t2: 80 } as const;
 
 /** Bonus for Si Hemat when banking below the safe heat threshold. */
-export const HEMAT = { bonus: 6, below: 40 } as const;
+export const HEMAT = { bonus: 8, below: 45 } as const;
 
 // ── Chilis (bites) ──────────────────────────────────────────
 // points: [min, max] inclusive roll. heat: heat added per bite.
@@ -47,33 +47,33 @@ export const CHARS = {
     tag: "Tahan banting",
     colorKey: "steel",
     up: "Sekali per ronde, selamat dari 1 kepedesan.",
-    down: "Poin tiap suap −2.",
+    down: "Poin tiap suap −22.",
     surviveBust: 1,
-    pointMod: -2,
+    pointMod: -22,
   },
   rakus: {
     name: "Si Rakus",
     tag: "High-roller",
     colorKey: "chili",
     up: "Poin tiap suap +3.",
-    down: "Pedas naik lebih cepat (+5).",
+    down: "Pedas naik lebih cepat (+4).",
     pointMod: 3,
-    heatMod: 5,
+    heatMod: 4,
   },
   kompor: {
     name: "Si Tukang Kompor",
     tag: "Pengganggu",
     colorKey: "flame",
-    up: "Dapat 2 jatah tambah sambal (lawan 1).",
+    up: "Dapat 3 jatah tambah sambal (lawan 1).",
     down: "Multiplier mentok ×1.5.",
-    sabotage: 2,
+    sabotage: 3,
     maxMult: 1.5,
   },
   hemat: {
     name: "Si Hemat",
     tag: "Grinder",
     colorKey: "leaf",
-    up: "Sajikan saat pedas < 40 → bonus +6.",
+    up: "Sajikan saat pedas < 45 → bonus +8.",
     down: "Multiplier mentok ×1.5.",
     safeBonus: HEMAT.bonus,
     safeBelow: HEMAT.below,
@@ -84,18 +84,18 @@ export const CHARS = {
     tag: "Tahan serangan",
     colorKey: "amber",
     up: "Mulai dengan 2 tameng.",
-    down: "Poin tiap suap −2.",
+    down: "Poin tiap suap −1.",
     tameng: 2,
-    pointMod: -2,
+    pointMod: -1,
   },
   pendingin: {
     name: "Si Pendingin",
     tag: "Adem",
     colorKey: "leaf-dark",
     up: "Mulai dengan 2 susu.",
-    down: "Pedas naik +4 tiap suap.",
+    down: "Pedas naik +2 tiap suap.",
     susu: 2,
-    heatMod: 4,
+    heatMod: 2,
   },
 } as const;
 

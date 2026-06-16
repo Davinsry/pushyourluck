@@ -125,8 +125,6 @@ function resolve(
   breakdown: { raw: number; mult: number; hematBonus: number; final: boolean }
 ): GameState {
   const pIdx = activeIndex(s);
-  const n = s.players.length;
-  const oppositeIdx = (pIdx + Math.floor(n / 2)) % n;
 
   const betResults: BetResult[] = Object.entries(s.bets)
     .filter(([, v]) => v)
@@ -143,12 +141,7 @@ function resolve(
     const bet = s.bets[i];
     if (bet) score += (busted && bet === "bust") || (!busted && bet === "aman") ? BET_STAKE : -BET_STAKE;
     
-    let burns = p.burns || 0;
-    if (busted && i === oppositeIdx) {
-      burns += 1;
-    }
-    
-    return { ...p, score: Math.max(0, score), burns };
+    return { ...p, score: Math.max(0, score) };
   });
 
   const outcome: Outcome = { busted, gained, ...breakdown, bets: betResults };

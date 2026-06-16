@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BUST, FINAL_MULT, MULT } from "../config/balance";
+import { BUST, FINAL_MULT, MULT, CHARS } from "../config/balance";
 import { bustChance, multiplier, scoreBank, biteGain, randRange, draftOptions } from "./rules";
 import type { Rng } from "./types";
 
@@ -39,7 +39,7 @@ describe("scoreBank", () => {
     expect(scoreBank(10, MULT.t2, "rakus", false).gained).toBe(20);
   });
   it("adds the hemat safe bonus only below the threshold", () => {
-    expect(scoreBank(10, 0, "hemat", false).gained).toBe(16); // 10*1 + 6
+    expect(scoreBank(10, 0, "hemat", false).gained).toBe(10 * 1 + CHARS.hemat.safeBonus);
     expect(scoreBank(10, 60, "hemat", false).hematBonus).toBe(0);
   });
   it("doubles on the final ronde", () => {
@@ -50,9 +50,9 @@ describe("scoreBank", () => {
 describe("biteGain", () => {
   it("respects the point range and character mod, min 1", () => {
     // rng 0 → min roll; rakus adds +3
-    expect(biteGain("ijo", "rakus", seq([0]))).toBe(4 + 3);
-    // baja -2 never goes below 1
-    expect(biteGain("ijo", "baja", seq([0]))).toBe(Math.max(1, 4 - 2));
+    expect(biteGain("ijo", "rakus", seq([0]))).toBe(4 + CHARS.rakus.pointMod);
+    // baja never goes below 1
+    expect(biteGain("ijo", "baja", seq([0]))).toBe(Math.max(1, 4 + CHARS.baja.pointMod));
   });
 });
 

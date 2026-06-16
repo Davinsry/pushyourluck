@@ -48,7 +48,11 @@ describe("bot decisions", () => {
   });
 
   it("banks when it has points and the heat is dangerous", () => {
-    const s = play({ turn: 1, heat: 90, roundPts: 12 });
+    const base = play({ turn: 1, heat: 90, roundPts: 12 });
+    const s = {
+      ...base,
+      players: base.players.map((p, i) => (i === 1 ? { ...p, susu: 0 } : p)),
+    };
     expect(botActiveDecision(s).type).toBe("SAJIKAN");
   });
 
