@@ -3,19 +3,12 @@
 //  return the Action a bot would take. Driven on a timer in App so
 //  the moves are watchable. All thresholds live in balance BOT{}.
 // ─────────────────────────────────────────────────────────────
-import { BOT, SABOTAGE_HEAT, BITES } from "../config/balance";
+import { BOT, SABOTAGE_HEAT } from "../config/balance";
 import type { Action, BiteId, GameState, Rng } from "./types";
 import { bustChance, multiplier } from "./rules";
-import { activeIndex, isFinalRonde, currentCycle } from "./reducer";
+import { activeIndex, isFinalRonde } from "./reducer";
 
 // ── Helpers ──────────────────────────────────────────────────
-
-/** Average score of all other players. */
-function avgOpponentScore(state: GameState, myIdx: number): number {
-  const others = state.players.filter((_, i) => i !== myIdx);
-  if (!others.length) return 0;
-  return others.reduce((s, p) => s + p.score, 0) / others.length;
-}
 
 /** The leading score among opponents. */
 function topOpponentScore(state: GameState, myIdx: number): number {
@@ -31,8 +24,6 @@ export function botActiveDecision(state: GameState): Action {
   const pts = state.roundPts;
   const ch = me.char;
   const final = isFinalRonde(state);
-  const cycle = currentCycle(state);
-  const totalCycles = state.settings.cycles;
 
   // Score gap: how far behind (positive) or ahead (negative) the bot is
   const topOpp = topOpponentScore(state, idx);
@@ -43,7 +34,7 @@ export function botActiveDecision(state: GameState): Action {
   //  - If behind by a lot → push harder (raise threshold up to 70%)
   //  - If ahead → play safe (lower threshold to 35%)
   //  - Final ronde → push a bit harder (points are doubled)
-  let bankThreshold = BOT.bankAtBust;
+  let bankThreshold: number = BOT.bankAtBust;
   if (scoreDiff > 20) bankThreshold += 15; // way behind: gamble more
   else if (scoreDiff > 10) bankThreshold += 8;
   else if (scoreDiff < -15) bankThreshold -= 12; // way ahead: play safe
@@ -115,8 +106,6 @@ export function botActiveDecision(state: GameState): Action {
 
 /** When sabotaged, a bot blocks with a shield based on how much heat is incoming. */
 export function botBlockDecision(state: GameState): Action {
-  const idx = activeIndex(state);
-  const me = state.players[idx];
   // Block if the sabotage heat is significant, or if we're already hot
   const wouldBeHot = state.heat + state.pendingHeat;
   if (state.pendingHeat >= SABOTAGE_HEAT && (wouldBeHot > 45 || bustChance(wouldBeHot) > 35)) {
@@ -139,7 +128,7 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
 
     // ── Smarter betting: consider the active player's character ──
     if (!state.bets[k]) {
-      let bustBias = BOT.betBustBias;
+      let bustBias: number = BOT.betBustBias;
       // Characters that tend to bust more (rakus, kompor) → bet bust more
       if (activePlayer.char === "rakus") bustBias += 0.15;
       if (activePlayer.char === "kompor") bustBias += 0.1;
@@ -153,7 +142,7 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
 
     // ── Sabotage: more aggressive when the active player is a threat ──
     if (p.sabotage > 0 && !state.usedSabo.includes(k)) {
-      let saboChance = BOT.sabotageChance;
+      let saboChance: number = BOT.sabotageChance;
       // Sabotage more if active player is leading
       if (activePlayer.score > p.score + 10) saboChance += 0.2;
       // Save sabotage if it's early and not threatened

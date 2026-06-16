@@ -310,7 +310,6 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
     let target: THREE.Vector3 = REST;
     let showCarry = false;
     let tiltZ = 0;
-    let carryKind: "chili" | "glass" | null = null;
 
     if (anim) {
       const t = Math.min(1, Math.max(0, (performance.now() - anim.nonce) / ACTION_ANIM_MS));
@@ -322,7 +321,6 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
         } else if (t < 0.65) {
           target = seg(bowlTarget, MOUTH, (t - 0.4) / 0.25);
           showCarry = true;
-          carryKind = "chili";
         } else {
           target = seg(MOUTH, REST, (t - 0.65) / 0.35);
         }
@@ -338,7 +336,6 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
 
         if (t >= 0.4 && t < 0.85) {
           showCarry = true;
-          carryKind = "glass";
           if (t >= 0.48 && t < 0.75) {
             const progress = Math.sin(((t - 0.48) / 0.27) * Math.PI);
             tiltZ = -progress * 1.3;
