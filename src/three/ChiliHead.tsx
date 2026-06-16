@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ACTION_ANIM_MS } from "../config/balance";
+import type { BiteId } from "../game";
 import { Particles } from "./Particles";
 import type { ActionAnim } from "./GameScene";
-import { MilkBottle } from "./MilkBottle";
 
 interface Props {
   heat: number; // 0–100, drives the whole reaction
@@ -214,54 +214,144 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null, charr
   );
 }
 
+// ── Chili colour lookup for the carried chili ──
+const BITE_HEX: Record<BiteId, string> = {
+  ijo: "#6fa315",
+  rawit: "#f26419",
+  carolina: "#9e1b2c",
+};
+
 // Hand keyframes (local space; +z points toward the bowls/camera).
 const REST = new THREE.Vector3(0.52, -0.7, 0.42);
 const MOUTH = new THREE.Vector3(0, -0.16, 0.56);
-const BOWL = new THREE.Vector3(0, -0.82, 1.15);
-const BOTTLE = new THREE.Vector3(1.05, -0.55, 0.5);
+
+// Three separate bowl targets (local space) — left, centre, right.
+// The bowls are spread ±0.75 along the local-X perpendicular, so we mirror that.
+const BOWL_LEFT   = new THREE.Vector3(-0.65, -0.82, 1.15);  // ijo (leftmost)
+const BOWL_CENTER = new THREE.Vector3( 0.00, -0.82, 1.15);  // rawit (centre)
+const BOWL_RIGHT  = new THREE.Vector3( 0.65, -0.82, 1.15);  // carolina (rightmost)
+
+const BOWL_MAP: Record<BiteId, THREE.Vector3> = {
+  ijo: BOWL_LEFT,
+  rawit: BOWL_CENTER,
+  carolina: BOWL_RIGHT,
+};
+
+// Milk glass position (to the side, where the bottle sits on the table).
+const GLASS_POS = new THREE.Vector3(1.05, -0.55, 0.5);
+
 const tmpV = new THREE.Vector3();
 const ease = (s: number) => s * s * (3 - 2 * s);
 const seg = (a: THREE.Vector3, b: THREE.Vector3, s: number) => tmpV.copy(a).lerp(b, ease(Math.min(1, Math.max(0, s))));
 
-/** A single hand that reaches for a chili (bite) or the bottle (milk), then to the mouth. */
+/** A small cartoon chili held in the hand during the bite animation. */
+function HandChili({ color }: { color: string }) {
+  return (
+    <group scale={0.7} rotation={[Math.PI / 2.3, 0.5, 0.1]}>
+      {/* body */}
+      <mesh castShadow>
+        <coneGeometry args={[0.045, 0.22, 8]} />
+        <meshStandardMaterial color={color} roughness={0.35} />
+      </mesh>
+      {/* shoulder */}
+      <mesh position={[0, 0.11, 0]} castShadow>
+        <sphereGeometry args={[0.045, 10, 8]} />
+        <meshStandardMaterial color={color} roughness={0.35} />
+      </mesh>
+      {/* stem cap */}
+      <mesh position={[0, 0.13, 0]}>
+        <cylinderGeometry args={[0.03, 0.045, 0.02, 8]} />
+        <meshStandardMaterial color="#558010" roughness={0.7} />
+      </mesh>
+    </group>
+  );
+}
+
+/** A small glass held in the hand during the milk animation. */
+function HandGlass({ full }: { full: boolean }) {
+  return (
+    <group scale={0.55}>
+      {/* glass body (transparent) */}
+      <mesh position={[0, 0.2, 0]}>
+        <cylinderGeometry args={[0.14, 0.11, 0.4, 16, 1, true]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          transparent
+          opacity={0.25}
+          roughness={0.1}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* glass bottom */}
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.11, 16]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.3} roughness={0.1} />
+      </mesh>
+      {/* milk fill */}
+      {full && (
+        <mesh position={[0, 0.18, 0]}>
+          <cylinderGeometry args={[0.12, 0.10, 0.34, 16]} />
+          <meshStandardMaterial color="#fbf6ee" roughness={0.6} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+/** A single hand that reaches for the correct chili bowl or picks up a milk glass. */
 function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
   const hand = useRef<THREE.Group>(null);
-  const bottleGroup = useRef<THREE.Group>(null);
-  const [bottleFull, setBottleFull] = useState(true);
+  const carryGroup = useRef<THREE.Group>(null);
+  const [glassFull, setGlassFull] = useState(true);
   const pos = useRef(new THREE.Vector3().copy(REST));
 
   useFrame(() => {
     if (!hand.current) return;
     let target: THREE.Vector3 = REST;
-    let showBottle = false;
+    let showCarry = false;
     let tiltZ = 0;
+    let carryKind: "chili" | "glass" | null = null;
 
     if (anim) {
       const t = Math.min(1, Math.max(0, (performance.now() - anim.nonce) / ACTION_ANIM_MS));
       if (anim.kind === "bite") {
-        if (t < 0.4) target = seg(REST, BOWL, t / 0.4);
-        else if (t < 0.65) target = seg(BOWL, MOUTH, (t - 0.4) / 0.25);
-        else target = seg(MOUTH, REST, (t - 0.65) / 0.35);
+        // Pick the bowl target matching the chili type
+        const bowlTarget = (anim.bite && BOWL_MAP[anim.bite]) || BOWL_CENTER;
+        if (t < 0.4) {
+          target = seg(REST, bowlTarget, t / 0.4);
+        } else if (t < 0.65) {
+          target = seg(bowlTarget, MOUTH, (t - 0.4) / 0.25);
+          showCarry = true;
+          carryKind = "chili";
+        } else {
+          target = seg(MOUTH, REST, (t - 0.65) / 0.35);
+        }
       } else {
-        if (t < 0.4) target = seg(REST, BOTTLE, t / 0.4);
-        else if (t < 0.7) target = seg(BOTTLE, MOUTH, (t - 0.4) / 0.3);
-        else target = seg(MOUTH, REST, (t - 0.7) / 0.3);
+        // Milk: reach for the glass, bring to mouth, tilt to drink
+        if (t < 0.4) {
+          target = seg(REST, GLASS_POS, t / 0.4);
+        } else if (t < 0.7) {
+          target = seg(GLASS_POS, MOUTH, (t - 0.4) / 0.3);
+        } else {
+          target = seg(MOUTH, REST, (t - 0.7) / 0.3);
+        }
 
         if (t >= 0.4 && t < 0.85) {
-          showBottle = true;
+          showCarry = true;
+          carryKind = "glass";
           if (t >= 0.48 && t < 0.75) {
             const progress = Math.sin(((t - 0.48) / 0.27) * Math.PI);
             tiltZ = -progress * 1.3;
           }
           const shouldBeFull = t < 0.62;
-          if (bottleFull !== shouldBeFull) {
-            setBottleFull(shouldBeFull);
+          if (glassFull !== shouldBeFull) {
+            setGlassFull(shouldBeFull);
           }
         }
       }
     } else {
-      if (!bottleFull) {
-        setBottleFull(true);
+      if (!glassFull) {
+        setGlassFull(true);
       }
     }
 
@@ -269,11 +359,14 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
     hand.current.position.copy(pos.current);
     hand.current.visible = active;
 
-    if (bottleGroup.current) {
-      bottleGroup.current.visible = showBottle;
-      bottleGroup.current.rotation.z = tiltZ;
+    if (carryGroup.current) {
+      carryGroup.current.visible = showCarry;
+      carryGroup.current.rotation.z = tiltZ;
     }
   });
+
+  // Determine what the hand is currently carrying
+  const carryChiliColor = anim?.kind === "bite" && anim.bite ? BITE_HEX[anim.bite] : null;
 
   return (
     <group ref={hand}>
@@ -281,8 +374,13 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
         <sphereGeometry args={[0.15, 12, 12]} />
         <meshStandardMaterial color="#e8b98c" roughness={0.85} />
       </mesh>
-      <group ref={bottleGroup} position={[0, 0.05, 0]} scale={0.55}>
-        <MilkBottle full={bottleFull} />
+      <group ref={carryGroup} position={[0, 0.05, 0]}>
+        {/* Show either a chili or a glass depending on the animation */}
+        {carryChiliColor ? (
+          <HandChili color={carryChiliColor} />
+        ) : (
+          <HandGlass full={glassFull} />
+        )}
       </group>
     </group>
   );
