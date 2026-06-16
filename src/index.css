@@ -56,3 +56,16 @@ body {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+@keyframes dynamic-shake {
+  0% { transform: translate(calc(var(--shake-amt) * 1px), calc(var(--shake-amt) * 1px)) rotate(calc(var(--shake-amt) * 0.1deg)); }
+  20% { transform: translate(calc(var(--shake-amt) * -1.5px), calc(var(--shake-amt) * 0px)) rotate(calc(var(--shake-amt) * -0.1deg)); }
+  40% { transform: translate(calc(var(--shake-amt) * 1px), calc(var(--shake-amt) * -1px)) rotate(calc(var(--shake-amt) * 0.05deg)); }
+  60% { transform: translate(calc(var(--shake-amt) * -1.5px), calc(var(--shake-amt) * 1.5px)) rotate(0deg); }
+  80% { transform: translate(calc(var(--shake-amt) * 1.5px), calc(var(--shake-amt) * 1px)) rotate(calc(var(--shake-amt) * -0.05deg)); }
+  100% { transform: translate(calc(var(--shake-amt) * 1px), calc(var(--shake-amt) * -1.5px)) rotate(calc(var(--shake-amt) * 0.1deg)); }
+}
+
+.animate-shake {
+  animation: dynamic-shake 0.08s infinite;
+}

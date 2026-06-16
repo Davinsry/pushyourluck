@@ -37,6 +37,117 @@ import { OnlinePlay } from "./components/online/OnlinePlay";
 // devices that never open 3D never pay for it.
 const GameScene = lazy(() => import("./three/GameScene").then((m) => ({ default: m.GameScene })));
 import { LobbyScene } from "./three/LobbyScene";
+class HeartbeatSynthesizer {
+  private ctx: AudioContext | null = null;
+  private timerId: any = null;
+  private bpm: number = 60;
+  private volume: number = 0;
+  private muted: boolean = false;
+
+  constructor() {}
+
+  setMuted(muted: boolean) {
+    this.muted = muted;
+    if (muted) {
+      this.stopTicking();
+    }
+  }
+
+  update(heat: number, isTurnActive: boolean) {
+    if (this.muted || !isTurnActive || heat < 15) {
+      this.stopTicking();
+      return;
+    }
+
+    // BPM increases as heat increases: from 60 BPM (at heat 15) to 150 BPM (at heat 90)
+    const targetBpm = Math.min(160, 60 + ((heat - 15) / 75) * 100);
+    // Volume increases as heat increases: from 0 (at heat 15) to 0.8 (at heat 90)
+    const targetVolume = Math.min(0.8, ((heat - 15) / 60) * 0.8);
+
+    this.bpm = targetBpm;
+    this.volume = targetVolume;
+
+    this.startTicking();
+  }
+
+  private initCtx() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
+    }
+    if (this.ctx && this.ctx.state === "suspended") {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
+  private startTicking() {
+    if (this.timerId !== null) return;
+    this.initCtx();
+    
+    const tick = () => {
+      if (this.muted || this.volume <= 0) {
+        this.stopTicking();
+        return;
+      }
+      this.playThump();
+      
+      const intervalMs = (60 / this.bpm) * 1000;
+      this.timerId = setTimeout(tick, intervalMs);
+    };
+
+    tick();
+  }
+
+  private stopTicking() {
+    if (this.timerId !== null) {
+      clearTimeout(this.timerId);
+      this.timerId = null;
+    }
+  }
+
+  private playThump() {
+    if (!this.ctx || this.ctx.state === "suspended") return;
+
+    try {
+      const playSingleBeat = (timeOffset: number, freq: number, gainAmt: number) => {
+        const osc = this.ctx!.createOscillator();
+        const gainNode = this.ctx!.createGain();
+
+        osc.connect(gainNode);
+        gainNode.connect(this.ctx!.destination);
+
+        const now = this.ctx!.currentTime + timeOffset;
+        osc.frequency.setValueAtTime(freq, now);
+        // Sweep frequency down slightly to simulate low thump
+        osc.frequency.exponentialRampToValueAtTime(10, now + 0.15);
+
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(gainAmt * this.volume, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.start(now);
+        osc.stop(now + 0.2);
+      };
+
+      // Lub-dub: First thump (lub)
+      playSingleBeat(0, 55, 0.8);
+      // Second thump (dub) - slightly higher frequency, slightly quieter, ~0.15s later
+      playSingleBeat(0.15, 60, 0.5);
+    } catch (e) {
+      console.warn("Failed to play heartbeat thump", e);
+    }
+  }
+
+  destroy() {
+    this.stopTicking();
+    if (this.ctx) {
+      this.ctx.close().catch(() => {});
+      this.ctx = null;
+    }
+  }
+}
 
 export default function App() {
   const game = useGame();
@@ -180,6 +291,8 @@ export default function App() {
   }, [syncUrlToState]);
 
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const inGameMusicRef = useRef<HTMLAudioElement | null>(null);
+  const heartbeatRef = useRef<HeartbeatSynthesizer | null>(null);
 
   useEffect(() => {
     if (!bgMusicRef.current) {
@@ -187,29 +300,85 @@ export default function App() {
       bgMusicRef.current.loop = true;
       bgMusicRef.current.volume = 0.35;
     }
-
-    const music = bgMusicRef.current;
-    const isLobby = state.screen !== "play" && !room.gameState;
-
-    if (isLobby && !muted) {
-      music.play().catch(() => {
-        // Fallback for browser autoplay policies: play on first click/touch
-        const playOnInteraction = () => {
-          music.play().catch(() => {});
-          window.removeEventListener("click", playOnInteraction);
-          window.removeEventListener("touchstart", playOnInteraction);
-        };
-        window.addEventListener("click", playOnInteraction);
-        window.addEventListener("touchstart", playOnInteraction);
-      });
-    } else {
-      music.pause();
+    if (!inGameMusicRef.current) {
+      inGameMusicRef.current = new Audio("/videoplayback.weba");
+      inGameMusicRef.current.loop = true;
+      inGameMusicRef.current.volume = 0.15; // lower volume as requested
+    }
+    if (!heartbeatRef.current) {
+      heartbeatRef.current = new HeartbeatSynthesizer();
     }
 
     return () => {
-      music.pause();
+      if (bgMusicRef.current) bgMusicRef.current.pause();
+      if (inGameMusicRef.current) inGameMusicRef.current.pause();
+      if (heartbeatRef.current) {
+        heartbeatRef.current.destroy();
+        heartbeatRef.current = null;
+      }
     };
-  }, [state.screen, room.gameState, muted]);
+  }, []);
+
+  useEffect(() => {
+    const lobbyMusic = bgMusicRef.current;
+    const playMusic = inGameMusicRef.current;
+    if (!lobbyMusic || !playMusic) return;
+
+    const isLobby = state.screen !== "play" && state.screen !== "shop" && state.screen !== "draft" && !room.gameState;
+
+    const playOnInteraction = () => {
+      if (!muted) {
+        const currentLobby = state.screen !== "play" && state.screen !== "shop" && state.screen !== "draft" && !room.gameState;
+        if (currentLobby) {
+          lobbyMusic.play().catch(() => {});
+          playMusic.pause();
+        } else {
+          playMusic.play().catch(() => {});
+          lobbyMusic.pause();
+        }
+      }
+    };
+
+    if (!muted) {
+      if (isLobby) {
+        playMusic.pause();
+        lobbyMusic.play().catch(() => {
+          window.addEventListener("click", playOnInteraction, { once: true });
+          window.addEventListener("touchstart", playOnInteraction, { once: true });
+        });
+      } else {
+        lobbyMusic.pause();
+        playMusic.play().catch(() => {
+          window.addEventListener("click", playOnInteraction, { once: true });
+          window.addEventListener("touchstart", playOnInteraction, { once: true });
+        });
+      }
+    } else {
+      lobbyMusic.pause();
+      playMusic.pause();
+    }
+
+    return () => {
+      lobbyMusic.pause();
+      playMusic.pause();
+      window.removeEventListener("click", playOnInteraction);
+      window.removeEventListener("touchstart", playOnInteraction);
+    };
+  }, [state.screen, room.gameState?.screen, muted]);
+
+  // Update heartbeat synthesizer based on current heat & phase
+  useEffect(() => {
+    if (!heartbeatRef.current) return;
+    heartbeatRef.current.setMuted(muted);
+
+    const isPlayActive =
+      (state.screen === "play" && state.phase === "active") ||
+      !!(online && room.gameState && room.gameState.screen === "play" && room.gameState.phase === "active");
+
+    const currentHeat = online && room.gameState ? room.gameState.heat : state.heat;
+
+    heartbeatRef.current.update(currentHeat, isPlayActive);
+  }, [state.screen, state.phase, state.heat, online, room.gameState?.screen, room.gameState?.phase, room.gameState?.heat, muted]);
 
   // While an eat/drink animation plays, lock the controls so the player has to
   // wait for the hand to finish before acting again. `anim` drives the 3D hand.
@@ -441,7 +610,17 @@ export default function App() {
     dispatch({ type: "RESET" });
   };
 
+  // Calculate current heat, shake, and vignette opacity
+  const onlinePlayActive = online && room.gameState && room.gameState.screen === "play";
+  const offlinePlayActive = !online && state.screen === "play";
+  const isPlayActive = onlinePlayActive || offlinePlayActive;
 
+  const currentHeat = isPlayActive 
+    ? (online && room.gameState ? room.gameState.heat : state.heat) 
+    : 0;
+
+  const shakeAmount = currentHeat > 15 ? Math.min(8, (currentHeat - 15) / 8) : 0;
+  const redOpacity = currentHeat > 10 ? Math.min(0.8, (currentHeat - 10) / 80) : 0;
 
   // ── Online: lobby → waiting room → synced game (separate from local state) ──
   if (online) {
@@ -458,7 +637,20 @@ export default function App() {
       const isHumanActiveTurn = activePlayerObj && !activePlayerObj.isBot && room.youSeat === activeIdx;
 
       return (
-        <div className="fixed inset-0 z-40 bg-bg text-cream">
+        <div 
+          className={`fixed inset-0 z-40 bg-bg text-cream ${shakeAmount > 0 ? "animate-shake" : ""}`}
+          style={{
+            "--shake-amt": shakeAmount
+          } as React.CSSProperties}
+        >
+          {/* Red Vignette Overlay for Heat/Spiciness */}
+          <div 
+            className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
+            style={{
+              opacity: redOpacity,
+              background: "radial-gradient(circle, transparent 20%, rgba(215, 38, 61, 0.6) 100%)",
+            }}
+          />
           <div className="absolute inset-0">
             <Suspense
               fallback={
@@ -607,7 +799,20 @@ export default function App() {
   // ── 3D: full-screen "game" layout with the controls overlaid on top ──
   if (state.screen === "play") {
     return (
-      <div className="fixed inset-0 z-40 bg-bg text-cream">
+      <div 
+        className={`fixed inset-0 z-40 bg-bg text-cream ${shakeAmount > 0 ? "animate-shake" : ""}`}
+        style={{
+          "--shake-amt": shakeAmount
+        } as React.CSSProperties}
+      >
+        {/* Red Vignette Overlay for Heat/Spiciness */}
+        <div 
+          className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
+          style={{
+            opacity: redOpacity,
+            background: "radial-gradient(circle, transparent 20%, rgba(215, 38, 61, 0.6) 100%)",
+          }}
+        />
         <div className="absolute inset-0">
           <Suspense
             fallback={
