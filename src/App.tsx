@@ -114,6 +114,12 @@ export default function App() {
           if (id) setGameId(id);
           dispatch({ type: "GO_MENU" });
         }
+      } else if (pathname === "/shop") {
+        // Shop screen is driven by game state — don't interfere
+        if (state.screen !== "shop" && state.screen !== "play") dispatch({ type: "GO_MENU" });
+      } else if (pathname === "/gameover") {
+        // Gameover screen is driven by game state — don't interfere
+        if (state.screen !== "gameover" && state.screen !== "play") dispatch({ type: "GO_MENU" });
       } else if (pathname === "/home") {
         if (state.screen !== "menu") dispatch({ type: "GO_MENU" });
       } else if (pathname === "/") {

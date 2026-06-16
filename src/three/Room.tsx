@@ -35,18 +35,18 @@ export function Room() {
 
       {/* ── WALLS (Neoclassical Off-white with Wainscoting) ── */}
       {/* Back Wall */}
-      <mesh position={[0, 2.5, -8.6]} castShadow receiveShadow>
-        <boxGeometry args={[17.0, 5.0, 0.2]} />
+      <mesh position={[0, 3.0, -8.6]} castShadow receiveShadow>
+        <boxGeometry args={[17.0, 6.0, 0.2]} />
         <meshStandardMaterial color="#f7f6f2" roughness={0.9} />
       </mesh>
       {/* Left Wall */}
-      <mesh position={[-8.5, 2.5, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.2, 5.0, 17.8]} />
+      <mesh position={[-8.5, 3.0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 6.0, 17.8]} />
         <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
       </mesh>
       {/* Right Wall */}
-      <mesh position={[8.5, 2.5, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.2, 5.0, 17.8]} />
+      <mesh position={[8.5, 3.0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 6.0, 17.8]} />
         <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
       </mesh>
 
@@ -363,18 +363,18 @@ export function Room() {
       </group>
 
       {/* ── MODERN/INDUSTRIAL BLACK DOME PENDANT LIGHT (Hanging from ceiling center) ── */}
-      <group position={[0, 3.1, 0]}>
-        {/* Ceiling Canopy (tapered cup at the ceiling Y=4.4, which is +1.7 relative to Y=2.7) */}
-        <mesh position={[0, 1.62, 0]}>
+      <group position={[0, 3.6, 0]}>
+        {/* Ceiling Canopy (tapered cup at the ceiling Y=6.0, which is +2.4 relative to Y=3.6) */}
+        <mesh position={[0, 2.32, 0]}>
           <cylinderGeometry args={[0.12, 0.07, 0.16, 16]} />
           <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
         </mesh>
 
         {/* Thin Hanging Cord */}
-        {/* Spans from Y = 0.16 (top of lamp neck) to Y = 1.54 (bottom of canopy) */}
-        {/* Height = 1.38, center position is at Y = 0.85 */}
-        <mesh position={[0, 0.85, 0]}>
-          <cylinderGeometry args={[0.006, 0.006, 1.38, 8]} />
+        {/* Spans from Y = 0.16 (top of lamp neck) to Y = 2.24 (bottom of canopy) */}
+        {/* Height = 2.08, center position is at Y = 1.2 */}
+        <mesh position={[0, 1.2, 0]}>
+          <cylinderGeometry args={[0.006, 0.006, 2.08, 8]} />
           <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
         </mesh>
 
