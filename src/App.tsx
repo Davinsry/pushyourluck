@@ -198,27 +198,50 @@ export default function App() {
   // Pause + per-turn countdown (local/solo only; online is host-driven).
   const [paused, setPaused] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(TURN_SECONDS);
-  const isHumanActiveTurn = state.screen === "play" && state.phase === "active" && !activePlayer?.isBot;
 
-  // Restart the countdown whenever a human's eating turn begins.
-  useEffect(() => {
-    if (isHumanActiveTurn) setSecondsLeft(TURN_SECONDS);
-  }, [state.turn, state.phase, isHumanActiveTurn]);
+  let currentLimit = TURN_SECONDS;
+  let timerType: "active" | "preturn" | "shop" | null = null;
 
-  // Tick the countdown; running out skips the turn.
+  if (state.screen === "play") {
+    if (state.phase === "active" && !activePlayer?.isBot) {
+      currentLimit = TURN_SECONDS;
+      timerType = "active";
+    } else if (state.phase === "preturn" && !state.blockAsk) {
+      currentLimit = 30;
+      timerType = "preturn";
+    }
+  } else if (state.screen === "shop") {
+    currentLimit = 60;
+    timerType = "shop";
+  }
+
+  // Restart the countdown whenever the timer type or turn/phase changes.
   useEffect(() => {
-    if (!isHumanActiveTurn || paused) return;
+    if (timerType) {
+      setSecondsLeft(currentLimit);
+    }
+  }, [state.turn, state.phase, state.screen, state.blockAsk, timerType, currentLimit]);
+
+  // Tick the countdown; running out dispatches the corresponding skip/confirm/close action.
+  useEffect(() => {
+    if (!timerType || paused) return;
     const id = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1) {
-          dispatch({ type: "SKIP_TURN" });
-          return TURN_SECONDS;
+          if (timerType === "active") {
+            dispatch({ type: "SKIP_TURN" });
+          } else if (timerType === "preturn") {
+            dispatch({ type: "CONFIRM_PRETURN" });
+          } else if (timerType === "shop") {
+            dispatch({ type: "CLOSE_SHOP" });
+          }
+          return currentLimit;
         }
         return s - 1;
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [isHumanActiveTurn, paused, dispatch]);
+  }, [timerType, paused, dispatch, currentLimit]);
 
   // Outcome / game-over SFX are driven by state transitions so we don't have
   // to guess the post-dispatch result synchronously.
@@ -392,7 +415,9 @@ export default function App() {
 
         {/* top-right HUD controls */}
         <div className="absolute right-4 top-4 z-50 pointer-events-auto flex items-center gap-2">
-          {isHumanActiveTurn && <TurnTimer secondsLeft={secondsLeft} onPause={() => setPaused(true)} />}
+          {(timerType === "preturn" || timerType === "active") && (
+            <TurnTimer secondsLeft={secondsLeft} onPause={() => setPaused(true)} />
+          )}
           <button
             className="tp-btn rounded-full bg-bg2/90 p-2.5 text-cream border border-line/10 shadow-lg backdrop-blur-md"
             style={{ backgroundColor: "rgba(42, 27, 18, 0.85)" }}
@@ -545,6 +570,7 @@ export default function App() {
           <ShopScreen
             players={state.players}
             cycle={cycle - 1}
+            secondsLeft={secondsLeft}
             onBuy={(player, item) => {
               play("click");
               dispatch({ type: "BUY", player, item });

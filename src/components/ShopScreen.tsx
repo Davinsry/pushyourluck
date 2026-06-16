@@ -9,6 +9,7 @@ interface Props {
   cycle: number; // the ronde that just finished
   onBuy: (player: number, item: ShopItem) => void;
   onClose: () => void;
+  secondsLeft?: number;
 }
 
 const ITEMS: { id: ShopItem; label: string; icon: typeof Milk; kit: keyof Player }[] = [
@@ -18,7 +19,7 @@ const ITEMS: { id: ShopItem; label: string; icon: typeof Milk; kit: keyof Player
 ];
 
 /** Between-ronde shop: spend points on Susu / Tameng / Sambal (cabai). */
-export function ShopScreen({ players, cycle, onBuy, onClose }: Props) {
+export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Props) {
   const [confirming, setConfirming] = useState<{ playerIndex: number; itemId: ShopItem; qty: number } | null>(null);
 
   const handleConfirmBuy = () => {
@@ -39,9 +40,16 @@ export function ShopScreen({ players, cycle, onBuy, onClose }: Props) {
 
   return (
     <div className="mt-[18px] rounded-[20px] bg-card p-6 text-ink relative">
-      <div className="mb-1 flex items-center gap-2">
-        <ShoppingCart size={20} className="text-chili-dark" />
-        <h2 className="m-0 text-xl font-extrabold text-chili-dark">Toko</h2>
+      <div className="mb-1 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShoppingCart size={20} className="text-chili-dark" />
+          <h2 className="m-0 text-xl font-extrabold text-chili-dark">Toko</h2>
+        </div>
+        {secondsLeft !== undefined && (
+          <div className="rounded-full bg-flame/10 px-2.5 py-1 text-xs font-bold text-flame animate-pulse">
+            Sisa Waktu: {secondsLeft}s
+          </div>
+        )}
       </div>
       <p className="m-0 mb-4 text-[13px] text-muted">
         Ronde {cycle} selesai. Belanja pakai poin sebelum lanjut.

@@ -27,39 +27,58 @@ export function OnlinePlay({ room, onExit }: Props) {
 
   // Reset the timer when active turn, phase, or limit changes
   useEffect(() => {
-    if (limit > 0 && state.phase === "active") {
+    if (state.phase === "active" && limit > 0) {
       setSecondsLeft(limit);
+    } else if (state.phase === "preturn" && !state.blockAsk) {
+      setSecondsLeft(30);
     }
-  }, [state.turn, state.phase, limit]);
+  }, [state.turn, state.phase, state.blockAsk, limit]);
 
   // Tick the countdown
   useEffect(() => {
-    if (limit <= 0 || state.phase !== "active") return;
+    if (state.phase !== "active" && (state.phase !== "preturn" || state.blockAsk)) return;
+    if (state.phase === "active" && limit <= 0) return;
+
+    const phaseLimit = state.phase === "active" ? limit : 30;
 
     const id = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1) {
-          if (youSeat === ai) {
-            send({ type: "SKIP_TURN" });
-          }
-
-          if (room.isHost && youSeat !== ai) {
-            if (s === 1) return 0;
-          } else {
-            return limit;
+          if (state.phase === "active") {
+            if (youSeat === ai) {
+              send({ type: "SKIP_TURN" });
+            }
+            if (room.isHost && youSeat !== ai) {
+              if (s === 1) return 0;
+            } else {
+              return limit;
+            }
+          } else if (state.phase === "preturn") {
+            if (youSeat === ai) {
+              send({ type: "CONFIRM_PRETURN" });
+            }
+            if (room.isHost && youSeat !== ai) {
+              if (s === 1) return 0;
+            } else {
+              return 30;
+            }
           }
         }
 
         if (s <= 0) {
           if (room.isHost && youSeat !== ai) {
             if (s <= -3) {
-              // Host forces SKIP_TURN for the AFK player
-              room.sendAction({ type: "SKIP_TURN" });
-              return limit;
+              if (state.phase === "active") {
+                room.sendAction({ type: "SKIP_TURN" });
+                return limit;
+              } else if (state.phase === "preturn") {
+                room.sendAction({ type: "CONFIRM_PRETURN" });
+                return 30;
+              }
             }
             return s - 1;
           }
-          return limit;
+          return phaseLimit;
         }
 
         return s - 1;
@@ -67,7 +86,7 @@ export function OnlinePlay({ room, onExit }: Props) {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [state.phase, youSeat, ai, limit, send, room.isHost, room.sendAction]);
+  }, [state.phase, state.blockAsk, youSeat, ai, limit, send, room.isHost, room.sendAction]);
 
   return (
     <>
@@ -102,7 +121,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 isFinal={isFinalRonde(state)}
               />
             </div>
-            {limit > 0 && state.phase === "active" && (
+            {((state.phase === "active" && limit > 0) || (state.phase === "preturn" && !state.blockAsk)) && (
               <div className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-bg2/90 border border-line/10 shadow-lg backdrop-blur-md text-cream min-w-[105px]">
                 <span className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1.5">Sisa Waktu</span>
                 <TurnTimer secondsLeft={Math.max(0, secondsLeft)} onPause={undefined} />
