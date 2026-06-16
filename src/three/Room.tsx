@@ -363,7 +363,7 @@ export function Room() {
       </group>
 
       {/* ── MODERN/INDUSTRIAL BLACK DOME PENDANT LIGHT (Hanging from ceiling center) ── */}
-      <group position={[0, 2.7, 0]}>
+      <group position={[0, 3.1, 0]}>
         {/* Ceiling Canopy (tapered cup at the ceiling Y=4.4, which is +1.7 relative to Y=2.7) */}
         <mesh position={[0, 1.62, 0]}>
           <cylinderGeometry args={[0.12, 0.07, 0.16, 16]} />
