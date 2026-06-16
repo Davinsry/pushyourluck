@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Warm "spicy" palette. These CSS variables are the single source
+   of truth for colours; tailwind.config.js maps them to utilities
+   (bg-chili, text-flame, …). Reskin the whole game from here.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --c-bg: #1e130d;
+  --c-bg2: #2a1b12;
+  --c-card: #fbf1e3;
+  --c-cream: #fdf6ec;
+  --c-cream-2: #eadfcb; /* muted cream — tracks, idle chips */
+  --c-ink: #2a1b12;
+  --c-chili: #d7263d;
+  --c-chili-dark: #9e1b2c;
+  --c-flame: #f26419;
+  --c-amber: #f6a609;
+  --c-leaf: #6fa315;
+  --c-leaf-dark: #4e7410;
+  --c-steel: #3e7cb1;
+  --c-muted: #9b8675;
+  --c-line: #e2d4be;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-cream);
+  font-family: "Baloo 2", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Shared button feel ported from the prototype's .tp-btn */
+.tp-btn {
+  transition: transform 0.08s ease, filter 0.15s ease;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+.tp-btn:hover {
+  filter: brightness(1.07);
+}
+.tp-btn:active {
+  transform: scale(0.97);
+}
+.tp-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
