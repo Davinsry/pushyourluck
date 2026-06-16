@@ -10,8 +10,12 @@ interface Props {
 export function WaitingRoom({ room }: Props) {
   return (
     <div className="mt-[18px] rounded-[20px] bg-card p-6 text-ink">
-      <p className="m-0 text-center text-[13px] font-semibold text-muted">Kode room — bagikan ke teman</p>
-      <p className="m-0 mb-5 text-center text-5xl font-extrabold tracking-[0.3em] text-chili-dark">{room.code}</p>
+      <div className="mb-5 text-center">
+        <h2 className="m-0 text-xl font-extrabold text-chili-dark">Ruang Tunggu</h2>
+        <p className="m-0 mt-1 text-[13px] font-semibold text-muted">
+          Room ID: <span className="font-extrabold tracking-wider text-ink bg-cream-2 px-2.5 py-1 rounded-lg border border-line">{room.code}</span>
+        </p>
+      </div>
 
       {room.error && (
         <p className="mb-3 rounded-lg bg-[#FBE0D6] px-3 py-2 text-[13px] font-semibold text-chili-dark">{room.error}</p>
