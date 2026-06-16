@@ -4,11 +4,10 @@ import { supabase, supabaseReady } from "./supabase";
 import { actionAllowed, gameReducer, startStateFor } from "../game";
 import type { Action, GameState } from "../game";
 import type { PresencePayload, RoomMember, RoomSummary } from "./protocol";
+import { EMOTES } from "../config/emotes";
 
 export type RoomStatus = "idle" | "connecting" | "online" | "closed";
 
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const newCode = () => Array.from({ length: 4 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join("");
 
 /** Read presence into a stable, seat-ordered member list. */
 function readMembers(ch: RealtimeChannel): PresencePayload[] {
@@ -54,6 +53,7 @@ export function useRoom() {
   const [seatIds, setSeatIds] = useState<string[]>([]);
   const [started, setStarted] = useState(false);
   const [roomSettings, setRoomSettings] = useState({ cycles: 3, turnTimerLimit: 30 });
+  const [activeEmotes, setActiveEmotes] = useState<Record<number, string>>({});
   const roomSettingsRef = useRef({ cycles: 3, turnTimerLimit: 30 });
 
   const myId = useRef(generateUUID()).current;
@@ -161,6 +161,26 @@ export function useRoom() {
         .on("broadcast", { event: "action" }, ({ payload }) => {
           if (isHostRef.current) applyAsHost(payload.fromId as string, payload.action as Action);
         })
+        .on("broadcast", { event: "emote" }, ({ payload }) => {
+          const seatIdx = seatIdsRef.current.indexOf(payload.senderId);
+          if (seatIdx >= 0) {
+            const emoteId = payload.emoteId as string;
+            const emoji = EMOTES.find((e) => e.id === emoteId)?.emoji || "";
+            if (emoji) {
+              setActiveEmotes((prev) => ({ ...prev, [seatIdx]: emoji }));
+              setTimeout(() => {
+                setActiveEmotes((prev) => {
+                  if (prev[seatIdx] === emoji) {
+                    const next = { ...prev };
+                    delete next[seatIdx];
+                    return next;
+                  }
+                  return prev;
+                });
+              }, 3000);
+            }
+          }
+        })
         .on("presence", { event: "sync" }, handlePresence)
         .on("presence", { event: "join" }, () => {
           // re-sync a late joiner / reconnect by re-sending the current state or settings
@@ -188,9 +208,9 @@ export function useRoom() {
   );
 
   const create = useCallback(
-    (name: string) => {
+    (name: string, roomName: string) => {
       myName.current = name || "Pemain";
-      joinChannel(newCode(), true);
+      joinChannel(roomName, true);
     },
     [joinChannel]
   );
@@ -278,6 +298,37 @@ export function useRoom() {
   const youSeat = started ? seatIds.indexOf(myId) : members.findIndex((m) => m.id === myId);
   const isHost = !!hostId && hostId === myId;
 
+  const sendEmote = useCallback(
+    (emoteId: string) => {
+      if (!ch.current) return;
+      ch.current.send({
+        type: "broadcast",
+        event: "emote",
+        payload: { senderId: myId, emoteId },
+      });
+
+      // Display locally immediately
+      const seatIdx = seatIdsRef.current.indexOf(myId);
+      if (seatIdx >= 0) {
+        const emoji = EMOTES.find((e) => e.id === emoteId)?.emoji || "";
+        if (emoji) {
+          setActiveEmotes((prev) => ({ ...prev, [seatIdx]: emoji }));
+          setTimeout(() => {
+            setActiveEmotes((prev) => {
+              if (prev[seatIdx] === emoji) {
+                const next = { ...prev };
+                delete next[seatIdx];
+                return next;
+              }
+              return prev;
+            });
+          }, 3000);
+        }
+      }
+    },
+    [myId, seatIds]
+  );
+
   return {
     ready: supabaseReady,
     status,
@@ -299,6 +350,8 @@ export function useRoom() {
     start,
     sendAction,
     leave: reset,
+    activeEmotes,
+    sendEmote,
   };
 }
 

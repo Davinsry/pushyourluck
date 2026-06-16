@@ -25,9 +25,21 @@ export const currentCycle = (s: GameState) => Math.floor(s.turn / playerCount(s)
 export const isFinalRonde = (s: GameState) => currentCycle(s) === s.settings.cycles;
 export const totalTurns = (s: GameState) => playerCount(s) * s.settings.cycles;
 
+const getSavedUsername = () => {
+  if (typeof window !== "undefined" && window.localStorage) {
+    return localStorage.getItem("push_your_luck_username") || "";
+  }
+  return "";
+};
+
 /** Default name for seat `i` given the mode (humans vs bots). */
-const seatName = (i: number, mode: Mode) =>
-  mode === "solo" ? (i === 0 ? "Kamu" : `Bot ${i}`) : `Pemain ${i + 1}`;
+const seatName = (i: number, mode: Mode) => {
+  if (i === 0) {
+    const saved = getSavedUsername();
+    if (saved) return saved;
+  }
+  return mode === "solo" ? (i === 0 ? "Kamu" : `Bot ${i}`) : `Pemain ${i + 1}`;
+};
 
 /** Build `count` players shaped for the mode (solo → seat 0 human, rest bots). */
 function shapePlayers(count: number, mode: Mode, existing: Player[] = []): Player[] {

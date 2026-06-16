@@ -9,6 +9,7 @@ interface Props {
   cycles: number;
   isFinal: boolean;
   className?: string;
+  activeEmotes?: Record<number, string>;
 }
 
 /** Vertical scoreboard: displays players sorted by highest points first, highlighted active player, and leader crown. */
@@ -19,6 +20,7 @@ export function Scoreboard({
   cycles,
   isFinal,
   className = "",
+  activeEmotes,
 }: Props) {
   // Sort players by score descending, preserving their original index for seat colors and active checks
   const sortedPlayers = players
@@ -47,10 +49,11 @@ export function Scoreboard({
         {sortedPlayers.map((p, idx) => {
           const isActive = p.originalIndex === activeIndex;
           const isLeader = idx === 0 && p.score > 0;
+          const activeEmote = activeEmotes?.[p.originalIndex];
           return (
             <div
               key={p.originalIndex}
-              className={`flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all duration-300 shadow-md border ${
+              className={`relative flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all duration-300 shadow-md border ${
                 isActive
                   ? "bg-chili text-white border-chili scale-105"
                   : "bg-bg2/90 text-cream border-line/10 hover:border-line/20"
@@ -80,6 +83,15 @@ export function Scoreboard({
               {/* Turn active indicator */}
               {isActive && (
                 <div className="h-1.5 w-1.5 rounded-full bg-white animate-ping flex-shrink-0" />
+              )}
+
+              {/* Emote Bubble */}
+              {activeEmote && (
+                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-cream border-2 border-line/20 px-3 py-1.5 rounded-2xl shadow-xl animate-bounce text-xl z-50 text-ink flex items-center justify-center">
+                  {activeEmote}
+                  {/* speech bubble tail */}
+                  <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-cream border-l-2 border-b-2 border-line/20 rotate-45" />
+                </div>
               )}
             </div>
           );

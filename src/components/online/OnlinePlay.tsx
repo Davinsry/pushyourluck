@@ -9,6 +9,7 @@ import { ActivePhase } from "../ActivePhase";
 import { ResultPhase } from "../ResultPhase";
 import { GameOverScreen } from "../GameOverScreen";
 import { TurnTimer } from "../TurnTimer";
+import { EMOTES } from "../../config/emotes";
 
 interface Props {
   room: UseRoom;
@@ -111,6 +112,21 @@ export function OnlinePlay({ room, onExit }: Props) {
 
       {state.screen === "play" && (
         <>
+          {/* Emote Panel (Middle Right) */}
+          <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 bg-bg2/95 border border-line/10 p-2 rounded-2xl shadow-xl backdrop-blur-md">
+            <span className="text-[9px] uppercase tracking-wider text-muted font-bold text-center mb-1">Emote</span>
+            {EMOTES.map(({ id, emoji, label }) => (
+              <button
+                key={id}
+                onClick={() => room.sendEmote(id)}
+                className="tp-btn h-10 w-10 text-xl rounded-xl bg-cream-2 hover:bg-cream hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                title={label}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
           <div className="flex gap-4 items-start mb-4">
             <div className="flex-1">
               <Scoreboard
@@ -119,6 +135,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 cycle={currentCycle(state)}
                 cycles={state.settings.cycles}
                 isFinal={isFinalRonde(state)}
+                activeEmotes={room.activeEmotes}
               />
             </div>
             {((state.phase === "active" && limit > 0) || (state.phase === "preturn" && !state.blockAsk)) && (

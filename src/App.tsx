@@ -35,6 +35,19 @@ export default function App() {
   const { play, muted, toggleMute } = useSound();
   const [online, setOnline] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [username, setUsername] = useState(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return localStorage.getItem("push_your_luck_username") || "";
+    }
+    return "";
+  });
+
+  const handleSetUsername = (name: string) => {
+    setUsername(name);
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.setItem("push_your_luck_username", name);
+    }
+  };
   const room = useRoom();
 
   // Generate or reset local game ID
@@ -479,7 +492,9 @@ export default function App() {
 
         {state.screen === "intro" && (
           <IntroScreen
-            onStart={() => {
+            initialName={username}
+            onStart={(name) => {
+              handleSetUsername(name);
               play("click");
               dispatch({ type: "GO_MENU" });
             }}
@@ -520,6 +535,8 @@ export default function App() {
           <SettingsScreen
             cycles={state.settings.cycles}
             muted={muted}
+            username={username}
+            onSetUsername={handleSetUsername}
             onSetCycles={(c) => {
               play("click");
               dispatch({ type: "SET_CYCLES", cycles: c });

@@ -9,7 +9,13 @@ interface Props {
 
 /** Create a room or pick from the list of open rooms. */
 export function OnlineLobby({ room, onBack }: Props) {
-  const [name, setName] = useState("Pemain");
+  const [name, setName] = useState(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return localStorage.getItem("push_your_luck_username") || "Pemain";
+    }
+    return "Pemain";
+  });
+  const [roomName, setRoomName] = useState("");
 
   // Poll the open-room list while we sit in the lobby.
   useEffect(() => {
@@ -41,12 +47,26 @@ export function OnlineLobby({ room, onBack }: Props) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         maxLength={14}
-        className="mb-4 w-full rounded-xl border-[1.5px] border-line bg-cream px-3.5 py-3 text-base font-semibold text-ink outline-none"
+        className="mb-3 w-full rounded-xl border-[1.5px] border-line bg-cream px-3.5 py-3 text-base font-semibold text-ink outline-none focus:border-flame"
+      />
+
+      <label className="mb-1 block text-[13px] font-semibold text-muted">Nama Room Baru</label>
+      <input
+        value={roomName}
+        onChange={(e) => setRoomName(e.target.value)}
+        maxLength={20}
+        placeholder="Masukkan nama room..."
+        className="mb-4 w-full rounded-xl border-[1.5px] border-line bg-cream px-3.5 py-3 text-base font-semibold text-ink outline-none focus:border-flame"
       />
 
       <button
-        className="tp-btn mb-5 flex w-full items-center justify-center gap-2 rounded-xl bg-flame py-3.5 text-[17px] font-extrabold text-white"
-        onClick={() => room.create(name.trim() || "Pemain")}
+        className="tp-btn mb-5 flex w-full items-center justify-center gap-2 rounded-xl bg-flame py-3.5 text-[17px] font-extrabold text-white disabled:opacity-50"
+        onClick={() => {
+          if (roomName.trim()) {
+            room.create(name.trim() || "Pemain", roomName.trim());
+          }
+        }}
+        disabled={!roomName.trim() || !name.trim()}
       >
         <Plus size={20} /> Buat room baru
       </button>
@@ -71,7 +91,7 @@ export function OnlineLobby({ room, onBack }: Props) {
             className="tp-btn flex items-center justify-between rounded-xl border-[1.5px] border-line bg-cream px-4 py-2.5 text-left transition-colors hover:bg-cream-2"
             onClick={() => room.join(r.code, name.trim() || "Pemain")}
           >
-            <span className="text-lg font-extrabold tracking-[0.15em] text-chili-dark">{r.code}</span>
+            <span className="text-base font-extrabold text-chili-dark">{r.code}</span>
             <span className="text-[13px] font-semibold text-muted">
               host {r.host} · {r.count}/4
             </span>
