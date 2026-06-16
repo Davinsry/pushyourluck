@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState, useCallback } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useGame } from "./hooks/useGame";
 import { useSound } from "./hooks/useSound";
@@ -30,12 +30,123 @@ const GameScene = lazy(() => import("./three/GameScene").then((m) => ({ default:
 import { LobbyScene } from "./three/LobbyScene";
 
 export default function App() {
-  console.error("DEBUG APP: LobbyScene component imported as:", LobbyScene);
   const game = useGame();
   const { state, dispatch, activeIndex, cycle, isFinal, totalTurns, activePlayer } = game;
   const { play, muted, toggleMute } = useSound();
   const [online, setOnline] = useState(false);
   const room = useRoom();
+
+  // Generate or reset local game ID
+  const [gameId, setGameId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state.screen === "play" && !gameId) {
+      const randId = "TP-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      setGameId(randId);
+    } else if (state.screen !== "play" && gameId) {
+      setGameId(null);
+    }
+  }, [state.screen, gameId]);
+
+  // Calculate URL path based on current state
+  const getPathForState = (screen: string, isOnline: boolean, roomCode: string | null, roomHasGame: boolean, gid: string | null) => {
+    if (isOnline) {
+      if (roomHasGame) {
+        return `/online/play?room=${roomCode || ""}`;
+      }
+      if (roomCode) {
+        return `/room?code=${roomCode}`;
+      }
+      return "/online";
+    }
+
+    switch (screen) {
+      case "play":
+        return `/play?id=${gid || ""}`;
+      case "tutorial":
+        return "/rules";
+      case "settings":
+        return "/settings";
+      case "setup":
+        return "/setup";
+      case "draft":
+        return "/draft";
+      case "shop":
+        return "/shop";
+      case "gameover":
+        return "/gameover";
+      case "menu":
+        return "/home";
+      case "intro":
+      default:
+        return "/";
+    }
+  };
+
+  const syncUrlToState = useCallback((pathname: string, search: string) => {
+    const params = new URLSearchParams(search);
+    const code = params.get("code") || params.get("room");
+    const id = params.get("id");
+
+    if (
+      pathname.startsWith("/online/play") ||
+      pathname.startsWith("/online/waiting") ||
+      pathname.startsWith("/room") ||
+      pathname === "/online"
+    ) {
+      setOnline(true);
+      if (code && !room.code) {
+        room.join(code, "Pemain");
+      }
+    } else {
+      setOnline(false);
+      if (pathname === "/rules") {
+        if (state.screen !== "tutorial") dispatch({ type: "OPEN_TUTORIAL" });
+      } else if (pathname === "/settings") {
+        if (state.screen !== "settings") dispatch({ type: "OPEN_SETTINGS" });
+      } else if (pathname === "/setup") {
+        if (state.screen !== "setup") dispatch({ type: "START_MODE", mode: "local" });
+      } else if (pathname === "/draft") {
+        if (state.screen !== "draft" && state.screen !== "setup") dispatch({ type: "START_MODE", mode: "local" });
+      } else if (pathname === "/play") {
+        if (state.screen !== "play") {
+          if (id) setGameId(id);
+          dispatch({ type: "GO_MENU" });
+        }
+      } else if (pathname === "/home") {
+        if (state.screen !== "menu") dispatch({ type: "GO_MENU" });
+      } else if (pathname === "/") {
+        if (state.screen !== "intro" && state.screen !== "menu") dispatch({ type: "RESET" });
+      } else {
+        if (state.screen !== "intro" && state.screen !== "menu") dispatch({ type: "RESET" });
+      }
+    }
+  }, [state.screen, room.code, dispatch]);
+
+  // Sync state to URL
+  useEffect(() => {
+    const targetPath = getPathForState(state.screen, online, room.code, !!room.gameState, gameId);
+    const currentPath = window.location.pathname + window.location.search;
+    if (targetPath !== currentPath) {
+      window.history.pushState({ screen: state.screen, online, roomCode: room.code, roomHasGame: !!room.gameState, gameId }, "", targetPath);
+    }
+  }, [state.screen, online, room.code, room.gameState, gameId]);
+
+  // Initial URL parsing
+  useEffect(() => {
+    syncUrlToState(window.location.pathname, window.location.search);
+  }, []);
+
+  // Popstate listener for back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      syncUrlToState(window.location.pathname, window.location.search);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [syncUrlToState]);
 
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
@@ -242,8 +353,8 @@ export default function App() {
           </Suspense>
         </div>
 
-        {/* top-left vertical scoreboard */}
-        <div className="absolute left-4 top-4 z-50 pointer-events-none">
+        {/* top-left vertical scoreboard & ID badge */}
+        <div className="absolute left-4 top-4 z-50 pointer-events-none flex flex-col gap-2">
           <Scoreboard
             players={state.players}
             activeIndex={activeIndex}
@@ -251,6 +362,20 @@ export default function App() {
             cycles={state.settings.cycles}
             isFinal={isFinal}
           />
+          <div
+            className="rounded-2xl px-3 py-1.5 text-center border border-line/10 shadow-lg backdrop-blur-md pointer-events-auto"
+            style={{
+              backgroundColor: "rgba(30, 19, 13, 0.85)",
+              color: "var(--c-cream)",
+            }}
+          >
+            <div className="text-[9px] uppercase tracking-wider text-muted font-bold">
+              {online ? "ID Room" : "ID Game"}
+            </div>
+            <div className="text-xs font-extrabold leading-none mt-0.5 text-amber">
+              {online ? room.code : gameId}
+            </div>
+          </div>
         </div>
 
         {/* top-right HUD controls */}

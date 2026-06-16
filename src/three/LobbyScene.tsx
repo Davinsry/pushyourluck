@@ -78,7 +78,6 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
  * Shows a 4-player game where characters take turns breathing fire and burning each other.
  */
 export function LobbyScene() {
-  console.error("DEBUG LOBBY: LobbyScene component is rendering!");
   const [activeIndex, setActiveIndex] = useState(0);
   const [eaterStates, setEaterStates] = useState([
     { heat: 0, bust: false, charred: false }, // seat 0
@@ -139,11 +138,11 @@ export function LobbyScene() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "linear-gradient(135deg, #fbfbfa 0%, #edeae4 100%)" }}>
+    <div className="fixed inset-0 z-10 pointer-events-none" style={{ background: "linear-gradient(135deg, #fbfbfa 0%, #edeae4 100%)" }}>
       <Canvas
         shadows
         dpr={[1, 1.2]} // cap pixel ratio for performance in menu backgrounds
-        camera={{ position: [0, 4.2, 7.5], fov: 46 }}
+        camera={{ position: [0, 3.2, 7.5], fov: 46 }}
       >
         <ambientLight intensity={0.7} />
         <directionalLight position={[4, 8, 5]} intensity={1.1} castShadow shadow-mapSize={[512, 512]} />
