@@ -78,6 +78,7 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
  * Shows a 4-player game where characters take turns breathing fire and burning each other.
  */
 export function LobbyScene() {
+  console.log("LobbyScene component is rendering!");
   const [activeIndex, setActiveIndex] = useState(0);
   const [eaterStates, setEaterStates] = useState([
     { heat: 0, bust: false, charred: false }, // seat 0

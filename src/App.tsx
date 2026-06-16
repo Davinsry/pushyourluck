@@ -30,6 +30,7 @@ const GameScene = lazy(() => import("./three/GameScene").then((m) => ({ default:
 import { LobbyScene } from "./three/LobbyScene";
 
 export default function App() {
+  console.log("LobbyScene component imported as:", LobbyScene);
   const game = useGame();
   const { state, dispatch, activeIndex, cycle, isFinal, totalTurns, activePlayer } = game;
   const { play, muted, toggleMute } = useSound();
