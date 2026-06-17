@@ -17,7 +17,7 @@ function makeRng(seed: number): Rng {
 describe("CSV Data Generator", () => {
   it("runs simulations and exports results to simulation_data.csv", () => {
     const playerCounts = [2, 3, 4];
-    const gamesPerCount = 5000;
+    const gamesPerCount = 100000;
     const rng = makeRng(12345);
     
     const csvRows = ["game_id,player_count,seat,character,score,is_winner,total_steps"];
