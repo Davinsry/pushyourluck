@@ -22,7 +22,7 @@ export const BUST = { offset: 10, cap: 95 } as const;
 export const MULT = { t15: 50, t2: 80 } as const;
 
 /** Bonus for Si Hemat when banking below the safe heat threshold. */
-export const HEMAT = { bonus: 8, below: 45 } as const;
+export const HEMAT = { bonus: 14, below: 45 } as const;
 
 // ── Chilis (bites) ──────────────────────────────────────────
 // points: [min, max] inclusive roll. heat: heat added per bite.
@@ -47,19 +47,19 @@ export const CHARS = {
     tag: "Tahan banting",
     colorKey: "steel",
     up: "Sekali per ronde, selamat dari 1 kepedesan.",
-    down: "Poin tiap suap −15 & pedas naik lebih cepat (+6).",
+    down: "Poin tiap suap −18 & pedas naik lebih cepat (+10).",
     surviveBust: 1,
-    pointMod: -15,
-    heatMod: 6,
+    pointMod: -18,
+    heatMod: 10,
   },
   rakus: {
     name: "Si Rakus",
     tag: "High-roller",
     colorKey: "chili",
-    up: "Poin tiap suap +3.",
-    down: "Pedas naik lebih cepat (+4).",
-    pointMod: 3,
-    heatMod: 4,
+    up: "Poin tiap suap +2.",
+    down: "Pedas naik lebih cepat (+5).",
+    pointMod: 2,
+    heatMod: 5,
   },
   kompor: {
     name: "Si Tukang Kompor",
@@ -74,7 +74,7 @@ export const CHARS = {
     name: "Si Hemat",
     tag: "Grinder",
     colorKey: "leaf",
-    up: "Sajikan saat pedas < 45 → bonus +8.",
+    up: "Sajikan saat pedas < 45 → bonus +14.",
     down: "Multiplier mentok ×1.5.",
     safeBonus: HEMAT.bonus,
     safeBelow: HEMAT.below,
@@ -85,9 +85,9 @@ export const CHARS = {
     tag: "Tahan serangan",
     colorKey: "amber",
     up: "Mulai dengan 2 tameng.",
-    down: "Poin tiap suap −1.",
+    down: "Tidak memiliki penalti poin.",
     tameng: 2,
-    pointMod: -1,
+    pointMod: 0,
   },
   pendingin: {
     name: "Si Pendingin",
