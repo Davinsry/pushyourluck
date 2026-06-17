@@ -47,9 +47,10 @@ export const CHARS = {
     tag: "Tahan banting",
     colorKey: "steel",
     up: "Sekali per ronde, selamat dari 1 kepedesan.",
-    down: "Poin tiap suap −22.",
+    down: "Poin tiap suap −15 & pedas naik lebih cepat (+6).",
     surviveBust: 1,
-    pointMod: -22,
+    pointMod: -15,
+    heatMod: 6,
   },
   rakus: {
     name: "Si Rakus",
