@@ -230,6 +230,7 @@ export function useRoom() {
         .from("rooms")
         .select("code,host,count")
         .eq("started", false)
+        .gt("updated_at", new Date(Date.now() - 45000).toISOString())
         .order("updated_at", { ascending: false })
         .limit(20);
       setRooms((data ?? []).filter((r) => r.count < 4) as RoomSummary[]);
@@ -297,6 +298,17 @@ export function useRoom() {
 
   const youSeat = started ? seatIds.indexOf(myId) : members.findIndex((m) => m.id === myId);
   const isHost = !!hostId && hostId === myId;
+
+  // Periodic heartbeat for host to keep the room alive in the lobby
+  useEffect(() => {
+    if (!supabase || !isHost || started) return;
+    const interval = setInterval(() => {
+      if (codeRef.current) {
+        void upsertRoom(members.length, false);
+      }
+    }, 15000); // update every 15 seconds
+    return () => clearInterval(interval);
+  }, [supabase, isHost, started, members.length, upsertRoom]);
 
   const sendEmote = useCallback(
     (emoteId: string) => {
