@@ -18,6 +18,26 @@ function readMembers(ch: RealtimeChannel): PresencePayload[] {
     .sort((a, b) => a.ts - b.ts || a.id.localeCompare(b.id));
 }
 
+function deDuplicateNames<T extends { id: string; name: string }>(list: T[]): T[] {
+  const nameCounts: Record<string, number> = {};
+  list.forEach((m) => {
+    nameCounts[m.name] = (nameCounts[m.name] || 0) + 1;
+  });
+
+  const nameTracker: Record<string, number> = {};
+  return list.map((m) => {
+    const total = nameCounts[m.name];
+    if (total > 1) {
+      nameTracker[m.name] = (nameTracker[m.name] || 0) + 1;
+      return {
+        ...m,
+        name: `${m.name} ${nameTracker[m.name]}`,
+      };
+    }
+    return m;
+  });
+}
+
 function generateUUID(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -120,7 +140,8 @@ export function useRoom() {
     const channel = ch.current;
     if (!channel) return;
     const ms = readMembers(channel);
-    setMembers(ms.map((m) => ({ id: m.id, name: m.name, connected: true })));
+    const deDuped = deDuplicateNames(ms);
+    setMembers(deDuped.map((m) => ({ id: m.id, name: m.name, connected: true })));
     const host = ms[0]?.id ?? null;
     setHostId(host);
     isHostRef.current = host === myId;
@@ -243,11 +264,12 @@ export function useRoom() {
     if (!isHostRef.current || !ch.current) return;
     const ms = readMembers(ch.current);
     if (ms.length < 2) return;
-    const ids = ms.map((m) => m.id);
+    const deDuped = deDuplicateNames(ms);
+    const ids = deDuped.map((m) => m.id);
     seatIdsRef.current = ids;
     setSeatIds(ids);
     const s = startStateFor(
-      ms.map((m) => m.name),
+      deDuped.map((m) => m.name),
       Math.random
     );
     s.settings.cycles = roomSettingsRef.current.cycles;
