@@ -8,7 +8,7 @@ interface Props {
   players: Player[];
   cycle: number; // the ronde that just finished
   onBuy: (player: number, item: ShopItem) => void;
-  onClose: () => void;
+  onClose?: () => void;
   secondsLeft?: number;
 }
 
@@ -89,12 +89,14 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
         ))}
       </div>
 
-      <button
-        className="tp-btn mt-5 w-full rounded-[14px] bg-flame py-3.5 text-[17px] font-extrabold text-white"
-        onClick={onClose}
-      >
-        Lanjut ke ronde berikutnya
-      </button>
+      {onClose && (
+        <button
+          className="tp-btn mt-5 w-full rounded-[14px] bg-flame py-3.5 text-[17px] font-extrabold text-white"
+          onClick={onClose}
+        >
+          Lanjut ke ronde berikutnya
+        </button>
+      )}
 
       {/* Confirmation Modal */}
       {confirming && buyer && activeItem && IconComponent && (

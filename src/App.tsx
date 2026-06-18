@@ -440,31 +440,44 @@ export default function App() {
 
   useEffect(() => {
     if (!online || !room.gameState) return;
+    const scr = room.gameState.screen;
     const p = room.gameState.phase;
     const blockAsk = room.gameState.blockAsk;
     
-    if (p === "active" && onlineLimit > 0) {
+    if (scr === "shop") {
+      setOnlineSecondsLeft(20);
+    } else if (p === "active" && onlineLimit > 0) {
       setOnlineSecondsLeft(onlineLimit);
     } else if (p === "preturn" && !blockAsk) {
       setOnlineSecondsLeft(30);
     }
-  }, [online, room.gameState?.turn, room.gameState?.phase, room.gameState?.blockAsk, onlineLimit]);
+  }, [online, room.gameState?.turn, room.gameState?.phase, room.gameState?.screen, room.gameState?.blockAsk, onlineLimit]);
 
   useEffect(() => {
     if (!online || !room.gameState) return;
+    const scr = room.gameState.screen;
     const p = room.gameState.phase;
     const blockAsk = room.gameState.blockAsk;
     const ai = getGameActiveIndex(room.gameState);
     
-    if (p !== "active" && (p !== "preturn" || blockAsk)) return;
+    if (scr !== "shop" && p !== "active" && (p !== "preturn" || blockAsk)) return;
     if (p === "active" && onlineLimit <= 0) return;
 
-    const phaseLimit = p === "active" ? onlineLimit : 30;
+    const phaseLimit = scr === "shop" ? 20 : (p === "active" ? onlineLimit : 30);
 
     const id = setInterval(() => {
       setOnlineSecondsLeft((s) => {
         if (s <= 1) {
-          if (p === "active") {
+          if (scr === "shop") {
+            if (room.isHost) {
+              room.sendAction({ type: "CLOSE_SHOP" });
+            }
+            if (room.isHost) {
+              if (s === 1) return 0;
+            } else {
+              return 20;
+            }
+          } else if (p === "active") {
             if (room.youSeat === ai) {
               room.sendAction({ type: "SKIP_TURN" });
             }
@@ -486,12 +499,15 @@ export default function App() {
         }
 
         if (s <= 0) {
-          if (room.isHost && room.youSeat !== ai) {
+          if (room.isHost) {
             if (s <= -3) {
-              if (p === "active") {
+              if (scr === "shop") {
+                room.sendAction({ type: "CLOSE_SHOP" });
+                return 20;
+              } else if (p === "active" && room.youSeat !== ai) {
                 room.sendAction({ type: "SKIP_TURN" });
                 return onlineLimit;
-              } else if (p === "preturn") {
+              } else if (p === "preturn" && room.youSeat !== ai) {
                 room.sendAction({ type: "CONFIRM_PRETURN" });
                 return 30;
               }
@@ -506,7 +522,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [online, room.gameState?.phase, room.gameState?.blockAsk, room.youSeat, room.gameState ? getGameActiveIndex(room.gameState) : -1, onlineLimit, room.isHost]);
+  }, [online, room.gameState?.screen, room.gameState?.phase, room.gameState?.blockAsk, room.youSeat, room.gameState ? getGameActiveIndex(room.gameState) : -1, onlineLimit, room.isHost]);
 
   // Outcome / game-over SFX are driven by state transitions so we don't have
   // to guess the post-dispatch result synchronously.
@@ -788,12 +804,6 @@ export default function App() {
                     if (room.youSeat !== null) {
                       play("click");
                       room.sendAction({ type: "BUY", player: room.youSeat, item });
-                    }
-                  }}
-                  onClose={() => {
-                    if (room.youSeat === 0) {
-                      play("click");
-                      room.sendAction({ type: "CLOSE_SHOP" });
                     }
                   }}
                 />
