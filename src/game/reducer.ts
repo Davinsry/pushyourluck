@@ -3,7 +3,7 @@
 //  + action + rng always produces the same next state, so it can
 //  be driven from React (useGame) or from tests.
 // ─────────────────────────────────────────────────────────────
-import { BET_STAKE, BITES, CYCLES, SABOTAGE_HEAT, SHOP, SUSU_COOL } from "../config/balance";
+import { BET_STAKE, BITES, CYCLES, SABOTAGE_HEAT, SHOP, SUSU_COOL, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
 import type { Action, BetResult, CharacterId, GameState, Mode, Outcome, Player, Rng, ShopItem } from "./types";
 import {
   biteGain,
@@ -230,7 +230,10 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     case "USE_TAMENG": {
       const pIdx = activeIndex(state);
       const players = state.players.map((p, i) => (i === pIdx ? { ...p, tameng: p.tameng - 1 } : p));
-      return startActive({ ...state, players }, 0);
+      // Block only a partial amount that scales with player count; leftover applies.
+      const block = playerCount(state) * TAMENG_BLOCK_PER_PLAYER;
+      const remaining = Math.max(0, state.pendingHeat - block);
+      return startActive({ ...state, players }, remaining);
     }
     case "ACCEPT_HEAT":
       return startActive(state, state.pendingHeat);

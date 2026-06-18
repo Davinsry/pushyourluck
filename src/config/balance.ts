@@ -11,6 +11,9 @@ export const TURN_SECONDS = 60; // per-turn time limit; running out skips the tu
 // Shop (opens after each ronde) — prices in points. "cabai" = a sabotage token.
 export const SHOP = { susu: 8, tameng: 10, cabai: 6 } as const;
 export const SABOTAGE_HEAT = 15; // +heat per spectator "tambah sambal"
+// Tameng blocks a partial amount of sabotage heat that scales with player count:
+// block = playerCount × this (2p→10, 3p→15, 4p→20). Leftover heat still applies.
+export const TAMENG_BLOCK_PER_PLAYER = 5;
 export const SUSU_COOL = 25; // heat removed by drinking susu
 export const BET_STAKE = 5; // spectator bet payout: correct +5, wrong −5
 export const FINAL_MULT = 2; // score multiplier on the final (pamungkas) ronde
@@ -22,7 +25,7 @@ export const BUST = { offset: 10, cap: 95 } as const;
 export const MULT = { t15: 50, t2: 80 } as const;
 
 /** Bonus for Si Hemat when banking below the safe heat threshold. */
-export const HEMAT = { bonus: 14, below: 45 } as const;
+export const HEMAT = { bonus: 10, below: 45 } as const;
 
 // ── Chilis (bites) ──────────────────────────────────────────
 // points: [min, max] inclusive roll. heat: heat added per bite.
@@ -47,18 +50,17 @@ export const CHARS = {
     tag: "Tahan banting",
     colorKey: "steel",
     up: "Sekali per ronde, selamat dari 1 kepedesan.",
-    down: "Poin tiap suap −18 & pedas naik lebih cepat (+10).",
+    down: "Poin tiap suap −3.",
     surviveBust: 1,
-    pointMod: -18,
-    heatMod: 10,
+    pointMod: -3,
   },
   rakus: {
     name: "Si Rakus",
     tag: "High-roller",
     colorKey: "chili",
-    up: "Poin tiap suap +2.",
+    up: "Poin tiap suap +3.",
     down: "Pedas naik lebih cepat (+5).",
-    pointMod: 2,
+    pointMod: 3,
     heatMod: 5,
   },
   kompor: {
@@ -85,9 +87,9 @@ export const CHARS = {
     tag: "Tahan serangan",
     colorKey: "amber",
     up: "Mulai dengan 2 tameng.",
-    down: "Tidak memiliki penalti poin.",
+    down: "Poin tiap suap −2.",
     tameng: 2,
-    pointMod: 0,
+    pointMod: -2,
   },
   pendingin: {
     name: "Si Pendingin",

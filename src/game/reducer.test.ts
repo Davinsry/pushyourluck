@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BET_STAKE, SABOTAGE_HEAT, STARTING_SCORE, SUSU_COOL } from "../config/balance";
+import { BET_STAKE, SABOTAGE_HEAT, STARTING_SCORE, SUSU_COOL, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
 import { gameReducer, initialState, type GameState } from "./index";
 import type { Action, Rng } from "./types";
 
@@ -35,7 +35,7 @@ describe("setup → draft → play", () => {
 });
 
 describe("sabotage and shielding", () => {
-  it("queues heat then blocks it with a tameng", () => {
+  it("queues heat then blocks part of it with a tameng (scales with player count)", () => {
     let s = startedGame();
     s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
     expect(s.pendingHeat).toBe(SABOTAGE_HEAT);
@@ -44,7 +44,9 @@ describe("sabotage and shielding", () => {
     expect(s.blockAsk).toBe(true);
     s = gameReducer(s, { type: "USE_TAMENG" }, SAFE);
     expect(s.phase).toBe("active");
-    expect(s.heat).toBe(0);
+    // 2 players → block 2 × TAMENG_BLOCK_PER_PLAYER; leftover heat still applies
+    const block = s.players.length * TAMENG_BLOCK_PER_PLAYER;
+    expect(s.heat).toBe(Math.max(0, SABOTAGE_HEAT - block));
     expect(s.players[0].tameng).toBe(0);
   });
 });

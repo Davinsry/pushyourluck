@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CheckCheck, Coins, Flame, FlameKindling, Hand, Milk, Shield, Sparkles } from "lucide-react";
-import { BET_STAKE, BITES, CHARS, FINAL_MULT } from "../config/balance";
+import { BET_STAKE, BITES, CHARS, FINAL_MULT, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
 import type { Bet, BiteId, GameState } from "../game";
 import { multiplier } from "../game";
 import { color } from "../ui/theme";
@@ -45,18 +45,19 @@ type SubProps = Props & { me: GameState["players"][number] };
 
 function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onUseTameng, onAcceptHeat }: SubProps) {
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
+  const block = Math.min(state.pendingHeat, state.players.length * TAMENG_BLOCK_PER_PLAYER);
   if (state.blockAsk) {
     return (
       <div className={`absolute bottom-4 right-4 w-[min(46vw,340px)] ${panel}`}>
         <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
         <p className="m-0 mb-2 text-xl font-extrabold text-chili-dark">{me.name}</p>
         <p className="m-0 mb-3 text-sm font-semibold text-ink">
-          Kena sambal +{state.pendingHeat} pedas. Pakai tameng buat tangkis?
+          Kena sambal +{state.pendingHeat} pedas. Tameng nangkis −{block} (sisa +{state.pendingHeat - block}).
         </p>
         <div className="flex gap-2">
           <button className="tp-btn flex-1 rounded-xl bg-steel py-3 text-sm font-extrabold text-white" onClick={onUseTameng}>
             <Shield size={16} className="mr-1.5 inline-block align-[-3px]" />
-            Tangkis
+            Tangkis −{block}
           </button>
           <button className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-sm font-extrabold text-ink" onClick={onAcceptHeat}>
             Terima aja

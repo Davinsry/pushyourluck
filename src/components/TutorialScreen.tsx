@@ -22,6 +22,7 @@ import {
   SHOP,
   SUSU_COOL,
   CYCLES,
+  TAMENG_BLOCK_PER_PLAYER,
 } from "../config/balance";
 import { color } from "../ui/theme";
 
@@ -103,7 +104,7 @@ export function TutorialScreen({ onBack }: Props) {
         </Section>
 
         <Section icon={<Shield size={18} />} title="5. Item & Kegunaannya">
-          <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> — Menangkis seluruh sambal sabotase yang dikirim lawan di awal giliranmu.
+          <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> — Menangkis <B>sebagian</B> sambal sabotase di awal giliranmu, sebanyak <B>{TAMENG_BLOCK_PER_PLAYER} × jumlah pemain</B> (2 pemain −10, 3 pemain −15, 4 pemain −20). Sisanya tetap masuk.
           <br />
           <Milk size={12} className="inline align-[-1px]" /> <B>Susu</B> — Menurunkan tingkat pedas sebanyak −{SUSU_COOL} saat giliran makanmu.
           <br />

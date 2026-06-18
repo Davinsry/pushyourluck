@@ -1,5 +1,5 @@
 import { Coins, Flame, Shield } from "lucide-react";
-import { BET_STAKE } from "../config/balance";
+import { BET_STAKE, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
 import type { Bet, BetMap, Player } from "../game";
 
 interface Props {
@@ -35,6 +35,7 @@ export function PreturnPhase({
   const hasHumanSpectators = players.some((p, k) => k !== activeIndex && !p.isBot);
   const online = viewerSeat !== undefined;
   const youAreActive = !online || viewerSeat === activeIndex;
+  const block = Math.min(pendingHeat, players.length * TAMENG_BLOCK_PER_PLAYER);
 
   if (blockAsk) {
     if (online && !youAreActive) {
@@ -51,7 +52,7 @@ export function PreturnPhase({
         <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
         <p className="m-0 mb-1 text-2xl font-extrabold text-chili-dark">{me.name}</p>
         <p className="my-2 mb-4 text-[15px] font-semibold text-ink">
-          {me.name} kena sambal +{pendingHeat} pedas. Pakai tameng buat tangkis?
+          {me.name} kena sambal +{pendingHeat} pedas. Tameng nangkis −{block} (sisa +{pendingHeat - block}).
         </p>
         <div className="flex gap-2.5">
           <button
@@ -59,7 +60,7 @@ export function PreturnPhase({
             onClick={onUseTameng}
           >
             <Shield size={16} className="mr-1.5 inline-block align-[-3px]" />
-            Tangkis
+            Tangkis −{block}
           </button>
           <button
             className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-[15px] font-extrabold text-ink"
