@@ -78,22 +78,40 @@ export function ActivePhase({
         <>
       <p className="m-0 mb-2 text-xs font-semibold text-muted">Pilih suapan:</p>
       <div className="mb-3 grid grid-cols-3 gap-2">
-        {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => (
-          <button
-            key={key}
-            className="tp-btn rounded-xl px-1.5 py-3 text-sm font-extrabold leading-snug text-white"
-            style={{ background: color(b.colorKey) }}
-            onClick={() => onSuap(key)}
-            disabled={busy}
-          >
-            {b.name}
-            <span className="mt-0.5 block text-[11px] font-semibold opacity-95">
-              +{b.points[0]}–{b.points[1]} poin
-              <br />
-              pedas +{b.heat}
-            </span>
-          </button>
-        ))}
+        {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
+          const pointMod = charDef && "pointMod" in charDef ? (charDef.pointMod as number) : 0;
+          const heatMod = charDef && "heatMod" in charDef ? (charDef.heatMod as number) : 0;
+
+          const baseMin = b.points[0];
+          const baseMax = b.points[1];
+          const finalMin = Math.max(1, baseMin + pointMod);
+          const finalMax = Math.max(1, baseMax + pointMod);
+
+          const finalHeat = b.heat + heatMod;
+
+          return (
+            <button
+              key={key}
+              className="tp-btn rounded-xl px-1.5 py-3 text-sm font-extrabold leading-snug text-white"
+              style={{ background: color(b.colorKey) }}
+              onClick={() => onSuap(key)}
+              disabled={busy}
+            >
+              {b.name}
+              <span className="mt-0.5 block text-[11px] font-semibold opacity-95">
+                +{finalMin}–{finalMax} poin
+                {pointMod !== 0 && (
+                  <span className="text-[10px] font-medium opacity-80"> ({pointMod > 0 ? `+${pointMod}` : pointMod})</span>
+                )}
+                <br />
+                pedas +{finalHeat}
+                {heatMod !== 0 && (
+                  <span className="text-[10px] font-medium opacity-80"> (+{heatMod})</span>
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex gap-2.5">

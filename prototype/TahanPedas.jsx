@@ -338,11 +338,30 @@ export default function TahanPedas() {
 
                   <p style={{ fontSize: 12, color: C.muted, fontWeight: 600, margin: "0 0 8px" }}>Pilih suapan:</p>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-                    {Object.entries(BITES).map(([key, b]) => (
-                      <button key={key} className="tp-btn" onClick={() => suap(key)} style={{ padding: "12px 6px", borderRadius: 12, background: b.color, color: "#fff", fontWeight: 800, fontSize: 14, lineHeight: 1.3 }}>
-                        {b.name}<span style={{ display: "block", fontSize: 11, fontWeight: 600, opacity: 0.95, marginTop: 3 }}>+{b.min}–{b.max} poin<br />pedas +{b.heat}</span>
-                      </button>
-                    ))}
+                    {Object.entries(BITES).map(([key, b]) => {
+                      const pointMod = ch === "rakus" ? 3 : (ch === "baja" ? -2 : 0);
+                      const heatMod = ch === "rakus" ? 5 : 0;
+                      const finalMin = Math.max(1, b.min + pointMod);
+                      const finalMax = Math.max(1, b.max + pointMod);
+                      const finalHeat = b.heat + heatMod;
+
+                      return (
+                        <button key={key} className="tp-btn" onClick={() => suap(key)} style={{ padding: "12px 6px", borderRadius: 12, background: b.color, color: "#fff", fontWeight: 800, fontSize: 14, lineHeight: 1.3 }}>
+                          {b.name}
+                          <span style={{ display: "block", fontSize: 11, fontWeight: 600, opacity: 0.95, marginTop: 3 }}>
+                            +{finalMin}–{finalMax} poin
+                            {pointMod !== 0 && (
+                              <span style={{ fontSize: 10, fontWeight: 500, opacity: 0.8 }}> ({pointMod > 0 ? `+${pointMod}` : pointMod})</span>
+                            )}
+                            <br />
+                            pedas +{finalHeat}
+                            {heatMod !== 0 && (
+                              <span style={{ fontSize: 10, fontWeight: 500, opacity: 0.8 }}> (+{heatMod})</span>
+                            )}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button className="tp-btn" onClick={minumSusu} disabled={me.susu <= 0 || heat <= 0} style={{ flex: 1, padding: "14px 0", borderRadius: 14, background: C.steel, color: "#fff", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>

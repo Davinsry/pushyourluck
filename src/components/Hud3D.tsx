@@ -194,20 +194,39 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
       <div className={`absolute bottom-4 right-4 w-[min(42vw,260px)] ${panel}`}>
         <p className="m-0 mb-2 text-xs font-semibold text-muted">Pilih suapan:</p>
         <div className="grid gap-2">
-          {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => (
-            <button
-              key={key}
-              className="tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-extrabold text-white"
-              style={{ background: color(b.colorKey) }}
-              onClick={() => onSuap(key)}
-              disabled={busy}
-            >
-              <span>{b.name}</span>
-              <span className="text-[11px] font-semibold opacity-95">
-                +{b.points[0]}–{b.points[1]} · 🌶{b.heat}
-              </span>
-            </button>
-          ))}
+          {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
+            const pointMod = charDef && "pointMod" in charDef ? (charDef.pointMod as number) : 0;
+            const heatMod = charDef && "heatMod" in charDef ? (charDef.heatMod as number) : 0;
+
+            const baseMin = b.points[0];
+            const baseMax = b.points[1];
+            const finalMin = Math.max(1, baseMin + pointMod);
+            const finalMax = Math.max(1, baseMax + pointMod);
+
+            const finalHeat = b.heat + heatMod;
+
+            return (
+              <button
+                key={key}
+                className="tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-extrabold text-white"
+                style={{ background: color(b.colorKey) }}
+                onClick={() => onSuap(key)}
+                disabled={busy}
+              >
+                <span>{b.name}</span>
+                <span className="text-[11px] font-semibold opacity-95">
+                  +{finalMin}–{finalMax}
+                  {pointMod !== 0 && (
+                    <span className="text-[10px] font-medium opacity-85"> ({pointMod > 0 ? `+${pointMod}` : pointMod})</span>
+                  )}
+                  {" · "}🌶{finalHeat}
+                  {heatMod !== 0 && (
+                    <span className="text-[10px] font-medium opacity-85"> (+{heatMod})</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
         <div className="mt-2 flex gap-2">
           <button
