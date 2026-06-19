@@ -17,7 +17,7 @@ const SABOTAGE_HEAT = 15;
 const SUSU_COOL = 25;
 const BET_STAKE = 5;
 const FINAL_MULT = 2;
-const PARAMS = { bustOffset: 10, bustCap: 95, mult15: 50, mult2: 80 };
+const PARAMS = { bustOffset: 10, bustCap: 100, mult15: 50, mult2: 80 };
 
 const BITES = {
   ijo:      { name: "Cabe Ijo", min: 4, max: 7, heat: 8, color: C.leaf },

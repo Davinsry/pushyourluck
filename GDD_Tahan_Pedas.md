@@ -89,8 +89,8 @@ Pemain Aktif dapat memilih satu dari aksi berikut berulang kali selama belum *bu
 
 ### A. Rumus Peluang Bust (Kegagalan)
 Peluang gagal (*Bust Chance*) dalam persen dihitung secara dinamis dari tingkat kepedesan saat ini dengan rumus:
-$$\text{Bust Chance (\%)} = \text{clamp}(\text{Kepedesan} - 10, 0, 95)$$
-* *Catatan:* Kepedesan di bawah 10 memiliki peluang *bust* sebesar 0%. Peluang *bust* maksimal dibatasi pada angka 95% (selalu ada 5% peluang keberuntungan untuk bertahan hidup).
+$$\text{Bust Chance (\%)} = \text{clamp}(\text{Kepedesan} - 10, 0, 100)$$
+* *Catatan:* Kepedesan di bawah 10 memiliki peluang *bust* sebesar 0%. Peluang *bust* maksimal dibatasi pada angka 100% (tidak ada peluang bertahan hidup jika kepedesan mencapai 110 atau lebih).
 
 ### B. Rumus Pengali Skor (Level Berani)
 Skor ronde dikalikan berdasarkan tingkat kepedesan akhir saat pemain memilih *Sajikan*:
