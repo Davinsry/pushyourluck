@@ -141,7 +141,7 @@ NARASI_BET = [
 
 def get_bust_chance(heat):
     """Hitung peluang bust (%) berdasarkan tingkat pedas saat ini."""
-    return min(100, max(0, round(heat - 10)))
+    return min(100, max(0, round(heat)))
 
 def get_multiplier(heat, char):
     """Hitung Level Berani multiplier."""

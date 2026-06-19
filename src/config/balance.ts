@@ -19,7 +19,7 @@ export const BET_STAKE = 5; // spectator bet payout: correct +5, wrong −5
 export const FINAL_MULT = 2; // score multiplier on the final (pamungkas) ronde
 
 /** bustChance% = clamp(heat - offset, 0, cap) */
-export const BUST = { offset: 10, cap: 100 } as const;
+export const BUST = { offset: 0, cap: 100 } as const;
 
 /** heat thresholds for the Level Berani multiplier (×1.5 / ×2) */
 export const MULT = { t15: 50, t2: 80 } as const;

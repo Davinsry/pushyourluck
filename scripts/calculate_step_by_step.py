@@ -81,7 +81,7 @@ CHARS = {
 }
 
 def get_bust_chance(heat):
-    return min(100, max(0, round(heat - 10))) / 100.0
+    return min(100, max(0, round(heat))) / 100.0
 
 def get_multiplier(heat, char):
     mult = 1.0
