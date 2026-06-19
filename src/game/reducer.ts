@@ -3,7 +3,7 @@
 //  + action + rng always produces the same next state, so it can
 //  be driven from React (useGame) or from tests.
 // ─────────────────────────────────────────────────────────────
-import { BET_STAKE, BITES, CYCLES, SABOTAGE_HEAT, SHOP, SUSU_COOL, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
+import { BET_STAKE, BITES, CYCLES, SABOTAGE_HEAT, SHOP, SUSU_COOL, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO } from "../config/balance";
 import type { Action, BetResult, CharacterId, GameState, Mode, Outcome, Player, Rng, ShopItem } from "./types";
 import {
   biteGain,
@@ -215,13 +215,26 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
       const cur = state.bets[action.player];
       return { ...state, bets: { ...state.bets, [action.player]: cur === action.bet ? undefined : action.bet } };
     }
-    case "ADD_SABO":
+    case "ADD_SABO": {
+      const p = state.players[action.player];
+      if (p.sabotage <= 0) return state;
+
+      // Honor the SABOTAGE_MAX_PER_TARGET cap
+      const cap = SABOTAGE_MAX_PER_TARGET;
+      if (cap > 0 && state.pendingHeat >= cap) return state;
+
+      // Prevent betting "bust" and sabotaging the same player
+      if (BLOCK_BET_AND_SABO && state.bets[action.player] === "bust") {
+        return state;
+      }
+
       return {
         ...state,
-        players: state.players.map((p, i) => (i === action.player ? { ...p, sabotage: p.sabotage - 1 } : p)),
+        players: state.players.map((pl, i) => (i === action.player ? { ...pl, sabotage: pl.sabotage - 1 } : pl)),
         usedSabo: [...state.usedSabo, action.player],
         pendingHeat: state.pendingHeat + SABOTAGE_HEAT,
       };
+    }
     case "CONFIRM_PRETURN": {
       const me = state.players[activeIndex(state)];
       if (state.pendingHeat > 0 && me.tameng > 0) return { ...state, blockAsk: true };
@@ -229,10 +242,14 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     }
     case "USE_TAMENG": {
       const pIdx = activeIndex(state);
-      const players = state.players.map((p, i) => (i === pIdx ? { ...p, tameng: p.tameng - 1 } : p));
-      // Block only a partial amount that scales with player count; leftover applies.
-      const block = playerCount(state) * TAMENG_BLOCK_PER_PLAYER;
+      const me = state.players[pIdx];
+      const incoming = Math.ceil(state.pendingHeat / SABOTAGE_HEAT);
+      const count = Math.max(0, Math.min(action.count, me.tameng, incoming));
+
+      const players = state.players.map((p, i) => (i === pIdx ? { ...p, tameng: p.tameng - count } : p));
+      const block = count * TAMENG_BLOCK;
       const remaining = Math.max(0, state.pendingHeat - block);
+
       return startActive({ ...state, players }, remaining);
     }
     case "ACCEPT_HEAT":

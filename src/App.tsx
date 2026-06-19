@@ -4,15 +4,12 @@ import { useGame } from "./hooks/useGame";
 import { useSound } from "./hooks/useSound";
 import type { BiteId } from "./game";
 import {
-  botActiveDecision,
-  botBlockDecision,
-  botSpectatorActions,
   isFinalRonde,
   totalTurns as getGameTotalTurns,
   activeIndex as getGameActiveIndex,
   currentCycle as getGameCurrentCycle
 } from "./game";
-import { ACTION_ANIM_MS, BOT, TURN_SECONDS } from "./config/balance";
+import { ACTION_ANIM_MS, TURN_SECONDS } from "./config/balance";
 import { EMOTES } from "./config/emotes";
 import type { ActionAnim } from "./three/GameScene";
 import { Header } from "./components/Header";
@@ -536,63 +533,7 @@ export default function App() {
     if (state.screen === "gameover") play("win");
   }, [state.screen, play]);
 
-  // ── Bot driver (solo mode): schedules one bot action at a time on a timer
-  // so the moves are watchable. Pure decisions live in src/game/bot.ts.
-  const spectatorsDoneTurn = useRef(-1);
-  useEffect(() => {
-    if (paused) return;
-    if (state.screen !== "play") {
-      spectatorsDoneTurn.current = -1;
-      return;
-    }
-    // Bot spectators place their bets/sabotage once when a turn's preturn opens.
-    if (state.phase === "preturn" && !state.blockAsk && spectatorsDoneTurn.current !== state.turn) {
-      spectatorsDoneTurn.current = state.turn;
-      const acts = botSpectatorActions(state, Math.random);
-      if (acts.length) {
-        const t = setTimeout(() => {
-          acts.forEach((a) => {
-            if (a.type === "ADD_SABO") play("sabotage");
-            dispatch(a);
-          });
-        }, BOT.stepDelayMs);
-        return () => clearTimeout(t);
-      }
-    }
-    // A sabotaged bot decides whether to shield.
-    if (state.phase === "preturn" && state.blockAsk && activePlayer.isBot) {
-      const t = setTimeout(() => dispatch(botBlockDecision(state)), BOT.stepDelayMs);
-      return () => clearTimeout(t);
-    }
-    // A bot's eating turn: one decision per tick until it banks or busts.
-    if (state.phase === "active" && activePlayer.isBot) {
-      const t = setTimeout(() => {
-        const a = botActiveDecision(state);
-        if (a.type === "SUAP") play("bite");
-        else if (a.type === "MINUM_SUSU") play("milk");
-        dispatch(a);
-      }, BOT.stepDelayMs);
-      return () => clearTimeout(t);
-    }
-    // After a bot finishes its turn, auto-advance the result screen.
-    if (state.phase === "result" && activePlayer.isBot) {
-      const t = setTimeout(() => dispatch({ type: "NEXT" }), BOT.stepDelayMs * 1.6);
-      return () => clearTimeout(t);
-    }
-  }, [state, activePlayer, dispatch, play, paused]);
-
-  // Bots draft their own character (solo mode).
-  useEffect(() => {
-    if (paused || state.screen !== "draft") return;
-    const drafting = state.players[state.draftIdx];
-    if (!drafting?.isBot) return;
-    const t = setTimeout(() => {
-      const pick = state.draftOpts[Math.floor(Math.random() * state.draftOpts.length)];
-      play("click");
-      dispatch({ type: "CHOOSE_CHAR", char: pick });
-    }, BOT.stepDelayMs);
-    return () => clearTimeout(t);
-  }, [state.screen, state.draftIdx, state.players, state.draftOpts, dispatch, play, paused]);
+  // (Bot/solo mode removed — this is offline pass-and-play only.)
 
   // Run an action behind a hand animation: lock controls, play the gesture,
   // then apply the action when the hand finishes.
@@ -768,9 +709,9 @@ export default function App() {
                 play("click");
                 room.sendAction({ type: "CONFIRM_PRETURN" });
               }}
-              onUseTameng={() => {
+              onUseTameng={(count) => {
                 play("click");
-                room.sendAction({ type: "USE_TAMENG" });
+                room.sendAction({ type: "USE_TAMENG", count });
               }}
               onAcceptHeat={() => {
                 play("click");
@@ -923,9 +864,9 @@ export default function App() {
               play("click");
               dispatch({ type: "CONFIRM_PRETURN" });
             }}
-            onUseTameng={() => {
+            onUseTameng={(count) => {
               play("click");
-              dispatch({ type: "USE_TAMENG" });
+              dispatch({ type: "USE_TAMENG", count });
             }}
             onAcceptHeat={() => {
               play("click");
@@ -995,10 +936,6 @@ export default function App() {
             onTutorial={() => {
               play("click");
               dispatch({ type: "OPEN_TUTORIAL" });
-            }}
-            onOnline={() => {
-              play("click");
-              setOnline(true);
             }}
           />
         )}

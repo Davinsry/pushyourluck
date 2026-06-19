@@ -159,7 +159,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 onToggleBet={(player, bet) => send({ type: "TOGGLE_BET", player, bet })}
                 onAddSabo={(player) => send({ type: "ADD_SABO", player })}
                 onConfirm={() => send({ type: "CONFIRM_PRETURN" })}
-                onUseTameng={() => send({ type: "USE_TAMENG" })}
+                onUseTameng={(count) => send({ type: "USE_TAMENG", count })}
                 onAcceptHeat={() => send({ type: "ACCEPT_HEAT" })}
               />
             )}

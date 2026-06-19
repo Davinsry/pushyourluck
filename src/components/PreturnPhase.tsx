@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Coins, Flame, Shield } from "lucide-react";
-import { BET_STAKE, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
+import { BET_STAKE, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO, SABOTAGE_HEAT } from "../config/balance";
 import type { Bet, BetMap, Player } from "../game";
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
   onToggleBet: (player: number, bet: Bet) => void;
   onAddSabo: (player: number) => void;
   onConfirm: () => void;
-  onUseTameng: () => void;
+  onUseTameng: (count: number) => void;
   onAcceptHeat: () => void;
   viewerSeat?: number; // online: which seat is looking (gates controls)
 }
@@ -21,7 +22,7 @@ export function PreturnPhase({
   players,
   activeIndex,
   bets,
-  usedSabo,
+  usedSabo: _usedSabo,
   pendingHeat,
   blockAsk,
   onToggleBet,
@@ -35,7 +36,16 @@ export function PreturnPhase({
   const hasHumanSpectators = players.some((p, k) => k !== activeIndex && !p.isBot);
   const online = viewerSeat !== undefined;
   const youAreActive = !online || viewerSeat === activeIndex;
-  const block = Math.min(pendingHeat, players.length * TAMENG_BLOCK_PER_PLAYER);
+
+  const maxShields = Math.min(me.tameng, Math.ceil(pendingHeat / TAMENG_BLOCK));
+  const [shieldCount, setShieldCount] = useState(maxShields);
+
+  // Sync shieldCount when maxShields changes (e.g. spectator queues more heat)
+  const [prevMaxShields, setPrevMaxShields] = useState(maxShields);
+  if (maxShields !== prevMaxShields) {
+    setPrevMaxShields(maxShields);
+    setShieldCount(maxShields);
+  }
 
   if (blockAsk) {
     if (online && !youAreActive) {
@@ -47,20 +57,83 @@ export function PreturnPhase({
         </div>
       );
     }
+    const sambalIncoming = Math.ceil(pendingHeat / SABOTAGE_HEAT);
     return (
       <div className="animate-pop">
         <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
         <p className="m-0 mb-1 text-2xl font-extrabold text-chili-dark">{me.name}</p>
         <p className="my-2 mb-4 text-[15px] font-semibold text-ink">
-          {me.name} kena sambal +{pendingHeat} pedas. Tameng nangkis −{block} (sisa +{pendingHeat - block}).
+          {me.name} kena sambal <span className="font-bold text-chili">+{pendingHeat} pedas ({sambalIncoming} sambal)</span>.
         </p>
+
+        {maxShields > 0 ? (
+          <>
+            <div className="mb-4 flex items-center justify-between rounded-xl bg-cream-2/55 p-3">
+              <span className="text-sm font-bold text-ink flex items-center gap-1.5">
+                <Shield size={16} className="text-steel" /> Gunakan Tameng:
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="tp-btn flex h-8 w-8 items-center justify-center rounded-lg bg-cream-2 text-lg font-bold disabled:opacity-40 text-ink"
+                  disabled={shieldCount <= 0}
+                  onClick={() => setShieldCount((prev) => Math.max(0, prev - 1))}
+                >
+                  −
+                </button>
+                <span className="w-12 text-center text-lg font-black text-ink">
+                  {shieldCount} / {me.tameng}
+                </span>
+                <button
+                  type="button"
+                  className="tp-btn flex h-8 w-8 items-center justify-center rounded-lg bg-cream-2 text-lg font-bold disabled:opacity-40 text-ink"
+                  disabled={shieldCount >= maxShields}
+                  onClick={() => setShieldCount((prev) => Math.min(maxShields, prev + 1))}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-4 flex gap-2">
+              {maxShields >= 1 && (
+                <button
+                  type="button"
+                  className={`tp-btn flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
+                    shieldCount === 1 ? "bg-steel text-white" : "bg-cream-2 text-muted"
+                  }`}
+                  onClick={() => setShieldCount(1)}
+                >
+                  Tangkis 1
+                </button>
+              )}
+              {maxShields > 1 && (
+                <button
+                  type="button"
+                  className={`tp-btn flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
+                    shieldCount === maxShields ? "bg-steel text-white" : "bg-cream-2 text-muted"
+                  }`}
+                  onClick={() => setShieldCount(maxShields)}
+                >
+                  Tangkis Semua ({maxShields})
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="my-2 mb-4 text-[13px] text-muted font-medium">
+            Kamu tidak memiliki tameng untuk menangkis sabotase.
+          </p>
+        )}
+
         <div className="flex gap-2.5">
           <button
-            className="tp-btn flex-1 rounded-xl bg-steel py-3 text-[15px] font-extrabold text-white"
-            onClick={onUseTameng}
+            className="tp-btn flex-1 rounded-xl bg-steel py-3 text-[15px] font-extrabold text-white disabled:opacity-50"
+            onClick={() => onUseTameng(shieldCount)}
+            disabled={maxShields <= 0 || shieldCount <= 0}
           >
             <Shield size={16} className="mr-1.5 inline-block align-[-3px]" />
-            Tangkis −{block}
+            Tangkis −{shieldCount * TAMENG_BLOCK}
           </button>
           <button
             className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-[15px] font-extrabold text-ink"
@@ -88,7 +161,10 @@ export function PreturnPhase({
         {players.map((p, k) => {
           if (k === activeIndex || p.isBot) return null;
           if (online && k !== viewerSeat) return null; // online: only bet for yourself
-          const canSabo = p.sabotage > 0 && !usedSabo.includes(k);
+          const hasBetBust = bets[k] === "bust";
+          const saboBlockedByBet = BLOCK_BET_AND_SABO && hasBetBust;
+          const capReached = SABOTAGE_MAX_PER_TARGET > 0 && pendingHeat >= SABOTAGE_MAX_PER_TARGET;
+          const canSabo = p.sabotage > 0 && !saboBlockedByBet && !capReached;
           return (
             <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-3 py-2.5">
               <div className="mb-2 text-sm font-bold">{p.name}</div>
@@ -111,15 +187,27 @@ export function PreturnPhase({
                   <Coins size={13} className="mr-1 inline-block align-[-2px]" />
                   Kepedesan
                 </button>
-                {canSabo && (
+                {p.sabotage > 0 ? (
                   <button
-                    className="tp-btn ml-auto rounded-full px-3 py-1.5 text-[13px] font-bold text-chili-dark"
+                    className="tp-btn ml-auto rounded-full px-3 py-1.5 text-[13px] font-bold text-chili-dark disabled:opacity-40"
                     style={{ background: "#FBE0D6" }}
                     onClick={() => onAddSabo(k)}
+                    disabled={!canSabo}
+                    title={
+                      saboBlockedByBet
+                        ? "Tidak bisa nyabotase jika bertaruh Kepedesan"
+                        : capReached
+                        ? `Batas sabotase target sudah penuh (${SABOTAGE_MAX_PER_TARGET} pedas)`
+                        : undefined
+                    }
                   >
                     <Flame size={13} className="mr-1 inline-block align-[-2px]" />
-                    Tambah sambal
+                    Tambah sambal ({p.sabotage})
                   </button>
+                ) : (
+                  <span className="ml-auto text-xs text-muted font-bold py-1.5">
+                    Sambal habis
+                  </span>
                 )}
               </div>
             </div>

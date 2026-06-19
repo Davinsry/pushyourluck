@@ -102,7 +102,7 @@ export type Action =
   | { type: "TOGGLE_BET"; player: number; bet: Bet }
   | { type: "ADD_SABO"; player: number }
   | { type: "CONFIRM_PRETURN" }
-  | { type: "USE_TAMENG" } // block sabotage with a shield
+  | { type: "USE_TAMENG"; count: number } // block sabotage with a shield
   | { type: "ACCEPT_HEAT" } // take the sabotage heat as-is
   | { type: "SUAP"; bite: BiteId }
   | { type: "MINUM_SUSU" }

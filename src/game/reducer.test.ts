@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BET_STAKE, SABOTAGE_HEAT, STARTING_SCORE, SUSU_COOL, TAMENG_BLOCK_PER_PLAYER } from "../config/balance";
+import { BET_STAKE, SABOTAGE_HEAT, STARTING_SCORE, SUSU_COOL, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET } from "../config/balance";
 import { gameReducer, initialState, type GameState } from "./index";
 import type { Action, Rng } from "./types";
 
@@ -35,19 +35,51 @@ describe("setup → draft → play", () => {
 });
 
 describe("sabotage and shielding", () => {
-  it("queues heat then blocks part of it with a tameng (scales with player count)", () => {
+  it("queues heat then blocks it with a tameng", () => {
     let s = startedGame();
     s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
     expect(s.pendingHeat).toBe(SABOTAGE_HEAT);
     expect(s.players[1].sabotage).toBe(0);
     s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
     expect(s.blockAsk).toBe(true);
-    s = gameReducer(s, { type: "USE_TAMENG" }, SAFE);
+    s = gameReducer(s, { type: "USE_TAMENG", count: 1 }, SAFE);
     expect(s.phase).toBe("active");
-    // 2 players → block 2 × TAMENG_BLOCK_PER_PLAYER; leftover heat still applies
-    const block = s.players.length * TAMENG_BLOCK_PER_PLAYER;
-    expect(s.heat).toBe(Math.max(0, SABOTAGE_HEAT - block));
+    // 1 tameng blocks exactly TAMENG_BLOCK (15 heat)
+    expect(s.heat).toBe(0);
     expect(s.players[0].tameng).toBe(0);
+  });
+
+  it("allows a spectator to stack multiple sabotage tokens", () => {
+    let s = startedGame();
+    s.players[1].sabotage = 3;
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    expect(s.pendingHeat).toBe(SABOTAGE_HEAT * 2);
+    expect(s.players[1].sabotage).toBe(1);
+  });
+
+  it("applies partial shields and leaves the remaining heat", () => {
+    let s = startedGame();
+    s.players[0].tameng = 3;
+    s.pendingHeat = SABOTAGE_HEAT * 3;
+    s = gameReducer(s, { type: "USE_TAMENG", count: 2 }, SAFE);
+    expect(s.phase).toBe("active");
+    expect(s.heat).toBe(TAMENG_BLOCK);
+    expect(s.players[0].tameng).toBe(1);
+  });
+
+  it("enforces the SABOTAGE_MAX_PER_TARGET cap", () => {
+    let s = startedGame();
+    s.players[1].sabotage = 5;
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    expect(s.pendingHeat).toBe(SABOTAGE_MAX_PER_TARGET);
+    expect(s.players[1].sabotage).toBe(2);
+
+    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
+    expect(s.pendingHeat).toBe(SABOTAGE_MAX_PER_TARGET);
+    expect(s.players[1].sabotage).toBe(2);
   });
 });
 

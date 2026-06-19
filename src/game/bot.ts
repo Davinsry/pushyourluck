@@ -3,7 +3,7 @@
 //  return the Action a bot would take. Driven on a timer in App so
 //  the moves are watchable. All thresholds live in balance BOT{}.
 // ─────────────────────────────────────────────────────────────
-import { BOT, SABOTAGE_HEAT } from "../config/balance";
+import { BOT, SABOTAGE_HEAT, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO } from "../config/balance";
 import type { Action, BiteId, GameState, Rng } from "./types";
 import { bustChance, multiplier } from "./rules";
 import { activeIndex, isFinalRonde } from "./reducer";
@@ -106,12 +106,25 @@ export function botActiveDecision(state: GameState): Action {
 
 /** When sabotaged, a bot blocks with a shield based on how much heat is incoming. */
 export function botBlockDecision(state: GameState): Action {
-  // Block if the sabotage heat is significant, or if we're already hot
-  const wouldBeHot = state.heat + state.pendingHeat;
-  if (state.pendingHeat >= SABOTAGE_HEAT && (wouldBeHot > 45 || bustChance(wouldBeHot) > 35)) {
-    return { type: "USE_TAMENG" };
+  const idx = activeIndex(state);
+  const me = state.players[idx];
+  const incoming = Math.ceil(state.pendingHeat / SABOTAGE_HEAT);
+  const maxShields = Math.min(me.tameng, incoming);
+
+  // We want to find the minimum count of shields to make starting bust chance <= 30%
+  const targetChance = 30;
+  let bestCount = maxShields;
+
+  for (let count = 0; count <= maxShields; count++) {
+    const remainingHeat = Math.max(0, state.pendingHeat - count * TAMENG_BLOCK);
+    const finalHeat = state.heat + remainingHeat;
+    if (bustChance(finalHeat) <= targetChance) {
+      bestCount = count;
+      break;
+    }
   }
-  return { type: "ACCEPT_HEAT" };
+
+  return { type: "USE_TAMENG", count: bestCount };
 }
 
 /**
@@ -141,7 +154,26 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
     }
 
     // ── Sabotage: more aggressive when the active player is a threat ──
-    if (p.sabotage > 0 && !state.usedSabo.includes(k)) {
+    let tempPendingHeat = state.pendingHeat;
+    let tokens = p.sabotage;
+    while (tokens > 0) {
+      if (SABOTAGE_MAX_PER_TARGET > 0 && tempPendingHeat >= SABOTAGE_MAX_PER_TARGET) {
+        break;
+      }
+
+      // Check current bet (including the one we just queued)
+      const myBetAction = actions.find((a) => a.type === "TOGGLE_BET" && a.player === k) as { bet: string } | undefined;
+      const myBet = myBetAction ? myBetAction.bet : state.bets[k];
+
+      // If we bet "bust" and block is enabled, we cannot sabotage.
+      if (BLOCK_BET_AND_SABO && myBet === "bust") {
+        break;
+      }
+      // If we bet "aman", we shouldn't sabotage our own bet.
+      if (myBet === "aman") {
+        break;
+      }
+
       let saboChance: number = BOT.sabotageChance;
       // Sabotage more if active player is leading
       if (activePlayer.score > p.score + 10) saboChance += 0.2;
@@ -151,6 +183,10 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
 
       if (rng() < saboChance) {
         actions.push({ type: "ADD_SABO", player: k });
+        tokens--;
+        tempPendingHeat += SABOTAGE_HEAT;
+      } else {
+        break;
       }
     }
   });

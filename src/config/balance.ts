@@ -11,9 +11,9 @@ export const TURN_SECONDS = 60; // per-turn time limit; running out skips the tu
 // Shop (opens after each ronde) — prices in points. "cabai" = a sabotage token.
 export const SHOP = { susu: 8, tameng: 10, cabai: 6 } as const;
 export const SABOTAGE_HEAT = 15; // +heat per spectator "tambah sambal"
-// Tameng blocks a partial amount of sabotage heat that scales with player count:
-// block = playerCount × this (2p→10, 3p→15, 4p→20). Leftover heat still applies.
-export const TAMENG_BLOCK_PER_PLAYER = 5;
+export const TAMENG_BLOCK = 15; // 1 tameng blocks exactly 15 heat (1 sabotage)
+export const SABOTAGE_MAX_PER_TARGET = 45; // max total queued heat onto 1 player (0 = unlimited)
+export const BLOCK_BET_AND_SABO = true; // prevent betting "bust" and sabotaging the same player
 export const SUSU_COOL = 25; // heat removed by drinking susu
 export const BET_STAKE = 5; // spectator bet payout: correct +5, wrong −5
 export const FINAL_MULT = 2; // score multiplier on the final (pamungkas) ronde

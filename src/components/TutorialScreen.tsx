@@ -22,7 +22,7 @@ import {
   SHOP,
   SUSU_COOL,
   CYCLES,
-  TAMENG_BLOCK_PER_PLAYER,
+  TAMENG_BLOCK,
 } from "../config/balance";
 import { color } from "../ui/theme";
 
@@ -70,7 +70,7 @@ export function TutorialScreen({ onBack }: Props) {
 
         <Section icon={<Hand size={18} />} title="2. Giliran Bermain (3 Fase)">
           <p className="m-0 mb-1.5">
-            <B>a. Fase Penonton (30 Detik):</B> Pemain lain menebak nasibmu: <span className="font-bold text-leaf-dark">Aman</span> atau <span className="font-bold text-chili-dark">Kepedesan</span> (tebakan benar mendapat +{BET_STAKE} poin, tebakan salah kehilangan −{BET_STAKE} poin). Penonton juga bisa mengirim <B>Sambal Sabotase</B> (+{SABOTAGE_HEAT} pedas). Kamu bisa membelanjakan <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> untuk menangkis sabotase.
+            <B>a. Fase Penonton (30 Detik):</B> Pemain lain menebak nasibmu: <span className="font-bold text-leaf-dark">Aman</span> atau <span className="font-bold text-chili-dark">Kepedesan</span> (tebakan benar mendapat +{BET_STAKE} poin, tebakan salah kehilangan −{BET_STAKE} poin). Penonton juga bisa mengirim <B>Sambal Sabotase</B> (+{SABOTAGE_HEAT} pedas). Kamu bisa memilih menggunakan berapa <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> untuk menangkis sabotase tersebut.
           </p>
           <p className="m-0 mb-1.5">
             <B>b. Fase Makan (60 Detik):</B> Kamu bergantian menyuap cabe. Setiap suap memberimu poin dan meningkatkan pedas. Jika pedas tinggi, ada risiko kepedesan (bust) berdasarkan peluang acak. Gunakan <Milk size={12} className="inline align-[-1px]" /> <B>Minum Susu</B> untuk menurunkan pedas −{SUSU_COOL}.
@@ -104,11 +104,11 @@ export function TutorialScreen({ onBack }: Props) {
         </Section>
 
         <Section icon={<Shield size={18} />} title="5. Item & Kegunaannya">
-          <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> — Menangkis <B>sebagian</B> sambal sabotase di awal giliranmu, sebanyak <B>{TAMENG_BLOCK_PER_PLAYER} × jumlah pemain</B> (2 pemain −10, 3 pemain −15, 4 pemain −20). Sisanya tetap masuk.
+          <Shield size={12} className="inline align-[-1px]" /> <B>Tameng</B> — Menangkis sambal sabotase di awal giliranmu. Satu tameng nangkis tepat satu sambal (pedas −{TAMENG_BLOCK}). Kamu bebas menentukan mau memakai berapa tameng sekaligus.
           <br />
           <Milk size={12} className="inline align-[-1px]" /> <B>Susu</B> — Menurunkan tingkat pedas sebanyak −{SUSU_COOL} saat giliran makanmu.
           <br />
-          <Flame size={12} className="inline align-[-1px]" /> <B>Sambal / Cabai</B> — Mengirim sabotase pedas (+{SABOTAGE_HEAT} pedas) ke pemain yang sedang makan.
+          <Flame size={12} className="inline align-[-1px]" /> <B>Sambal / Cabai</B> — Mengirim sabotase pedas (+{SABOTAGE_HEAT} pedas) ke pemain yang sedang makan. Spectator boleh membuang beberapa sambal sekaligus.
         </Section>
 
         <Section icon={<Coins size={18} />} title="6. Karakter & Sidegrade">

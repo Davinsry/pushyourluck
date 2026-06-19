@@ -1,24 +1,16 @@
-import { BookOpen, Bot, Settings, Users, Wifi } from "lucide-react";
+import { BookOpen, Settings, Users } from "lucide-react";
 import type { Mode } from "../game";
 
 interface Props {
   onPickMode: (mode: Mode) => void;
   onSettings: () => void;
   onTutorial: () => void;
-  onOnline: () => void;
 }
 
-/** Main menu: solo (vs bot), local multiplayer, settings, online rooms. */
-export function MenuScreen({ onPickMode, onSettings, onTutorial, onOnline }: Props) {
+/** Main menu: local pass-and-play, how-to-play, settings. */
+export function MenuScreen({ onPickMode, onSettings, onTutorial }: Props) {
   return (
     <div className="mt-[18px] grid gap-3">
-      <MenuButton
-        icon={<Bot size={26} />}
-        title="Main Sendiri"
-        subtitle="Lawan bot — latihan & seru-seruan solo"
-        color="var(--c-chili)"
-        onClick={() => onPickMode("solo")}
-      />
       <MenuButton
         icon={<Users size={26} />}
         title="Main Bareng"
@@ -39,13 +31,6 @@ export function MenuScreen({ onPickMode, onSettings, onTutorial, onOnline }: Pro
         subtitle="Jumlah ronde & suara"
         color="var(--c-steel)"
         onClick={onSettings}
-      />
-      <MenuButton
-        icon={<Wifi size={26} />}
-        title="Main Online"
-        subtitle="Buat / join room bareng teman"
-        color="var(--c-leaf)"
-        onClick={onOnline}
       />
     </div>
   );
