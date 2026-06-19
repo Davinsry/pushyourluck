@@ -33,7 +33,15 @@ export function biteHeat(bite: BiteId, char: CharacterId | null): number {
 /** Points gained from a successful bite (rolls within range, applies char mod). */
 export function biteGain(bite: BiteId, char: CharacterId | null, rng: Rng): number {
   const [min, max] = BITES[bite].points;
-  const pointMod = char ? (CHARS[char] as { pointMod?: number }).pointMod ?? 0 : 0;
+  let pointMod = 0;
+  if (char) {
+    const charDef = CHARS[char] as any;
+    if (charDef.pointModPerChili && bite in charDef.pointModPerChili) {
+      pointMod = charDef.pointModPerChili[bite];
+    } else {
+      pointMod = charDef.pointMod ?? 0;
+    }
+  }
   return Math.max(1, randRange(min, max, rng) + pointMod);
 }
 

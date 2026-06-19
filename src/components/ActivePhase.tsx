@@ -86,7 +86,15 @@ export function ActivePhase({
       </div>
       <div className="mb-3 grid grid-cols-3 gap-2">
         {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
-          const pointMod = charDef && "pointMod" in charDef ? (charDef.pointMod as number) : 0;
+          let pointMod = 0;
+          if (charDef) {
+            const anyCharDef = charDef as any;
+            if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
+              pointMod = anyCharDef.pointModPerChili[key];
+            } else {
+              pointMod = anyCharDef.pointMod ?? 0;
+            }
+          }
           const heatMod = charDef && "heatMod" in charDef ? (charDef.heatMod as number) : 0;
 
           const baseMin = b.points[0];

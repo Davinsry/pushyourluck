@@ -52,7 +52,7 @@ describe("biteGain", () => {
     // rng 0 → min roll; rakus adds +3
     expect(biteGain("ijo", "rakus", seq([0]))).toBe(4 + CHARS.rakus.pointMod);
     // baja never goes below 1
-    expect(biteGain("ijo", "baja", seq([0]))).toBe(Math.max(1, 4 + CHARS.baja.pointMod));
+    expect(biteGain("ijo", "baja", seq([0]))).toBe(Math.max(1, 4 + CHARS.baja.pointModPerChili.ijo));
   });
 });
 

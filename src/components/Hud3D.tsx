@@ -92,8 +92,8 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
               </div>
             </div>
 
-            <div className="mb-3 flex gap-1.5">
-              {maxShields >= 1 && (
+            {maxShields > 1 && (
+              <div className="mb-3 flex gap-1.5">
                 <button
                   type="button"
                   className={`tp-btn flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
@@ -103,8 +103,6 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
                 >
                   Tangkis 1
                 </button>
-              )}
-              {maxShields > 1 && (
                 <button
                   type="button"
                   className={`tp-btn flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
@@ -114,8 +112,8 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
                 >
                   Tangkis Semua ({maxShields})
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </>
         ) : (
           <p className="my-2 mb-3 text-xs text-muted font-medium">
@@ -293,7 +291,15 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
         </div>
         <div className="grid gap-2">
           {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
-            const pointMod = charDef && "pointMod" in charDef ? (charDef.pointMod as number) : 0;
+            let pointMod = 0;
+            if (charDef) {
+              const anyCharDef = charDef as any;
+              if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
+                pointMod = anyCharDef.pointModPerChili[key];
+              } else {
+                pointMod = anyCharDef.pointMod ?? 0;
+              }
+            }
             const heatMod = charDef && "heatMod" in charDef ? (charDef.heatMod as number) : 0;
 
             const baseMin = b.points[0];

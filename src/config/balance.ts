@@ -50,9 +50,9 @@ export const CHARS = {
     tag: "Tahan banting",
     colorKey: "steel",
     up: "Sekali di setiap ronde, selamat dari 1 kepedesan.",
-    down: "Poin tiap suap −3.",
+    down: "Poin dikurangi sesuai cabai (Carolina −3, Rawit −2, Ijo −1).",
     surviveBust: 1,
-    pointMod: -3,
+    pointModPerChili: { ijo: -1, rawit: -2, carolina: -3 } as const,
   },
   rakus: {
     name: "Si Rakus",

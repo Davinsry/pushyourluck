@@ -95,8 +95,8 @@ export function PreturnPhase({
               </div>
             </div>
 
-            <div className="mb-4 flex gap-2">
-              {maxShields >= 1 && (
+            {maxShields > 1 && (
+              <div className="mb-4 flex gap-2">
                 <button
                   type="button"
                   className={`tp-btn flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
@@ -106,8 +106,6 @@ export function PreturnPhase({
                 >
                   Tangkis 1
                 </button>
-              )}
-              {maxShields > 1 && (
                 <button
                   type="button"
                   className={`tp-btn flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
@@ -117,8 +115,8 @@ export function PreturnPhase({
                 >
                   Tangkis Semua ({maxShields})
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </>
         ) : (
           <p className="my-2 mb-4 text-[13px] text-muted font-medium">
