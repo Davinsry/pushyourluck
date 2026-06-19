@@ -295,9 +295,20 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     // ── result → next, or time-out skip ──
     case "NEXT":
       return advanceTurn(state);
-    case "SKIP_TURN":
-      // ran out of time: forfeit this round (no points) and move on
+    case "SKIP_TURN": {
+      // ran out of time: if they have points, auto-bank them; otherwise forfeit.
+      if (state.roundPts > 0) {
+        const me = state.players[activeIndex(state)];
+        const b = scoreBank(state.roundPts, state.heat, me.char, isFinalRonde(state));
+        return resolve(
+          { ...state, feedback: "Waktu habis! Poin disajikan otomatis." },
+          false,
+          b.gained,
+          b
+        );
+      }
       return advanceTurn({ ...state, feedback: "Kehabisan waktu!" });
+    }
 
     // ── shop (between rondes) ──
     case "BUY": {

@@ -165,3 +165,26 @@ describe("shop between rondes", () => {
     expect(s.screen).toBe("play");
   });
 });
+
+describe("turn timeout behavior (SKIP_TURN)", () => {
+  it("forfeits the turn if roundPts is 0", () => {
+    let s = startedGame();
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
+    s = gameReducer(s, { type: "SKIP_TURN" }, SAFE);
+    expect(s.phase).toBe("preturn"); // moves immediately to next turn
+    expect(s.turn).toBe(1);
+    expect(s.players[0].score).toBe(STARTING_SCORE);
+  });
+
+  it("automatically banks accumulated points if roundPts > 0", () => {
+    let s = startedGame();
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
+    s = gameReducer(s, { type: "SUAP", bite: "ijo" }, SAFE);
+    expect(s.roundPts).toBeGreaterThan(0);
+    const expectedScore = STARTING_SCORE + s.roundPts; // 1.0x multiplier
+    s = gameReducer(s, { type: "SKIP_TURN" }, SAFE);
+    expect(s.phase).toBe("result"); // moves to result screen first
+    expect(s.outcome?.busted).toBe(false);
+    expect(s.players[0].score).toBe(expectedScore);
+  });
+});
