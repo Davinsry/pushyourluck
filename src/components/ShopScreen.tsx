@@ -39,8 +39,8 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
   const IconComponent = activeItem?.icon;
 
   return (
-    <div className="mt-[18px] rounded-[20px] bg-card p-6 text-ink relative">
-      <div className="mb-1 flex items-center justify-between">
+    <div className="rounded-[20px] bg-card p-5 text-ink relative max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="mb-1 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <ShoppingCart size={20} className="text-chili-dark" />
           <h2 className="m-0 text-xl font-extrabold text-chili-dark">Toko</h2>
@@ -51,13 +51,13 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
           </div>
         )}
       </div>
-      <p className="m-0 mb-4 text-[13px] text-muted">
+      <p className="m-0 mb-3 text-[13px] text-muted flex-shrink-0">
         Ronde {cycle} selesai. Belanja pakai poin sebelum lanjut.
       </p>
 
-      <div className="grid gap-3">
+      <div className="grid gap-3 overflow-y-auto flex-1 pr-1.5 my-2 min-h-0">
         {players.map((p, i) => (
-          <div key={i} className="rounded-2xl border-[1.5px] border-cream-2 bg-cream p-3.5">
+          <div key={i} className="rounded-2xl border-[1.5px] border-cream-2 bg-cream p-3.5 flex-shrink-0">
             <div className="mb-2.5 flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded-full" style={{ background: playerColor(i) }} />
               <span className="text-base font-extrabold">{p.name}</span>
@@ -91,7 +91,7 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
 
       {onClose && (
         <button
-          className="tp-btn mt-5 w-full rounded-[14px] bg-flame py-3.5 text-[17px] font-extrabold text-white"
+          className="tp-btn mt-4 w-full rounded-[14px] bg-flame py-3.5 text-[17px] font-extrabold text-white flex-shrink-0 shadow-md"
           onClick={onClose}
         >
           Lanjut ke ronde berikutnya

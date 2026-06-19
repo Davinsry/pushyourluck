@@ -1,4 +1,5 @@
-import { Crown } from "lucide-react";
+import { useState } from "react";
+import { Crown, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 import type { Player } from "../game";
 import { playerColor } from "../ui/theme";
 
@@ -22,82 +23,105 @@ export function Scoreboard({
   className = "",
   activeEmotes,
 }: Props) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   // Sort players by score descending, preserving their original index for seat colors and active checks
   const sortedPlayers = players
     .map((p, originalIndex) => ({ ...p, originalIndex }))
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div className={`flex flex-col gap-2.5 pointer-events-auto ${className}`}>
-      {/* Ronde info card */}
+    <div
+      className={`pointer-events-auto flex flex-col rounded-2xl border border-line/20 shadow-2xl transition-all duration-300 ${className}`}
+      style={{
+        backgroundColor: "rgba(28, 17, 11, 0.95)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      {/* Header (clickable to collapse/expand) */}
       <div
-        className="rounded-2xl px-3 py-2 text-center text-xs font-bold border border-line/10 shadow-lg backdrop-blur-md"
-        style={{
-          backgroundColor: "rgba(30, 19, 13, 0.85)",
-          color: isFinal ? "var(--c-amber)" : "var(--c-cream)",
-        }}
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex items-center justify-between p-2.5 cursor-pointer select-none hover:bg-white/5 transition-colors rounded-t-2xl"
       >
-        <div className="text-[10px] uppercase tracking-wider text-muted font-bold">Ronde</div>
-        <div className="text-sm font-extrabold leading-none mt-0.5">
-          {cycle} / {cycles}
+        <div className="flex flex-col text-left">
+          <span className="text-[9px] uppercase tracking-wider text-muted font-bold leading-none">Ronde</span>
+          <span className={`text-xs font-black leading-none mt-1 ${isFinal ? "text-amber" : "text-cream"}`}>
+            {cycle} / {cycles}
+          </span>
         </div>
-        {isFinal && <div className="text-[9px] text-amber animate-pulse mt-0.5">PAMUNGKAS ×2</div>}
+        <div className="flex items-center gap-1.5">
+          {isFinal ? (
+            <Crown size={12} className="text-amber fill-amber animate-pulse" />
+          ) : (
+            <Trophy size={11} className="text-muted" />
+          )}
+          {isCollapsed ? <ChevronDown size={12} className="text-muted" /> : <ChevronUp size={12} className="text-muted" />}
+        </div>
       </div>
 
-      {/* Players List */}
-      <div className="flex flex-col gap-1.5">
-        {sortedPlayers.map((p, idx) => {
-          const isActive = p.originalIndex === activeIndex;
-          const isLeader = idx === 0 && p.score > 0;
-          const activeEmote = activeEmotes?.[p.originalIndex];
-          return (
-            <div
-              key={p.originalIndex}
-              className={`relative flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all duration-300 shadow-md border ${
-                isActive
-                  ? "bg-chili text-white border-chili scale-105"
-                  : "bg-bg2/90 text-cream border-line/10 hover:border-line/20"
-              }`}
-              style={{
-                backgroundColor: isActive ? undefined : "rgba(42, 27, 18, 0.85)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              {/* Seat color indicator */}
+      {/* Final Ronde Badge inside Header (when expanded) */}
+      {isFinal && !isCollapsed && (
+        <div className="mx-2 mb-1.5 rounded-lg bg-amber/10 py-1 text-center text-[9px] font-black text-amber animate-pulse border border-amber/10">
+          PAMUNGKAS ×2
+        </div>
+      )}
+
+      {/* Separator line when expanded */}
+      {!isCollapsed && <div className="h-[1px] bg-line/10 w-full" />}
+
+      {/* Collapsible Content */}
+      {!isCollapsed && (
+        <div className="flex flex-col gap-1.5 p-2 bg-black/15 rounded-b-2xl">
+          {sortedPlayers.map((p, idx) => {
+            const isActive = p.originalIndex === activeIndex;
+            const isLeader = idx === 0 && p.score > 0;
+            const activeEmote = activeEmotes?.[p.originalIndex];
+            return (
               <div
-                className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-                style={{ background: playerColor(p.originalIndex) }}
-              />
+                key={p.originalIndex}
+                className={`relative flex items-center gap-1.5 rounded-xl px-2 py-1.5 transition-all duration-300 border ${
+                  isActive
+                    ? "bg-chili text-white border-chili shadow-md scale-102"
+                    : "bg-bg2/40 text-cream border-line/5 hover:border-line/15"
+                }`}
+                style={{
+                  backgroundColor: isActive ? undefined : "rgba(42, 27, 18, 0.4)",
+                }}
+              >
+                {/* Seat color indicator */}
+                <div
+                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                  style={{ background: playerColor(p.originalIndex) }}
+                />
 
-              {/* Player Name and Score */}
-              <div className="flex flex-col min-w-[70px] flex-1">
-                <span className="text-[12px] font-extrabold truncate flex items-center gap-1 leading-tight">
-                  {p.name}
-                  {isLeader && <Crown size={11} className="text-amber fill-amber animate-bounce" />}
-                </span>
-                <span className={`text-[10px] font-bold leading-tight ${isActive ? "text-white/80" : "text-muted"}`}>
-                  {p.score} Poin
-                </span>
-              </div>
-
-              {/* Turn active indicator */}
-              {isActive && (
-                <div className="h-1.5 w-1.5 rounded-full bg-white animate-ping flex-shrink-0" />
-              )}
-
-              {/* Emote Bubble */}
-              {activeEmote && (
-                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-cream border-2 border-line/20 px-3 py-1.5 rounded-2xl shadow-xl animate-bounce text-xl z-50 text-ink flex items-center justify-center">
-                  {activeEmote}
-                  {/* speech bubble tail */}
-                  <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-cream border-l-2 border-b-2 border-line/20 rotate-45" />
+                {/* Player Name and Score */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[11px] font-black truncate flex items-center gap-0.5 leading-tight">
+                    {p.name}
+                    {isLeader && <Crown size={9} className="text-amber fill-amber flex-shrink-0" />}
+                  </span>
+                  <span className={`text-[9px] font-bold leading-tight ${isActive ? "text-white/80" : "text-muted"}`}>
+                    {p.score} Poin
+                  </span>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+
+                {/* Turn active indicator ping dot */}
+                {isActive && (
+                  <div className="h-1 w-1 rounded-full bg-white animate-ping flex-shrink-0" />
+                )}
+
+                {/* Emote Bubble */}
+                {activeEmote && (
+                  <div className="absolute left-full ml-2.5 top-1/2 -translate-y-1/2 bg-cream border-2 border-line/20 px-2.5 py-1 rounded-2xl shadow-xl animate-bounce text-lg z-50 text-ink flex items-center justify-center">
+                    {activeEmote}
+                    <div className="absolute left-[-5px] top-1/2 -translate-y-1/2 w-2 h-2 bg-cream border-l-2 border-b-2 border-line/20 rotate-45" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
-
