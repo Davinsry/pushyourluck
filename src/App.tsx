@@ -576,7 +576,6 @@ export default function App() {
     ? (online && room.gameState ? room.gameState.heat : state.heat) 
     : 0;
 
-  const shakeAmount = currentHeat > 15 ? Math.min(8, (currentHeat - 15) / 8) : 0;
   const redOpacity = currentHeat > 10 ? Math.min(0.8, (currentHeat - 10) / 80) : 0;
 
   // ── Online: lobby → waiting room → synced game (separate from local state) ──
@@ -594,12 +593,7 @@ export default function App() {
       const isHumanActiveTurn = activePlayerObj && !activePlayerObj.isBot && room.youSeat === activeIdx;
 
       return (
-        <div 
-          className={`fixed inset-0 z-40 bg-bg text-cream ${shakeAmount > 0 ? "animate-shake" : ""}`}
-          style={{
-            "--shake-amt": shakeAmount
-          } as React.CSSProperties}
-        >
+        <div className="fixed inset-0 z-40 bg-bg text-cream">
           {/* Red Vignette Overlay for Heat/Spiciness */}
           <div 
             className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
@@ -777,12 +771,7 @@ export default function App() {
   // ── 3D: full-screen "game" layout with the controls overlaid on top ──
   if (state.screen === "play" || state.screen === "shop") {
     return (
-      <div 
-        className={`fixed inset-0 z-40 bg-bg text-cream ${shakeAmount > 0 ? "animate-shake" : ""}`}
-        style={{
-          "--shake-amt": shakeAmount
-        } as React.CSSProperties}
-      >
+      <div className="fixed inset-0 z-40 bg-bg text-cream">
         {/* Red Vignette Overlay for Heat/Spiciness */}
         <div 
           className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
