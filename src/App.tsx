@@ -817,20 +817,6 @@ export default function App() {
               isFinal={isFinal}
               className="w-[140px]"
             />
-            <div
-              className="rounded-2xl px-3 py-1.5 text-center border border-line/10 shadow-lg backdrop-blur-md pointer-events-auto w-[140px]"
-              style={{
-                backgroundColor: "rgba(30, 19, 13, 0.85)",
-                color: "var(--c-cream)",
-              }}
-            >
-              <div className="text-[9px] uppercase tracking-wider text-muted font-bold">
-                {online ? "ID Room" : "ID Game"}
-              </div>
-              <div className="text-xs font-extrabold leading-none mt-0.5 text-amber">
-                {online ? room.code : gameId}
-              </div>
-            </div>
           </div>
         )}
 
