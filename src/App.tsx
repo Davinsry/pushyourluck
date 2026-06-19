@@ -576,6 +576,7 @@ export default function App() {
     ? (online && room.gameState ? room.gameState.heat : state.heat) 
     : 0;
 
+  const shakeAmount = currentHeat > 15 ? Math.min(8, (currentHeat - 15) / 8) : 0;
   const redOpacity = currentHeat > 10 ? Math.min(0.8, (currentHeat - 10) / 80) : 0;
 
   // ── Online: lobby → waiting room → synced game (separate from local state) ──
@@ -602,7 +603,12 @@ export default function App() {
               background: "radial-gradient(circle, transparent 20%, rgba(215, 38, 61, 0.6) 100%)",
             }}
           />
-          <div className="absolute inset-0">
+          <div 
+            className={`absolute inset-0 ${shakeAmount > 0 ? "animate-shake" : ""}`}
+            style={{
+              "--shake-amt": shakeAmount
+            } as React.CSSProperties}
+          >
             <Suspense
               fallback={
                 <div className="flex h-full items-center justify-center text-sm text-muted">
@@ -783,7 +789,12 @@ export default function App() {
             background: "radial-gradient(circle, transparent 20%, rgba(215, 38, 61, 0.6) 100%)",
           }}
         />
-        <div className="absolute inset-0">
+        <div 
+          className={`absolute inset-0 ${shakeAmount > 0 ? "animate-shake" : ""}`}
+          style={{
+            "--shake-amt": shakeAmount
+          } as React.CSSProperties}
+        >
           <Suspense
             fallback={
               <div className="flex h-full items-center justify-center text-sm text-muted">
