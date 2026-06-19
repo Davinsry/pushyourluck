@@ -76,7 +76,14 @@ export function ActivePhase({
         </p>
       ) : (
         <>
-      <p className="m-0 mb-2 text-xs font-semibold text-muted">Pilih suapan:</p>
+      <div className="mb-2">
+        <p className="m-0 text-xs font-semibold text-muted">Pilih suapan:</p>
+        {charDef && (
+          <p className="m-0 mt-0.5 text-[11px] font-bold leading-normal" style={{ color: color(charDef.colorKey) }}>
+            ✨ {charDef.name}: {charDef.up} <span className="opacity-80">({charDef.down})</span>
+          </p>
+        )}
+      </div>
       <div className="mb-3 grid grid-cols-3 gap-2">
         {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
           const pointMod = charDef && "pointMod" in charDef ? (charDef.pointMod as number) : 0;

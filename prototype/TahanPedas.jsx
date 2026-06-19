@@ -336,7 +336,14 @@ export default function TahanPedas() {
                   </div>
                   <p style={{ height: 20, margin: "0 0 14px", fontSize: 14, fontWeight: 700, color: C.flame }}>{feedback}</p>
 
-                  <p style={{ fontSize: 12, color: C.muted, fontWeight: 600, margin: "0 0 8px" }}>Pilih suapan:</p>
+                  <div style={{ marginBottom: 8 }}>
+                    <p style={{ fontSize: 12, color: C.muted, fontWeight: 600, margin: 0 }}>Pilih suapan:</p>
+                    {ch && CHARS[ch] && (
+                      <p style={{ fontSize: 11, fontWeight: 700, color: CHARS[ch].color, margin: "2px 0 0", lineHeight: 1.2 }}>
+                        ✨ {CHARS[ch].name}: {CHARS[ch].up} <span style={{ opacity: 0.8 }}>({CHARS[ch].down})</span>
+                      </p>
+                    )}
+                  </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
                     {Object.entries(BITES).map(([key, b]) => {
                       const pointMod = ch === "rakus" ? 3 : (ch === "baja" ? -2 : 0);
