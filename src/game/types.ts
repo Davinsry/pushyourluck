@@ -12,7 +12,8 @@ export type Screen =
   | "draft"
   | "play"
   | "shop"
-  | "gameover";
+  | "gameover"
+  | "history";
 
 /** Buyable shop items (cabai = a sabotage / "tambah sambal" token). */
 export type ShopItem = "susu" | "tameng" | "cabai";
@@ -35,6 +36,14 @@ export interface Player {
   tameng: number; // remaining shields
   susu: number; // remaining milk
   isBot: boolean; // controlled by the AI (solo mode)
+  stats?: {
+    ijoCount: number;
+    rawitCount: number;
+    carolinaCount: number;
+    maxHeat: number;
+    correctBets: number;
+    busts: number;
+  };
 }
 
 /** Per-spectator settlement line shown on the result screen. */
@@ -112,6 +121,7 @@ export type Action =
   | { type: "BUY"; player: number; item: ShopItem }
   | { type: "CLOSE_SHOP" }
   | { type: "RESTART" } // replay with the same names/mode/settings
+  | { type: "OPEN_HISTORY" }
   | { type: "RESET" };
 
 /** Random source — injectable so the reducer stays deterministic in tests. */

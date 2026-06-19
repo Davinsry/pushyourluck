@@ -114,5 +114,127 @@ export function makePlayer(index: number, name?: string, isBot = false): Player 
     tameng: STARTING_KIT.tameng,
     susu: STARTING_KIT.susu,
     isBot,
+    stats: {
+      ijoCount: 0,
+      rawitCount: 0,
+      carolinaCount: 0,
+      maxHeat: 0,
+      correctBets: 0,
+      busts: 0,
+    },
+  };
+}
+
+export interface Playstyle {
+  title: string;
+  description: string;
+}
+
+export function analyzePlaystyle(stats: {
+  ijoCount: number;
+  rawitCount: number;
+  carolinaCount: number;
+  maxHeat: number;
+  correctBets: number;
+  busts: number;
+}): Playstyle {
+  const { ijoCount, rawitCount, carolinaCount, correctBets, busts } = stats;
+  const totalEaten = ijoCount + rawitCount + carolinaCount;
+
+  if (busts >= 2) {
+    return {
+      title: "Korban Kepedesan",
+      description: "Nafsu makan terlalu besar sampai sering tersedak/bust!",
+    };
+  }
+  if (correctBets >= 2 && correctBets > totalEaten) {
+    return {
+      title: "Pengamat Ulung",
+      description: "Lebih jago menebak nasib lawan dibanding makan sendiri.",
+    };
+  }
+  if (carolinaCount > ijoCount && carolinaCount > rawitCount) {
+    return {
+      title: "Carolina Lover",
+      description: "Menyukai tantangan ekstrem dengan lahap melahap Cabe Carolina!",
+    };
+  }
+  if (rawitCount > ijoCount && rawitCount >= carolinaCount) {
+    return {
+      title: "Rawit Taktis",
+      description: "Strategis, mengambil risiko sedang demi poin maksimal.",
+    };
+  }
+  if (ijoCount > rawitCount && ijoCount >= carolinaCount) {
+    return {
+      title: "Cabe Ijo Lover",
+      description: "Sangat berhati-hati, bermain aman demi kelangsungan hidup.",
+    };
+  }
+  return {
+    title: "Pemain Taktis",
+    description: "Keseimbangan yang baik antara risiko dan hasil.",
+  };
+}
+
+export interface PlaytestingStats {
+  favoriteChili: string;
+  spiciestKing: { name: string; value: number };
+  bestGuesser: { name: string; value: number };
+  mostBusted: { name: string; value: number };
+}
+
+export function calculatePlaytestingStats(players: Player[]): PlaytestingStats {
+  let totalIjo = 0;
+  let totalRawit = 0;
+  let totalCarolina = 0;
+
+  let maxHeatVal = -1;
+  let maxHeatPlayer = "-";
+
+  let maxBetsVal = -1;
+  let maxBetsPlayer = "-";
+
+  let maxBustsVal = -1;
+  let maxBustsPlayer = "-";
+
+  players.forEach((p) => {
+    const s = p.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
+    totalIjo += s.ijoCount;
+    totalRawit += s.rawitCount;
+    totalCarolina += s.carolinaCount;
+
+    if (s.maxHeat > maxHeatVal) {
+      maxHeatVal = s.maxHeat;
+      maxHeatPlayer = p.name;
+    }
+    if (s.correctBets > maxBetsVal) {
+      maxBetsVal = s.correctBets;
+      maxBetsPlayer = p.name;
+    }
+    if (s.busts > maxBustsVal) {
+      maxBustsVal = s.busts;
+      maxBustsPlayer = p.name;
+    }
+  });
+
+  // Favorite Chili
+  let favoriteChili = "Belum ada";
+  const maxChiliCount = Math.max(totalIjo, totalRawit, totalCarolina);
+  if (maxChiliCount > 0) {
+    if (maxChiliCount === totalCarolina) {
+      favoriteChili = "Cabe Carolina";
+    } else if (maxChiliCount === totalRawit) {
+      favoriteChili = "Cabe Rawit";
+    } else {
+      favoriteChili = "Cabe Ijo";
+    }
+  }
+
+  return {
+    favoriteChili,
+    spiciestKing: maxHeatVal > 0 ? { name: maxHeatPlayer, value: maxHeatVal } : { name: "-", value: 0 },
+    bestGuesser: maxBetsVal > 0 ? { name: maxBetsPlayer, value: maxBetsVal } : { name: "-", value: 0 },
+    mostBusted: maxBustsVal > 0 ? { name: maxBustsPlayer, value: maxBustsVal } : { name: "-", value: 0 },
   };
 }

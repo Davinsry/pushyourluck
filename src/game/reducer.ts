@@ -108,8 +108,23 @@ function advanceTurn(s: GameState): GameState {
 
 /** Move from preturn into the eating phase with a starting heat. */
 function startActive(s: GameState, startHeat: number): GameState {
+  const pIdx = activeIndex(s);
+  const players = s.players.map((p, i) => {
+    if (i === pIdx) {
+      const oldStats = p.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
+      return {
+        ...p,
+        stats: {
+          ...oldStats,
+          maxHeat: Math.max(oldStats.maxHeat, startHeat),
+        },
+      };
+    }
+    return p;
+  });
   return {
     ...s,
+    players,
     phase: "active",
     blockAsk: false,
     heat: startHeat,
@@ -135,14 +150,25 @@ function resolve(
       return { player, name: s.players[player].name, bet, correct, delta: correct ? BET_STAKE : -BET_STAKE };
     });
 
-  const players = s.players.map((p, i) => {
-    let score = p.score;
-    if (i === pIdx && !busted) score += gained;
-    const bet = s.bets[i];
-    if (bet) score += (busted && bet === "bust") || (!busted && bet === "aman") ? BET_STAKE : -BET_STAKE;
-    
-    return { ...p, score: Math.max(0, score) };
-  });
+    const players = s.players.map((p, i) => {
+      let score = p.score;
+      if (i === pIdx && !busted) score += gained;
+      const bet = s.bets[i];
+      let correctBet = false;
+      if (bet) {
+        const correct = (busted && bet === "bust") || (!busted && bet === "aman");
+        score += correct ? BET_STAKE : -BET_STAKE;
+        if (correct) correctBet = true;
+      }
+      
+      const oldStats = p.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
+      const newStats = {
+        ...oldStats,
+        correctBets: oldStats.correctBets + (correctBet ? 1 : 0),
+      };
+      
+      return { ...p, score: Math.max(0, score), stats: newStats };
+    });
 
   const outcome: Outcome = { busted, gained, ...breakdown, bets: betResults };
   return { ...s, players, outcome, phase: "result" };
@@ -155,6 +181,8 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
       return { ...state, screen: "menu" };
     case "OPEN_SETTINGS":
       return { ...state, screen: "settings" };
+    case "OPEN_HISTORY":
+      return { ...state, screen: "history" };
     case "OPEN_TUTORIAL":
       return { ...state, screen: "tutorial" };
     case "SET_CYCLES":
@@ -257,22 +285,50 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
 
     // ── active (eating) ──
     case "SUAP": {
-      const me = state.players[activeIndex(state)];
-      const ch = me.char;
-      const newHeat = state.heat + biteHeat(action.bite, ch);
-      if (rollBust(newHeat, rng)) {
-        if (!state.shieldUsed && surviveBusts(ch) > 0) {
-          return { ...state, heat: newHeat, shieldUsed: true, feedback: "Perut baja nahan! Selamat sekali." };
+        const pIdx = activeIndex(state);
+        const me = state.players[pIdx];
+        const ch = me.char;
+        const newHeat = state.heat + biteHeat(action.bite, ch);
+        
+        const oldStats = me.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
+        const newStats = {
+          ...oldStats,
+          ijoCount: oldStats.ijoCount + (action.bite === "ijo" ? 1 : 0),
+          rawitCount: oldStats.rawitCount + (action.bite === "rawit" ? 1 : 0),
+          carolinaCount: oldStats.carolinaCount + (action.bite === "carolina" ? 1 : 0),
+          maxHeat: Math.max(oldStats.maxHeat, newHeat),
+        };
+
+        if (rollBust(newHeat, rng)) {
+          if (!state.shieldUsed && surviveBusts(ch) > 0) {
+            return {
+              ...state,
+              players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
+              heat: newHeat,
+              shieldUsed: true,
+              feedback: "Perut baja nahan! Selamat sekali."
+            };
+          }
+          const bustStats = { ...newStats, busts: newStats.busts + 1 };
+          return resolve(
+            {
+              ...state,
+              heat: newHeat,
+              players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: bustStats } : p))
+            },
+            true,
+            0,
+            { raw: 0, mult: 1, hematBonus: 0, final: isFinalRonde(state) }
+          );
         }
-        return resolve({ ...state, heat: newHeat }, true, 0, { raw: 0, mult: 1, hematBonus: 0, final: isFinalRonde(state) });
-      }
-      const gain = biteGain(action.bite, ch, rng);
-      return {
-        ...state,
-        heat: newHeat,
-        roundPts: state.roundPts + gain,
-        feedback: `Nyam ${BITES[action.bite].name}! +${gain} poin`,
-      };
+        const gain = biteGain(action.bite, ch, rng);
+        return {
+          ...state,
+          players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
+          heat: newHeat,
+          roundPts: state.roundPts + gain,
+          feedback: `Nyam ${BITES[action.bite].name}! +${gain} poin`,
+        };
     }
     case "MINUM_SUSU": {
       const pIdx = activeIndex(state);

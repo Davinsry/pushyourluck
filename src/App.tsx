@@ -7,8 +7,13 @@ import {
   isFinalRonde,
   totalTurns as getGameTotalTurns,
   activeIndex as getGameActiveIndex,
-  currentCycle as getGameCurrentCycle
+  currentCycle as getGameCurrentCycle,
+  analyzePlaystyle,
+  calculatePlaytestingStats
 } from "./game";
+import { HistoryScreen } from "./components/HistoryScreen";
+import { CHARS } from "./config/balance";
+import { color } from "./ui/theme";
 import { ACTION_ANIM_MS, TURN_SECONDS } from "./config/balance";
 import { EMOTES } from "./config/emotes";
 import type { ActionAnim } from "./three/GameScene";
@@ -169,6 +174,7 @@ export default function App() {
 
   // Generate or reset local game ID
   const [gameId, setGameId] = useState<string | null>(null);
+  const savedGamesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (state.screen === "play" && !gameId) {
@@ -206,6 +212,8 @@ export default function App() {
         return "/shop";
       case "gameover":
         return "/gameover";
+      case "history":
+        return "/history";
       case "menu":
         return "/home";
       case "intro":
@@ -235,6 +243,8 @@ export default function App() {
         if (state.screen !== "tutorial") dispatch({ type: "OPEN_TUTORIAL" });
       } else if (pathname === "/settings") {
         if (state.screen !== "settings") dispatch({ type: "OPEN_SETTINGS" });
+      } else if (pathname === "/history") {
+        if (state.screen !== "history") dispatch({ type: "OPEN_HISTORY" });
       } else if (pathname === "/setup") {
         if (state.screen !== "setup") dispatch({ type: "START_MODE", mode: "local" });
       } else if (pathname === "/draft") {
@@ -532,6 +542,57 @@ export default function App() {
   useEffect(() => {
     if (state.screen === "gameover") play("win");
   }, [state.screen, play]);
+
+  // Save game to localStorage history on game over (local/solo only)
+  useEffect(() => {
+    if (state.screen === "gameover" && gameId) {
+      if (savedGamesRef.current.has(gameId)) return;
+      savedGamesRef.current.add(gameId);
+
+      try {
+        const saved = localStorage.getItem("tahan_pedas_history");
+        const list = saved ? JSON.parse(saved) : [];
+
+        const pStats = calculatePlaytestingStats(state.players);
+
+        const playersInfo = state.players.map((p) => {
+          const charDef = p.char ? CHARS[p.char] : null;
+          const charName = charDef ? charDef.name : "-";
+          const charColor = charDef ? color(charDef.colorKey) : "var(--c-muted)";
+          const pStatsObj = p.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
+          const playstyle = analyzePlaystyle(pStatsObj);
+
+          return {
+             name: p.name,
+             score: p.score,
+             charName,
+             charColor,
+             stats: pStatsObj,
+             playstyle,
+          };
+        });
+
+        const record = {
+          id: gameId,
+          timestamp: Date.now(),
+          mode: state.mode,
+          cycles: state.settings.cycles,
+          players: playersInfo,
+          playtestingStats: {
+            favoriteChili: pStats.favoriteChili,
+            spiciestKing: pStats.spiciestKing,
+            bestGuesser: pStats.bestGuesser,
+            mostBusted: pStats.mostBusted,
+          },
+        };
+
+        list.push(record);
+        localStorage.setItem("tahan_pedas_history", JSON.stringify(list));
+      } catch (e) {
+        console.error("Gagal menyimpan riwayat permainan:", e);
+      }
+    }
+  }, [state.screen, gameId, state.players, state.mode, state.settings.cycles]);
 
   // (Bot/solo mode removed — this is offline pass-and-play only.)
 
@@ -929,6 +990,10 @@ export default function App() {
               play("click");
               dispatch({ type: "OPEN_TUTORIAL" });
             }}
+            onHistory={() => {
+              play("click");
+              dispatch({ type: "OPEN_HISTORY" });
+            }}
           />
         )}
 
@@ -997,6 +1062,15 @@ export default function App() {
             onReset={() => {
               play("click");
               dispatch({ type: "RESET" });
+            }}
+          />
+        )}
+
+        {state.screen === "history" && (
+          <HistoryScreen
+            onBack={() => {
+              play("click");
+              dispatch({ type: "GO_MENU" });
             }}
           />
         )}
