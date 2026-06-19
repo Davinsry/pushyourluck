@@ -16,7 +16,7 @@ CHARS = {
         "maxMult": 2.0,
         "safeBonus": 0,
         "safeBelow": 0,
-        "desc": "Sekali per ronde selamat dari bust, poin tiap suap -3."
+        "desc": "Sekali di setiap ronde selamat dari bust, poin tiap suap -3."
     },
     "rakus": {
         "name": "Si Rakus (RAKUS)",

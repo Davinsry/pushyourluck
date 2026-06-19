@@ -17,7 +17,7 @@ Berikut adalah poin rata-rata, kepedesan, dan peluang meledak (Bust) pada suapan
 ---
 
 ## 👤 Si Lidah Baja (BAJA)
-*Sekali per ronde selamat dari bust, poin tiap suap -3.*
+*Sekali di setiap ronde selamat dari bust, poin tiap suap -3.*
 
 ### 🟢 Urutan Makan: Cabe Ijo
 | Langkah | Cabe | Total Pedas | Peluang Bust Langkah Ini | Poin Rata-Rata Didapat | Total Poin Kasar | Pengali | Poin Jika Disajikan | Peluang Selamat Kumulatif | Peluang Meledak Kumulatif | Nilai Harapan (EV) |

@@ -49,7 +49,7 @@ export const CHARS = {
     name: "Si Lidah Baja",
     tag: "Tahan banting",
     colorKey: "steel",
-    up: "Sekali per ronde, selamat dari 1 kepedesan.",
+    up: "Sekali di setiap ronde, selamat dari 1 kepedesan.",
     down: "Poin tiap suap −3.",
     surviveBust: 1,
     pointMod: -3,

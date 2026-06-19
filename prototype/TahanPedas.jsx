@@ -27,7 +27,7 @@ const BITES = {
 
 const CHARS = {
   baja:   { name: "Si Lidah Baja", tag: "Tahan banting", color: C.steel,
-            up: "Sekali per ronde, selamat dari 1 kepedesan.", down: "Poin tiap suap −2." },
+            up: "Sekali di setiap ronde, selamat dari 1 kepedesan.", down: "Poin tiap suap −2." },
   rakus:  { name: "Si Rakus", tag: "High-roller", color: C.chili,
             up: "Poin tiap suap +3.", down: "Pedas naik lebih cepat (+5)." },
   kompor: { name: "Si Tukang Kompor", tag: "Pengganggu", color: C.flame,

@@ -8,7 +8,7 @@ Analisis ini menghitung peluang bertahannya karakter dan nilai ekspektasi skor (
 > Strategi terbaik secara matematis adalah yang menghasilkan **Expected Score tertinggi**.
 
 ## 👤 Si Lidah Baja (BAJA)
-* **Modifikator:** Poin tiap suap $-3$, **Memiliki 1 Nyawa Tambahan per Ronde**.
+* **Modifikator:** Poin tiap suap $-3$, **Memiliki 1 Nyawa Tambahan di Setiap Ronde**.
 
 | Strategi | Poin Kasar | Pedas Akhir | Peluang Bust Akhir | Pengali | Skor Jika Selamat | Peluang Selamat | Peluang Meledak | Skor Harapan (EV) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

@@ -230,7 +230,7 @@ def generate_report():
         
         # Penjelasan Modifikator Karakter
         if char_id == "baja":
-            report_content.append("* **Modifikator:** Poin tiap suap $-3$, **Memiliki 1 Nyawa Tambahan per Ronde**.")
+            report_content.append("* **Modifikator:** Poin tiap suap $-3$, **Memiliki 1 Nyawa Tambahan di Setiap Ronde**.")
         elif char_id == "rakus":
             report_content.append("* **Modifikator:** Poin tiap suap $+3$, Pedas $+5$.")
         elif char_id == "kompor":
