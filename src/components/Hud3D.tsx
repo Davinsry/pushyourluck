@@ -378,7 +378,7 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
   }, [onNext]);
 
   return (
-    <div className={`absolute bottom-4 right-4 w-[min-46vw,340px] ${panel}`}>
+    <div className={`absolute bottom-4 right-4 w-[min(46vw,340px)] ${panel}`}>
       <div className="text-center">
         {busted ? (
           <>
