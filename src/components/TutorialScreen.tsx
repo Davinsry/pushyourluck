@@ -76,7 +76,7 @@ export function TutorialScreen({ onBack }: Props) {
             <B>b. Fase Makan (60 Detik):</B> Kamu bergantian menyuap cabe. Setiap suap memberimu poin dan meningkatkan pedas. Jika pedas tinggi, ada risiko kepedesan (bust) berdasarkan peluang acak. Gunakan <Milk size={12} className="inline align-[-1px]" /> <B>Minum Susu</B> untuk menurunkan pedas −{SUSU_COOL}.
           </p>
           <p className="m-0">
-            <B>c. Fase Sajikan:</B> Klik <B>Sajikan</B> untuk mengamankan poin rondemu (akan dikalikan dengan multiplier level berani).
+            <B>c. Fase Sajikan:</B> Klik <B>Sajikan</B> untuk mengamankan poin rondemu (akan dikalikan dengan pengali skor level berani).
           </p>
         </Section>
 
@@ -94,13 +94,13 @@ export function TutorialScreen({ onBack }: Props) {
           <p className="m-0 mt-1.5">Makin tinggi tingkat pedas, makin besar peluang kepedesan (bust) pada suapan berikutnya.</p>
         </Section>
 
-        <Section icon={<Sparkles size={18} />} title="4. Multiplier (Level Berani)">
+        <Section icon={<Sparkles size={18} />} title="4. Pengali Skor (Level Berani)">
           Jika kamu menyajikan makanan saat tingkat pedas tinggi, poin yang diperoleh akan dikalikan:
           <div className="mt-1 flex flex-col gap-0.5">
             <div>• Pedas <B>≥ {MULT.t15}</B> → Poin Sajian <B>×1.5</B></div>
             <div>• Pedas <B>≥ {MULT.t2}</B> → Poin Sajian <B>×2.0</B></div>
           </div>
-          <p className="m-0 mt-1">*Catatan: Karakter tertentu (Si Tukang Kompor & Si Hemat) memiliki batas multiplier maksimum ×1.5.</p>
+          <p className="m-0 mt-1">*Catatan: Karakter tertentu (Si Tukang Kompor & Si Hemat) memiliki batas pengali skor maksimum ×1.5.</p>
         </Section>
 
         <Section icon={<Shield size={18} />} title="5. Item & Kegunaannya">
