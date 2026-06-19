@@ -18,8 +18,8 @@ BITES = {
 CHARS = {
     "baja": {
         "name": "Si Lidah Baja",
-        "pointMod": -18,
-        "heatMod": 10,
+        "pointMod": -3,
+        "heatMod": 0,
         "surviveBust": 1,
         "maxMult": 2.0,
         "safeBonus": 0,
@@ -27,7 +27,7 @@ CHARS = {
     },
     "rakus": {
         "name": "Si Rakus",
-        "pointMod": 2,
+        "pointMod": 3,
         "heatMod": 5,
         "surviveBust": 0,
         "maxMult": 2.0,
@@ -49,12 +49,12 @@ CHARS = {
         "heatMod": 0,
         "surviveBust": 0,
         "maxMult": 1.5,
-        "safeBonus": 14,
+        "safeBonus": 10,
         "safeBelow": 45
     },
     "perisai": {
         "name": "Si Perisai",
-        "pointMod": 0,
+        "pointMod": -2,
         "heatMod": 0,
         "surviveBust": 0,
         "maxMult": 2.0,
@@ -230,15 +230,15 @@ def generate_report():
         
         # Penjelasan Modifikator Karakter
         if char_id == "baja":
-            report_content.append("* **Modifikator:** Poin tiap suap $-18$, Pedas $+10$, **Memiliki 1 Nyawa Tambahan per Ronde**.")
+            report_content.append("* **Modifikator:** Poin tiap suap $-3$, **Memiliki 1 Nyawa Tambahan per Ronde**.")
         elif char_id == "rakus":
-            report_content.append("* **Modifikator:** Poin tiap suap $+2$, Pedas $+5$.")
+            report_content.append("* **Modifikator:** Poin tiap suap $+3$, Pedas $+5$.")
         elif char_id == "kompor":
             report_content.append("* **Modifikator:** Multiplier maksimal dibatasi $\\times 1.5$.")
         elif char_id == "hemat":
-            report_content.append("* **Modifikator:** Multiplier maksimal dibatasi $\\times 1.5$, mendapat **Bonus $+14$ poin** jika menyajikan di bawah pedas 45.")
+            report_content.append("* **Modifikator:** Multiplier maksimal dibatasi $\\times 1.5$, mendapat **Bonus $+10$ poin** jika menyajikan di bawah pedas 45.")
         elif char_id == "perisai":
-            report_content.append("* **Modifikator:** Tidak memiliki penalti poin (Poin $+0$).")
+            report_content.append("* **Modifikator:** Poin tiap suap $-2$.")
         elif char_id == "pendingin":
             report_content.append("* **Modifikator:** Pedas naik $+2$ tiap suap, mulai dengan susu ekstra.")
         else:

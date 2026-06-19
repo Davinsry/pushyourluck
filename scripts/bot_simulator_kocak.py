@@ -48,17 +48,17 @@ CHARS = {
         "name": "Si Lidah Baja",
         "tag": "Tahan banting",
         "up": "Sekali per ronde, selamat dari 1 kepedesan.",
-        "down": "Poin tiap suap -18 & pedas naik lebih cepat (+10).",
+        "down": "Poin tiap suap -3.",
         "surviveBust": 1,
-        "pointMod": -18,
-        "heatMod": 10
+        "pointMod": -3,
+        "heatMod": 0
     },
     "rakus": {
         "name": "Si Rakus",
         "tag": "High-roller",
-        "up": "Poin tiap suap +2.",
+        "up": "Poin tiap suap +3.",
         "down": "Pedas naik lebih cepat (+5).",
-        "pointMod": 2,
+        "pointMod": 3,
         "heatMod": 5
     },
     "kompor": {
@@ -72,9 +72,9 @@ CHARS = {
     "hemat": {
         "name": "Si Hemat",
         "tag": "Grinder",
-        "up": "Sajikan saat pedas < 45 -> bonus +14.",
+        "up": "Sajikan saat pedas < 45 -> bonus +10.",
         "down": "Multiplier mentok x1.5.",
-        "safeBonus": 14,
+        "safeBonus": 10,
         "safeBelow": 45,
         "maxMult": 1.5
     },
@@ -82,9 +82,9 @@ CHARS = {
         "name": "Si Perisai",
         "tag": "Tahan serangan",
         "up": "Mulai dengan 2 tameng.",
-        "down": "Tidak memiliki penalti poin.",
+        "down": "Poin tiap suap -2.",
         "tameng": 2,
-        "pointMod": 0
+        "pointMod": -2
     },
     "pendingin": {
         "name": "Si Pendingin",

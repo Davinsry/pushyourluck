@@ -103,12 +103,12 @@ Terdapat 6 pilihan karakter unik yang memberikan kelebihan (*upside*) dan kekura
 
 | Karakter | Nama Karakter | Kelebihan (Upside) | Kekurangan (Downside) |
 | :---: | :--- | :--- | :--- |
-| 🛡️ | **Si Perisai** | Mulai dengan 2 Tameng (standar 1). | Poin tiap suap berkurang -1. |
+| 🛡️ | **Si Perisai** | Mulai dengan 2 Tameng (standar 1). | Poin tiap suap berkurang -2. |
 | ❄️ | **Si Pendingin** | Mulai dengan 2 Susu (standar 1). | Kepedesan bertambah ekstra +2 tiap suap. |
-| 🔩 | **Si Lidah Baja** | Sekali per ronde, otomatis selamat dari *bust* pertama. | Penalti poin tiap suap -15 & kepedesan naik ekstra +6 tiap suap. |
-| 😋 | **Si Rakus** | Poin tiap suap mendapat tambahan +3. | Kepedesan bertambah ekstra +4 tiap suap. |
+| 🔩 | **Si Lidah Baja** | Sekali per ronde, otomatis selamat dari *bust* pertama. | Penalti poin tiap suap -3. |
+| 😋 | **Si Rakus** | Poin tiap suap mendapat tambahan +3. | Kepedesan bertambah ekstra +5 tiap suap. |
 | 🔥 | **Si Tukang Kompor** | Mulai dengan 3 token Sabotase (standar 1). | Pengali Level Berani mentok di ×1.5. |
-| 💰 | **Si Hemat** | Menyajikan saat pedas < 45 memberikan bonus +8 poin. | Pengali Level Berani mentok di ×1.5. |
+| 💰 | **Si Hemat** | Menyajikan saat pedas < 45 memberikan bonus +10 poin. | Pengali Level Berani mentok di ×1.5. |
 
 ---
 
