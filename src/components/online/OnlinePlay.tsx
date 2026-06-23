@@ -175,6 +175,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 onSuap={(bite) => send({ type: "SUAP", bite })}
                 onMinumSusu={() => send({ type: "MINUM_SUSU" })}
                 onSajikan={() => send({ type: "SAJIKAN" })}
+                shieldUsed={state.shieldUsed}
               />
             )}
 

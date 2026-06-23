@@ -241,9 +241,25 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
             <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
             <p className="m-0 text-xl font-extrabold text-chili-dark">{me.name}</p>
             {charDef && (
-              <p className="m-0 text-[13px] font-bold" style={{ color: color(charDef.colorKey) }}>
-                {charDef.name}
-              </p>
+              <div className="flex flex-col gap-1 mt-0.5">
+                <p className="m-0 text-[13px] font-bold" style={{ color: color(charDef.colorKey) }}>
+                  {charDef.name}
+                </p>
+                {ch === "baja" && (
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span 
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold shadow-sm ${
+                        state.shieldUsed 
+                          ? "bg-stone-200 text-stone-500 line-through" 
+                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      }`}
+                    >
+                      <Shield size={10} className={state.shieldUsed ? "text-stone-400" : "text-emerald-600"} />
+                      {state.shieldUsed ? "Kebal: Terpakai" : "Kebal: Aktif"}
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div className="text-right text-[11px] font-semibold text-muted">

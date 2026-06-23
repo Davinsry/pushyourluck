@@ -1,4 +1,4 @@
-import { Hand, Milk, Sparkles } from "lucide-react";
+import { Hand, Milk, Sparkles, Shield } from "lucide-react";
 import { BITES, CHARS, FINAL_MULT } from "../config/balance";
 import type { BiteId, Player } from "../game";
 import { multiplier } from "../game";
@@ -17,6 +17,7 @@ interface Props {
   onSajikan: () => void;
   readOnly?: boolean; // online: you're watching someone else's turn
   busy?: boolean; // an eat/drink animation is playing — lock the controls
+  shieldUsed?: boolean; // Lidah Baja's passive shield used this round
 }
 
 export function ActivePhase({
@@ -30,6 +31,7 @@ export function ActivePhase({
   onSajikan,
   readOnly = false,
   busy = false,
+  shieldUsed = false,
 }: Props) {
   const ch = player.char;
   const charDef = ch ? CHARS[ch] : null;
@@ -42,9 +44,25 @@ export function ActivePhase({
           <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
           <p className="m-0 text-2xl font-extrabold text-chili-dark">{player.name}</p>
           {charDef && (
-            <p className="m-0 mt-0.5 text-[13px] font-bold" style={{ color: color(charDef.colorKey) }}>
-              {charDef.name}
-            </p>
+            <div className="flex flex-col gap-1 mt-0.5">
+              <p className="m-0 text-[13px] font-bold" style={{ color: color(charDef.colorKey) }}>
+                {charDef.name}
+              </p>
+              {ch === "baja" && (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span 
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold shadow-sm ${
+                      shieldUsed 
+                        ? "bg-stone-200 text-stone-500 line-through" 
+                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    }`}
+                  >
+                    <Shield size={10} className={shieldUsed ? "text-stone-400" : "text-emerald-600"} />
+                    {shieldUsed ? "Kebal: Terpakai" : "Kebal: Aktif"}
+                  </span>
+                </div>
+              )}
+            </div>
           )}
         </div>
         <KitBadges player={player} />
