@@ -59,8 +59,8 @@ describe("scoreBank", () => {
 
 describe("biteGain", () => {
   it("respects the point range and character mod, min 1", () => {
-    // rng 0 → min roll; rakus adds +3
-    expect(biteGain("ijo", "rakus", seq([0]))).toBe(4 + CHARS.rakus.pointMod);
+    // rng 0 → min roll; rakus adds +1 for ijo
+    expect(biteGain("ijo", "rakus", seq([0]))).toBe(4 + CHARS.rakus.pointModPerChili.ijo);
     // baja never goes below 1
     expect(biteGain("ijo", "baja", seq([0]))).toBe(Math.max(1, 4 + CHARS.baja.pointModPerChili.ijo));
   });

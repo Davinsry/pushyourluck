@@ -26,7 +26,15 @@ export function multiplier(heat: number, char: CharacterId | null): number {
 
 /** Extra heat a bite adds for this character. */
 export function biteHeat(bite: BiteId, char: CharacterId | null): number {
-  const heatMod = char ? (CHARS[char] as { heatMod?: number }).heatMod ?? 0 : 0;
+  let heatMod = 0;
+  if (char) {
+    const charDef = CHARS[char] as any;
+    if (charDef.heatModPerChili && bite in charDef.heatModPerChili) {
+      heatMod = charDef.heatModPerChili[bite];
+    } else {
+      heatMod = charDef.heatMod ?? 0;
+    }
+  }
   return BITES[bite].heat + heatMod;
 }
 
