@@ -123,14 +123,8 @@ export function ActivePhase({
               {b.name}
               <span className="mt-0.5 block text-[11px] font-semibold opacity-95">
                 +{finalMin}–{finalMax} poin
-                {pointMod !== 0 && (
-                  <span className="text-[10px] font-medium opacity-80"> ({pointMod > 0 ? `+${pointMod}` : pointMod})</span>
-                )}
                 <br />
                 pedas +{finalHeat}
-                {heatMod !== 0 && (
-                  <span className="text-[10px] font-medium opacity-80"> (+{heatMod})</span>
-                )}
               </span>
             </button>
           );

@@ -328,13 +328,7 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
                 <span>{b.name}</span>
                 <span className="text-[11px] font-semibold opacity-95">
                   +{finalMin}–{finalMax}
-                  {pointMod !== 0 && (
-                    <span className="text-[10px] font-medium opacity-85"> ({pointMod > 0 ? `+${pointMod}` : pointMod})</span>
-                  )}
                   {" · "}🌶{finalHeat}
-                  {heatMod !== 0 && (
-                    <span className="text-[10px] font-medium opacity-85"> (+{heatMod})</span>
-                  )}
                 </span>
               </button>
             );
