@@ -28,7 +28,13 @@ const CUES: Record<Cue, { freq: number; dur: number; type: OscillatorType; slide
 };
 
 export function useSound() {
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(() => {
+    try {
+      return localStorage.getItem("tp_muted") === "true";
+    } catch {
+      return false;
+    }
+  });
   const ctxRef = useRef<AudioContext | null>(null);
 
   const play = useCallback(
@@ -60,6 +66,16 @@ export function useSound() {
     [muted]
   );
 
-  const toggleMute = useCallback(() => setMuted((m) => !m), []);
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      const next = !m;
+      try {
+        localStorage.setItem("tp_muted", String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
   return { play, muted, toggleMute };
 }
