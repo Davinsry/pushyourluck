@@ -95,7 +95,15 @@ export function ActivePhase({
               pointMod = anyCharDef.pointMod ?? 0;
             }
           }
-          const heatMod = charDef && "heatMod" in charDef ? (charDef.heatMod as number) : 0;
+          let heatMod = 0;
+          if (charDef) {
+            const anyCharDef = charDef as any;
+            if (anyCharDef.heatModPerChili && key in anyCharDef.heatModPerChili) {
+              heatMod = anyCharDef.heatModPerChili[key];
+            } else {
+              heatMod = anyCharDef.heatMod ?? 0;
+            }
+          }
 
           const baseMin = b.points[0];
           const baseMax = b.points[1];
