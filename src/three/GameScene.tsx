@@ -35,10 +35,11 @@ interface Props {
   onPick: (bite: BiteId) => void;
   anim?: ActionAnim | null;
   busy?: boolean;
+  paused?: boolean;
 }
 
 /** The 3D stage. Reads game state only — it never mutates it. */
-export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Props) {
+export function GameScene({ state, activeIndex, onPick, anim, busy = false, paused = false }: Props) {
   const n = state.players.length;
   const busted = state.phase === "result" && state.outcome?.busted === true;
   const canEat = state.phase === "active" && !busy;
@@ -86,7 +87,7 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false }: Pr
 
           return (
             <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, seatFacing(i, n), 0]}>
-              {state.screen !== "shop" && (
+              {state.screen !== "shop" && !paused && (
                 <Html
                   position={[0, 0.85, 0]}
                   center

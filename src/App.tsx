@@ -687,6 +687,7 @@ export default function App() {
                 }}
                 anim={anim}
                 busy={busy}
+                paused={paused}
               />
             </Suspense>
           </div>
@@ -863,7 +864,7 @@ export default function App() {
               </div>
             }
           >
-            <GameScene state={state} activeIndex={activeIndex} onPick={suap} anim={anim} busy={busy} />
+            <GameScene state={state} activeIndex={activeIndex} onPick={suap} anim={anim} busy={busy} paused={paused} />
           </Suspense>
         </div>
 
