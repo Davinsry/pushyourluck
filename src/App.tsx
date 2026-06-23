@@ -770,6 +770,10 @@ export default function App() {
                 play("sabotage");
                 room.sendAction({ type: "ADD_SABO", player });
               }}
+              onTogglePassiveShield={() => {
+                play("click");
+                room.sendAction({ type: "TOGGLE_PASSIVE_SHIELD" });
+              }}
               onConfirm={() => {
                 play("click");
                 room.sendAction({ type: "CONFIRM_PRETURN" });
@@ -913,6 +917,10 @@ export default function App() {
             onAddSabo={(player) => {
               play("sabotage");
               dispatch({ type: "ADD_SABO", player });
+            }}
+            onTogglePassiveShield={() => {
+              play("click");
+              dispatch({ type: "TOGGLE_PASSIVE_SHIELD" });
             }}
             onConfirm={() => {
               play("click");

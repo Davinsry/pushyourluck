@@ -66,6 +66,7 @@ export function initialState(rng: Rng): GameState {
     heat: 0,
     roundPts: 0,
     shieldUsed: false,
+    passiveShieldActivated: false,
     feedback: "",
     outcome: null,
     pendingHeat: 0,
@@ -83,6 +84,7 @@ function freshTurn(s: GameState): GameState {
     heat: 0,
     roundPts: 0,
     shieldUsed: false,
+    passiveShieldActivated: false,
     feedback: "",
     outcome: null,
     pendingHeat: 0,
@@ -109,11 +111,15 @@ function advanceTurn(s: GameState): GameState {
 /** Move from preturn into the eating phase with a starting heat. */
 function startActive(s: GameState, startHeat: number): GameState {
   const pIdx = activeIndex(s);
+  const me = s.players[pIdx];
+  const usePassive = me.char === "baja" && s.passiveShieldActivated && me.passiveShields > 0;
+
   const players = s.players.map((p, i) => {
     if (i === pIdx) {
       const oldStats = p.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
       return {
         ...p,
+        passiveShields: usePassive ? p.passiveShields - 1 : p.passiveShields,
         stats: {
           ...oldStats,
           maxHeat: Math.max(oldStats.maxHeat, startHeat),
@@ -122,12 +128,15 @@ function startActive(s: GameState, startHeat: number): GameState {
     }
     return p;
   });
+
   return {
     ...s,
     players,
     phase: "active",
     blockAsk: false,
     heat: startHeat,
+    shieldUsed: !usePassive,
+    passiveShieldActivated: false,
     feedback: startHeat > 0 ? `Mulai dengan pedas +${startHeat} dari sambal lawan!` : "",
   };
 }
@@ -242,6 +251,15 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     case "TOGGLE_BET": {
       const cur = state.bets[action.player];
       return { ...state, bets: { ...state.bets, [action.player]: cur === action.bet ? undefined : action.bet } };
+    }
+    case "TOGGLE_PASSIVE_SHIELD": {
+      const pIdx = activeIndex(state);
+      const me = state.players[pIdx];
+      if (me.char !== "baja" || me.passiveShields <= 0) return state;
+      return {
+        ...state,
+        passiveShieldActivated: !state.passiveShieldActivated,
+      };
     }
     case "ADD_SABO": {
       const p = state.players[action.player];

@@ -58,7 +58,9 @@ export function ActivePhase({
                     }`}
                   >
                     <Shield size={10} className={shieldUsed ? "text-stone-400" : "text-emerald-600"} />
-                    {shieldUsed ? "Kebal: Terpakai" : "Kebal: Aktif"}
+                    {shieldUsed 
+                      ? `Kebal: Tidak Aktif (Sisa: ${player.passiveShields})` 
+                      : `Kebal: Aktif (Sisa: ${player.passiveShields})`}
                   </span>
                 </div>
               )}

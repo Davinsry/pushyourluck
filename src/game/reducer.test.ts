@@ -188,3 +188,68 @@ describe("turn timeout behavior (SKIP_TURN)", () => {
     expect(s.players[0].score).toBe(expectedScore);
   });
 });
+
+describe("Lidah Baja passive shield", () => {
+  const startedBajaGame = (): GameState =>
+    run(initialState(seq([0, 0])), [
+      { type: "SET_COUNT", count: 2 },
+      { type: "START_DRAFT" },
+      { type: "CHOOSE_CHAR", char: "baja" },
+      { type: "CHOOSE_CHAR", char: "rakus" },
+    ], seq([0, 0]));
+
+  it("initializes passiveShields to 2 and passiveShieldActivated to false", () => {
+    const s = startedBajaGame();
+    expect(s.players[0].passiveShields).toBe(2);
+    expect(s.passiveShieldActivated).toBe(false);
+  });
+
+  it("toggles passiveShieldActivated action", () => {
+    let s = startedBajaGame();
+    s = gameReducer(s, { type: "TOGGLE_PASSIVE_SHIELD" });
+    expect(s.passiveShieldActivated).toBe(true);
+    s = gameReducer(s, { type: "TOGGLE_PASSIVE_SHIELD" });
+    expect(s.passiveShieldActivated).toBe(false);
+  });
+
+  it("consumes passive shield charge on turn start if activated", () => {
+    let s = startedBajaGame();
+    s = gameReducer(s, { type: "TOGGLE_PASSIVE_SHIELD" });
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" });
+    expect(s.players[0].passiveShields).toBe(1);
+    expect(s.shieldUsed).toBe(false); // active/available survival
+    expect(s.passiveShieldActivated).toBe(false); // resets
+  });
+
+  it("does not consume passive shield charge on turn start if not activated", () => {
+    let s = startedBajaGame();
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" });
+    expect(s.players[0].passiveShields).toBe(2);
+    expect(s.shieldUsed).toBe(true); // unavailable survival
+  });
+
+  it("survives bust automatically if shield is active", () => {
+    let s = startedBajaGame();
+    s = gameReducer(s, { type: "TOGGLE_PASSIVE_SHIELD" });
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" });
+    // Eat a carolina, forcing high heat.
+    // Use BUST_ROLL to force a bust.
+    s = gameReducer(s, { type: "SUAP", bite: "carolina" }, BUST_ROLL);
+    expect(s.phase).toBe("active"); // did not bust!
+    expect(s.shieldUsed).toBe(true); // shield is spent
+    expect(s.feedback).toBe("Perut baja nahan! Selamat sekali.");
+
+    // Next suap carolina with BUST_ROLL will bust since shieldUsed is true
+    s = gameReducer(s, { type: "SUAP", bite: "carolina" }, BUST_ROLL);
+    expect(s.phase).toBe("result"); // busted now!
+    expect(s.outcome?.busted).toBe(true);
+  });
+
+  it("does not survive bust if shield is not active", () => {
+    let s = startedBajaGame();
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" });
+    s = gameReducer(s, { type: "SUAP", bite: "carolina" }, BUST_ROLL);
+    expect(s.phase).toBe("result"); // busted immediately!
+    expect(s.outcome?.busted).toBe(true);
+  });
+});

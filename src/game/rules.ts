@@ -122,6 +122,7 @@ export function makePlayer(index: number, name?: string, isBot = false): Player 
     tameng: STARTING_KIT.tameng,
     susu: STARTING_KIT.susu,
     isBot,
+    passiveShields: 2,
     stats: {
       ijoCount: 0,
       rawitCount: 0,

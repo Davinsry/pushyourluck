@@ -40,8 +40,8 @@ describe("bot decisions", () => {
     screen: "play",
     mode: "solo",
     players: [
-      { name: "Kamu", score: 0, char: "rakus", sabotage: 1, tameng: 1, susu: 1, isBot: false },
-      { name: "Bot 1", score: 0, char: "rakus", sabotage: 1, tameng: 1, susu: 1, isBot: true },
+      { name: "Kamu", score: 0, char: "rakus", sabotage: 1, tameng: 1, susu: 1, isBot: false, passiveShields: 2 },
+      { name: "Bot 1", score: 0, char: "rakus", sabotage: 1, tameng: 1, susu: 1, isBot: true, passiveShields: 2 },
     ],
     phase: "active",
     ...over,

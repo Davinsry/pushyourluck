@@ -32,18 +32,9 @@ export function WaitingRoom({ room }: Props) {
             <label className="mb-1 block text-[11px] font-bold text-muted uppercase tracking-wider">
               Jumlah Ronde
             </label>
-            <select
-              value={room.roomSettings.cycles}
-              onChange={(e) => room.updateSettings(Number(e.target.value), room.roomSettings.turnTimerLimit)}
-              disabled={!room.isHost}
-              className="w-full rounded-xl border-[1.5px] border-line bg-cream-2 px-3 py-2 text-[14px] font-bold text-ink outline-none disabled:opacity-80 disabled:cursor-not-allowed"
-            >
-              {[1, 2, 3, 4, 5].map((val) => (
-                <option key={val} value={val}>
-                  {val} Ronde
-                </option>
-              ))}
-            </select>
+            <div className="w-full rounded-xl border-[1.5px] border-line bg-cream-2 px-3 py-2 text-[14px] font-bold text-ink opacity-80">
+              4 Ronde
+            </div>
           </div>
 
           <div>

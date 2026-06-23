@@ -109,7 +109,7 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
                   >
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: body }} />
                     {p.name}
-                    {p.char === "baja" && (
+                    {p.char === "baja" && p.passiveShields > 0 && (
                       <span 
                         className="ml-1 text-[11px]"
                         style={{ opacity: (isActive && state.shieldUsed) ? 0.35 : 1 }}

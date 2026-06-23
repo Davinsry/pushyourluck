@@ -36,6 +36,7 @@ export interface Player {
   tameng: number; // remaining shields
   susu: number; // remaining milk
   isBot: boolean; // controlled by the AI (solo mode)
+  passiveShields: number; // Lidah Baja's passive shield charges left
   stats?: {
     ijoCount: number;
     rawitCount: number;
@@ -88,6 +89,7 @@ export interface GameState {
   heat: number;
   roundPts: number;
   shieldUsed: boolean; // Lidah Baja's free-survival used this ronde
+  passiveShieldActivated: boolean; // Is passive shield activated for this turn?
   feedback: string;
   outcome: Outcome | null;
 
@@ -102,6 +104,7 @@ export type Action =
   | { type: "GO_MENU" }
   | { type: "OPEN_SETTINGS" }
   | { type: "OPEN_TUTORIAL" }
+  | { type: "OPEN_HISTORY" }
   | { type: "SET_CYCLES"; cycles: number }
   | { type: "START_MODE"; mode: Mode }
   | { type: "SET_COUNT"; count: number }
@@ -111,18 +114,18 @@ export type Action =
   | { type: "TOGGLE_BET"; player: number; bet: Bet }
   | { type: "ADD_SABO"; player: number }
   | { type: "CONFIRM_PRETURN" }
-  | { type: "USE_TAMENG"; count: number } // block sabotage with a shield
-  | { type: "ACCEPT_HEAT" } // take the sabotage heat as-is
+  | { type: "USE_TAMENG"; count: number }
+  | { type: "ACCEPT_HEAT" }
   | { type: "SUAP"; bite: BiteId }
   | { type: "MINUM_SUSU" }
   | { type: "SAJIKAN" }
-  | { type: "SKIP_TURN" } // ran out of time → forfeit the round, next player
   | { type: "NEXT" }
+  | { type: "SKIP_TURN" }
+  | { type: "RESET" }
+  | { type: "RESTART" }
   | { type: "BUY"; player: number; item: ShopItem }
   | { type: "CLOSE_SHOP" }
-  | { type: "RESTART" } // replay with the same names/mode/settings
-  | { type: "OPEN_HISTORY" }
-  | { type: "RESET" };
+  | { type: "TOGGLE_PASSIVE_SHIELD" };
 
 /** Random source — injectable so the reducer stays deterministic in tests. */
 export type Rng = () => number;

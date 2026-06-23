@@ -49,7 +49,7 @@ export const CHARS = {
     name: "Si Lidah Baja",
     tag: "Tahan banting",
     colorKey: "steel",
-    up: "Sekali di setiap ronde, selamat dari 1 kepedesan.",
+    up: "Punya 2 tameng kebal kepedasan per game, diaktifkan sebelum makan.",
     down: "Poin dikurangi sesuai cabai (Carolina −3, Rawit −2, Ijo −1).",
     surviveBust: 1,
     pointModPerChili: { ijo: -1, rawit: -2, carolina: -3 } as const,

@@ -20,6 +20,7 @@ interface Props {
   onMinumSusu: () => void;
   onSajikan: () => void;
   onNext: () => void;
+  onTogglePassiveShield?: () => void;
   busy?: boolean; // an eat/drink animation is playing — lock the controls
 }
 
@@ -43,7 +44,7 @@ export function Hud3D(props: Props) {
 
 type SubProps = Props & { me: GameState["players"][number] };
 
-function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onUseTameng, onAcceptHeat }: SubProps) {
+function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onUseTameng, onAcceptHeat, onTogglePassiveShield }: SubProps) {
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
   const maxShields = Math.min(me.tameng, Math.ceil(state.pendingHeat / TAMENG_BLOCK));
   const [shieldCount, setShieldCount] = useState(maxShields);
@@ -62,6 +63,18 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
         <p className="m-0 mb-3 text-sm font-semibold text-ink">
           Kena sambal <span className="font-bold text-chili">+{state.pendingHeat} pedas ({sambalIncoming} sambal)</span>.
         </p>
+
+        {me.char === "baja" && me.passiveShields > 0 && (
+          <label className="mb-3 flex items-center gap-2 cursor-pointer select-none rounded-xl border border-line bg-cream-2/40 px-3 py-2 text-[13px] font-bold text-ink">
+            <input
+              type="checkbox"
+              checked={state.passiveShieldActivated}
+              onChange={onTogglePassiveShield}
+              className="h-4 w-4 accent-chili"
+            />
+            <span>Aktifkan Tameng Kebal (Sisa: {me.passiveShields})</span>
+          </label>
+        )}
 
         {maxShields > 0 ? (
           <>
@@ -145,8 +158,28 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
     <>
       {/* left: who's up + instructions */}
       <div className={`absolute bottom-4 left-4 w-[min(42vw,300px)] ${panel}`}>
-        <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
-        <p className="m-0 mb-2 text-2xl font-extrabold text-chili-dark">{me.name}</p>
+        <p className="m-0 text-[13px] font-semibold text-muted font-bold uppercase tracking-wider">
+          Mulai Giliran
+        </p>
+        <p className="m-0 text-2xl font-extrabold text-chili-dark">{me.name}</p>
+        {me.char && (
+          <p className="m-0 text-[13px] font-bold mb-2" style={{ color: color(CHARS[me.char].colorKey) }}>
+            {CHARS[me.char].name}
+          </p>
+        )}
+
+        {me.char === "baja" && me.passiveShields > 0 && (
+          <label className="mb-3 flex items-center gap-2 cursor-pointer select-none rounded-xl border border-line bg-cream-2/40 px-3 py-2 text-[13px] font-bold text-ink">
+            <input
+              type="checkbox"
+              checked={state.passiveShieldActivated}
+              onChange={onTogglePassiveShield}
+              className="h-4 w-4 accent-chili"
+            />
+            <span>Aktifkan Tameng Kebal (Sisa: {me.passiveShields})</span>
+          </label>
+        )}
+
         <p className="m-0 text-[13px] text-ink">
           {hasHumanSpectators
             ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh tambah sambal.`
@@ -255,7 +288,9 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
                       }`}
                     >
                       <Shield size={10} className={state.shieldUsed ? "text-stone-400" : "text-emerald-600"} />
-                      {state.shieldUsed ? "Kebal: Terpakai" : "Kebal: Aktif"}
+                      {state.shieldUsed 
+                        ? `Kebal: Tidak Aktif (Sisa: ${me.passiveShields})` 
+                        : `Kebal: Aktif (Sisa: ${me.passiveShields})`}
                     </span>
                   </div>
                 )}

@@ -12,8 +12,6 @@ interface Props {
   onSetUsername: (username: string) => void;
 }
 
-const CYCLE_OPTIONS = [2, 3, 4, 5, 6];
-
 export function SettingsScreen({
   cycles,
   muted,
@@ -23,6 +21,9 @@ export function SettingsScreen({
   username,
   onSetUsername,
 }: Props) {
+  void cycles;
+  void onSetCycles;
+
   const [name, setName] = useState(username);
 
   const handleNameChange = (val: string) => {
@@ -64,21 +65,7 @@ export function SettingsScreen({
         </button>
       </div>
 
-      <p className="m-0 mb-2 text-[15px] font-semibold text-ink">Ronde per pemain</p>
-      <p className="m-0 mb-3 text-[13px] text-muted">Berapa kali tiap pemain dapat giliran.</p>
-      <div className="mb-6 flex gap-2">
-        {CYCLE_OPTIONS.map((c) => (
-          <button
-            key={c}
-            className={`tp-btn flex-1 rounded-xl py-3 text-lg font-extrabold ${
-              cycles === c ? "bg-chili text-white" : "bg-cream-2 text-muted"
-            }`}
-            onClick={() => onSetCycles(c)}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+
 
       <p className="m-0 mb-2 text-[15px] font-semibold text-ink">Suara</p>
       <button

@@ -72,9 +72,9 @@ export function useRoom() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [seatIds, setSeatIds] = useState<string[]>([]);
   const [started, setStarted] = useState(false);
-  const [roomSettings, setRoomSettings] = useState({ cycles: 3, turnTimerLimit: 30 });
+  const [roomSettings, setRoomSettings] = useState({ cycles: 4, turnTimerLimit: 30 });
   const [activeEmotes, setActiveEmotes] = useState<Record<number, string>>({});
-  const roomSettingsRef = useRef({ cycles: 3, turnTimerLimit: 30 });
+  const roomSettingsRef = useRef({ cycles: 4, turnTimerLimit: 30 });
 
   const myId = useRef(generateUUID()).current;
   const myName = useRef("Pemain");
@@ -311,8 +311,8 @@ export function useRoom() {
     setSeatIds([]);
     setStarted(false);
     setError(null);
-    roomSettingsRef.current = { cycles: 3, turnTimerLimit: 30 };
-    setRoomSettings({ cycles: 3, turnTimerLimit: 30 });
+    roomSettingsRef.current = { cycles: 4, turnTimerLimit: 30 };
+    setRoomSettings({ cycles: 4, turnTimerLimit: 30 });
   }, [deleteRoom]);
 
   // Tidy up on unmount.
