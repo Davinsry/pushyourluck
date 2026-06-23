@@ -69,3 +69,7 @@ body {
 .animate-shake {
   animation: dynamic-shake 0.08s infinite;
 }
+
+.game-paused .chili-player-badge {
+  display: none !important;
+}

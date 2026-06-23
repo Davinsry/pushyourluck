@@ -87,7 +87,7 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
 
           return (
             <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, seatFacing(i, n), 0]}>
-              {state.screen !== "shop" && !paused && (
+              {state.screen !== "shop" && (
                 <Html
                   position={[0, 0.85, 0]}
                   center
@@ -96,13 +96,15 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
                     pointerEvents: "none",
                     whiteSpace: "nowrap",
                     userSelect: "none",
+                    display: paused ? "none" : "block",
                   }}
                 >
                   <div
-                    className="px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-lg border border-line/10 flex items-center gap-1.5"
+                    className="chili-player-badge px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-lg border border-line/10 flex items-center gap-1.5"
                     style={{
                       backgroundColor: "rgba(30, 19, 13, 0.85)",
                       color: "var(--c-cream)",
+                      display: paused ? "none" : "flex",
                     }}
                   >
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: body }} />

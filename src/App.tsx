@@ -655,7 +655,7 @@ export default function App() {
       const isHumanActiveTurn = activePlayerObj && !activePlayerObj.isBot && room.youSeat === activeIdx;
 
       return (
-        <div className="fixed inset-0 z-40 bg-bg text-cream">
+        <div className={`fixed inset-0 z-40 bg-bg text-cream ${paused ? "game-paused" : ""}`}>
           {/* Red Vignette Overlay for Heat/Spiciness */}
           <div 
             className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
@@ -842,7 +842,7 @@ export default function App() {
   // ── 3D: full-screen "game" layout with the controls overlaid on top ──
   if (state.screen === "play" || state.screen === "shop") {
     return (
-      <div className="fixed inset-0 z-40 bg-bg text-cream">
+      <div className={`fixed inset-0 z-40 bg-bg text-cream ${paused ? "game-paused" : ""}`}>
         {/* Red Vignette Overlay for Heat/Spiciness */}
         <div 
           className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
