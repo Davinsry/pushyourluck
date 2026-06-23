@@ -26,7 +26,7 @@ export function PauseOverlay({ onResume, onRestart, onMenu }: Props) {
             className="tp-btn flex items-center justify-center gap-2 rounded-xl bg-steel py-3 text-[15px] font-extrabold text-white"
             onClick={onRestart}
           >
-            <RotateCcw size={17} /> Restart (nama tetap)
+            <RotateCcw size={17} /> Restart
           </button>
           <button
             className="tp-btn flex items-center justify-center gap-2 rounded-xl bg-cream-2 py-3 text-[15px] font-extrabold text-ink"
