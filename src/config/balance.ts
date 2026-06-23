@@ -25,7 +25,7 @@ export const BUST = { offset: 0, cap: 100 } as const;
 export const MULT = { t15: 50, t2: 80 } as const;
 
 /** Bonus for Si Hemat when banking below the safe heat threshold. */
-export const HEMAT = { bonus: 10, below: 45 } as const;
+export const HEMAT = { bonus: 14, below: 45 } as const;
 
 // ── Chilis (bites) ──────────────────────────────────────────
 // points: [min, max] inclusive roll. heat: heat added per bite.
