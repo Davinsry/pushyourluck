@@ -67,7 +67,7 @@ export const CHARS = {
     name: "Si Tukang Kompor",
     tag: "Pengganggu",
     colorKey: "flame",
-    up: "Dapat 3 jatah tambah sambal (lawan 1).",
+    up: "Mulai dengan 3 jatah tambah sambal (karakter lain hanya 1).",
     down: "Pengali skor mentok ×1.5.",
     sabotage: 3,
     maxMult: 1.5,
