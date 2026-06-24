@@ -52,11 +52,15 @@ function shapePlayers(count: number, mode: Mode, existing: Player[] = []): Playe
   return out;
 }
 
-function rollChili(rng: Rng): BiteId {
-  const r = rng();
-  if (r < 0.5) return "ijo";
-  if (r < 0.8) return "rawit";
-  return "carolina";
+function shuffleBowls(rng: Rng): BiteId[] {
+  const arr: BiteId[] = ["ijo", "rawit", "carolina"];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    const temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+  return arr;
 }
 
 export function initialState(rng: Rng): GameState {
@@ -143,17 +147,7 @@ function startActive(s: GameState, rng: Rng): GameState {
   });
 
   // Roll secret bowls
-  const secretBowls: BiteId[] = [];
-  for (let i = 0; i < 3; i++) {
-    const r = rng();
-    if (r < 0.5) {
-      secretBowls.push("ijo");
-    } else if (r < 0.8) {
-      secretBowls.push("rawit");
-    } else {
-      secretBowls.push("carolina");
-    }
-  }
+  const secretBowls = shuffleBowls(rng);
 
   // Apply traps
   let trapsLeft = s.pendingTraps;
@@ -367,10 +361,9 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
           maxHeat: Math.max(oldStats.maxHeat, newHeat),
         };
 
-        // Re-roll a new chili for this bowl index
-        const nextChili = rollChili(rng);
-        const nextSecretBowls = state.secretBowls.map((c, idx) => idx === bowlIdx ? nextChili : c);
-        const nextRevealedBowls = state.revealedBowls.map((rev, idx) => idx === bowlIdx ? false : rev);
+        // Shuffle the bowls completely and reset peeks
+        const nextSecretBowls = shuffleBowls(rng);
+        const nextRevealedBowls = [false, false, false];
 
         if (rollBust(newHeat, rng)) {
           if (!state.shieldUsed && surviveBusts(ch) > 0) {
