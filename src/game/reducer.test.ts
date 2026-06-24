@@ -40,12 +40,16 @@ describe("sabotage and peeking", () => {
     expect(s.pendingTraps).toBe(1);
     expect(s.players[1].sabotage).toBe(0);
 
-    // Roll 3 ijos (r = 0.1), then trap at index 0 (pickIdx = 0)
+    // Shuffle bowls and apply trap:
+    // With shuffle, sequence:
+    // i=2: j = floor(0.1*3) = 0 -> swap ijo & carolina -> ["carolina", "rawit", "ijo"]
+    // i=1: j = floor(0.1*2) = 0 -> swap carolina & rawit -> ["rawit", "carolina", "ijo"]
+    // Trap at pickIdx = floor(0.1 * 2) = 0 -> targetIndex = 0 (rawit) -> replaces with carolina -> ["carolina", "carolina", "ijo"]
     const seqRng = seq([0.1, 0.1, 0.1, 0.0]);
     s = gameReducer(s, { type: "CONFIRM_PRETURN" }, seqRng);
     expect(s.phase).toBe("active");
     expect(s.secretBowls[0]).toBe("carolina");
-    expect(s.secretBowls[1]).toBe("ijo");
+    expect(s.secretBowls[1]).toBe("carolina");
     expect(s.secretBowls[2]).toBe("ijo");
   });
 
