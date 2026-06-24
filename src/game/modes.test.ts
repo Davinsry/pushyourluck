@@ -90,7 +90,7 @@ describe("online authority (actionAllowed + startStateFor)", () => {
     expect(actionAllowed(s, 1, { type: "TOGGLE_BET", player: 1, bet: "aman" })).toBe(true);
     expect(actionAllowed(s, 1, { type: "TOGGLE_BET", player: 0, bet: "aman" })).toBe(false);
     expect(actionAllowed(s, 0, { type: "TOGGLE_BET", player: 0, bet: "aman" })).toBe(false); // active can't bet
-    expect(actionAllowed(s, 1, { type: "SUAP", bite: "ijo" })).toBe(false); // only active eats
-    expect(actionAllowed(s, 0, { type: "SUAP", bite: "ijo" })).toBe(true);
+    expect(actionAllowed(s, 1, { type: "SUAP", bowlIdx: 0 })).toBe(false); // only active eats
+    expect(actionAllowed(s, 0, { type: "SUAP", bowlIdx: 0 })).toBe(true);
   });
 });

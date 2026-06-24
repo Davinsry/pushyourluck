@@ -98,6 +98,11 @@ export interface GameState {
   usedSabo: number[]; // spectator indices who already sabotaged
   bets: BetMap;
   blockAsk: boolean; // showing the "use your tameng?" prompt
+
+  // Opsi A: Mangkok Misteri (Blind Draw)
+  secretBowls: BiteId[]; // secret chilis in the 3 bowls
+  revealedBowls: boolean[]; // whether each bowl has been peeked/revealed
+  pendingTraps: number; // pending traps (Carolinas) queued onto the active player
 }
 
 export type Action =
@@ -116,7 +121,8 @@ export type Action =
   | { type: "CONFIRM_PRETURN" }
   | { type: "USE_TAMENG"; count: number }
   | { type: "ACCEPT_HEAT" }
-  | { type: "SUAP"; bite: BiteId }
+  | { type: "SUAP"; bowlIdx: number }
+  | { type: "INTIP_BOWL"; bowlIdx: number }
   | { type: "MINUM_SUSU" }
   | { type: "SAJIKAN" }
   | { type: "NEXT" }

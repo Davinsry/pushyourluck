@@ -610,7 +610,25 @@ export default function App() {
     }, ACTION_ANIM_MS);
   };
 
-  const suap = (bite: BiteId) => animateThen("bite", bite, () => dispatch({ type: "SUAP", bite }));
+  const suap = (bowlIdx: number) => {
+    const secretBowls = online ? room.gameState?.secretBowls : state.secretBowls;
+    const bite = secretBowls ? secretBowls[bowlIdx] : undefined;
+    animateThen("bite", bite, () => {
+      if (online) {
+        room.sendAction({ type: "SUAP", bowlIdx });
+      } else {
+        dispatch({ type: "SUAP", bowlIdx });
+      }
+    });
+  };
+  const intipBowl = (bowlIdx: number) => {
+    play("click");
+    if (online) {
+      room.sendAction({ type: "INTIP_BOWL", bowlIdx });
+    } else {
+      dispatch({ type: "INTIP_BOWL", bowlIdx });
+    }
+  };
   const minum = () => animateThen("milk", undefined, () => dispatch({ type: "MINUM_SUSU" }));
 
   useEffect(() => () => { if (busyTimer.current) clearTimeout(busyTimer.current); }, []);
@@ -680,9 +698,10 @@ export default function App() {
               <GameScene
                 state={room.gameState}
                 activeIndex={activeIdx}
-                onPick={(bite) => {
+                onPick={(bowlIdx) => {
                   if (isHumanActiveTurn) {
-                    animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
+                    const bite = room.gameState?.secretBowls[bowlIdx];
+                    animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bowlIdx }));
                   }
                 }}
                 anim={anim}
@@ -786,11 +805,8 @@ export default function App() {
                 play("click");
                 room.sendAction({ type: "ACCEPT_HEAT" });
               }}
-              onSuap={(bite) => {
-                if (isHumanActiveTurn) {
-                  animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bite }));
-                }
-              }}
+              onSuap={suap}
+              onIntipBowl={intipBowl}
               onMinumSusu={() => {
                 if (isHumanActiveTurn) {
                   animateThen("milk", undefined, () => room.sendAction({ type: "MINUM_SUSU" }));
@@ -935,6 +951,7 @@ export default function App() {
               dispatch({ type: "ACCEPT_HEAT" });
             }}
             onSuap={suap}
+            onIntipBowl={intipBowl}
             onMinumSusu={minum}
             onSajikan={() => dispatch({ type: "SAJIKAN" })}
             busy={busy}

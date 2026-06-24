@@ -153,14 +153,11 @@ export function OnlinePlay({ room, onExit }: Props) {
                 activeIndex={ai}
                 bets={state.bets}
                 usedSabo={state.usedSabo}
-                pendingHeat={state.pendingHeat}
-                blockAsk={state.blockAsk}
+                pendingTraps={state.pendingTraps}
                 viewerSeat={youSeat}
                 onToggleBet={(player, bet) => send({ type: "TOGGLE_BET", player, bet })}
                 onAddSabo={(player) => send({ type: "ADD_SABO", player })}
                 onConfirm={() => send({ type: "CONFIRM_PRETURN" })}
-                onUseTameng={(count) => send({ type: "USE_TAMENG", count })}
-                onAcceptHeat={() => send({ type: "ACCEPT_HEAT" })}
                 passiveShieldActivated={state.passiveShieldActivated}
                 onTogglePassiveShield={() => send({ type: "TOGGLE_PASSIVE_SHIELD" })}
               />
@@ -174,7 +171,10 @@ export function OnlinePlay({ room, onExit }: Props) {
                 feedback={state.feedback}
                 isFinal={isFinalRonde(state)}
                 readOnly={youSeat !== ai}
-                onSuap={(bite) => send({ type: "SUAP", bite })}
+                secretBowls={state.secretBowls}
+                revealedBowls={state.revealedBowls}
+                onSuap={(bowlIdx) => send({ type: "SUAP", bowlIdx })}
+                onIntipBowl={(bowlIdx) => send({ type: "INTIP_BOWL", bowlIdx })}
                 onMinumSusu={() => send({ type: "MINUM_SUSU" })}
                 onSajikan={() => send({ type: "SAJIKAN" })}
                 shieldUsed={state.shieldUsed}

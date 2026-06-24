@@ -32,7 +32,7 @@ export interface ActionAnim {
 interface Props {
   state: GameState;
   activeIndex: number;
-  onPick: (bite: BiteId) => void;
+  onPick: (bowlIdx: number) => void;
   anim?: ActionAnim | null;
   busy?: boolean;
   paused?: boolean;
@@ -62,7 +62,14 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
 
       <Suspense fallback={null}>
         <Room />
-        <Table activeIndex={activeIndex} playerCount={n} canEat={canEat} onPick={onPick} />
+        <Table
+          activeIndex={activeIndex}
+          playerCount={n}
+          canEat={canEat}
+          onPick={onPick}
+          secretBowls={state.secretBowls}
+          revealedBowls={state.revealedBowls}
+        />
 
         {/* milk bottle for the active player — full until they drink it */}
         {(() => {

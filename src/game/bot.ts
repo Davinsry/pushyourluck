@@ -3,8 +3,8 @@
 //  return the Action a bot would take. Driven on a timer in App so
 //  the moves are watchable. All thresholds live in balance BOT{}.
 // ─────────────────────────────────────────────────────────────
-import { BOT, SABOTAGE_HEAT, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO } from "../config/balance";
-import type { Action, BiteId, GameState, Rng } from "./types";
+import { BOT, BLOCK_BET_AND_SABO } from "../config/balance";
+import type { Action, GameState, Rng } from "./types";
 import { bustChance, multiplier } from "./rules";
 import { activeIndex, isFinalRonde } from "./reducer";
 
@@ -49,14 +49,11 @@ export function botActiveDecision(state: GameState): Action {
   const wantsHigherMult = mult < 1.5 && heat >= 35 && heat < 50 && pts >= 8;
 
   // ── Drink susu strategically ──
-  // Drink when heat is high enough to be dangerous but we still want to keep eating
   if (heat >= BOT.drinkAtHeat && me.susu > 0 && pts >= 6) {
-    // Don't waste susu if we're about to bank anyway
     if (chance < bankThreshold + 15) {
       return { type: "MINUM_SUSU" };
     }
   }
-  // Emergency drink: about to bust and have points worth saving
   if (chance >= 60 && me.susu > 0 && pts >= 10) {
     return { type: "MINUM_SUSU" };
   }
@@ -66,65 +63,51 @@ export function botActiveDecision(state: GameState): Action {
     return { type: "SAJIKAN" };
   }
 
-  // ── Chili selection (smarter risk-reward) ──
-  // Consider expected value: points vs heat added
-  let bite: BiteId = "ijo";
-
-  if (heat < 15) {
-    // Very safe: go big
-    bite = "carolina";
-  } else if (heat < 30) {
-    // Moderate: mix it up based on situation
-    if (scoreDiff > 10 || final) bite = "carolina"; // behind or final: aggressive
-    else bite = "rawit";
-  } else if (heat < 50) {
-    // Getting warm: be more careful
-    if (scoreDiff > 15) bite = "rawit"; // still behind: medium risk
-    else bite = chance < 25 ? "rawit" : "ijo";
-  } else {
-    // Hot: play safe unless desperate
-    if (scoreDiff > 25 && chance < 55) bite = "rawit";
-    else bite = "ijo";
-  }
-
-  // Character-specific overrides
-  if (ch === "baja" && !state.shieldUsed && chance >= 30) {
-    // Lidah Baja has a free survive — be bolder
-    bite = heat < 40 ? "carolina" : "rawit";
-  }
-  if (ch === "hemat" && heat < 35) {
-    // Si Hemat wants to bank below 40 heat for bonus — eat safe chilis
-    bite = "ijo";
-  }
-  if (ch === "rakus") {
-    // Si Rakus gets +3 per bite, so even ijo is decent. Push a bit more.
-    if (heat < 35) bite = heat < 20 ? "carolina" : "rawit";
-  }
-
-  return { type: "SUAP", bite };
-}
-
-/** When sabotaged, a bot blocks with a shield based on how much heat is incoming. */
-export function botBlockDecision(state: GameState): Action {
-  const idx = activeIndex(state);
-  const me = state.players[idx];
-  const incoming = Math.ceil(state.pendingHeat / SABOTAGE_HEAT);
-  const maxShields = Math.min(me.tameng, incoming);
-
-  // We want to find the minimum count of shields to make starting bust chance <= 30%
-  const targetChance = 30;
-  let bestCount = maxShields;
-
-  for (let count = 0; count <= maxShields; count++) {
-    const remainingHeat = Math.max(0, state.pendingHeat - count * TAMENG_BLOCK);
-    const finalHeat = state.heat + remainingHeat;
-    if (bustChance(finalHeat) <= targetChance) {
-      bestCount = count;
-      break;
+  // Gather bowl info
+  const revealedIndices: number[] = [];
+  const unrevealedIndices: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    if (state.revealedBowls[i]) {
+      revealedIndices.push(i);
+    } else {
+      unrevealedIndices.push(i);
     }
   }
 
-  return { type: "USE_TAMENG", count: bestCount };
+  // ── Decide whether to peek (INTIP_BOWL) ──
+  // If we have shields, and there are unrevealed bowls, and heat is starting to get hot, peek!
+  if (me.tameng > 0 && unrevealedIndices.length > 0 && heat >= 15) {
+    return { type: "INTIP_BOWL", bowlIdx: unrevealedIndices[0] };
+  }
+
+  // ── Choose which bowl to eat (SUAP) ──
+  // 1. If we have a revealed non-carolina bowl, eat it!
+  const revealedSafe = revealedIndices.find(idx => state.secretBowls[idx] === "ijo");
+  if (revealedSafe !== undefined) {
+    return { type: "SUAP", bowlIdx: revealedSafe };
+  }
+  const revealedMedium = revealedIndices.find(idx => state.secretBowls[idx] === "rawit");
+  if (revealedMedium !== undefined) {
+    return { type: "SUAP", bowlIdx: revealedMedium };
+  }
+
+  // 2. If we have unrevealed bowls, eat one of them (since we don't know what it is)
+  if (unrevealedIndices.length > 0) {
+    return { type: "SUAP", bowlIdx: unrevealedIndices[0] };
+  }
+
+  // 3. Fallback: if all bowls are revealed and they are all Carolina, just eat the first one (or we bust, but we have no choice if we don't bank)
+  if (revealedIndices.length > 0) {
+    return { type: "SUAP", bowlIdx: revealedIndices[0] };
+  }
+
+  return { type: "SUAP", bowlIdx: 0 };
+}
+
+/** Legacy block decision, returns fallback CONFIRM_PRETURN. */
+export function botBlockDecision(state: GameState): Action {
+  void state;
+  return { type: "CONFIRM_PRETURN" };
 }
 
 /**
@@ -139,13 +122,11 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
   state.players.forEach((p, k) => {
     if (k === active || !p.isBot) return;
 
-    // ── Smarter betting: consider the active player's character ──
+    // ── Smarter betting ──
     if (!state.bets[k]) {
       let bustBias: number = BOT.betBustBias;
-      // Characters that tend to bust more (rakus, kompor) → bet bust more
       if (activePlayer.char === "rakus") bustBias += 0.15;
       if (activePlayer.char === "kompor") bustBias += 0.1;
-      // Safe characters → lean toward "aman"
       if (activePlayer.char === "baja") bustBias -= 0.15;
       if (activePlayer.char === "hemat") bustBias -= 0.1;
       if (activePlayer.char === "pendingin") bustBias -= 0.1;
@@ -153,38 +134,34 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
       actions.push({ type: "TOGGLE_BET", player: k, bet: rng() < bustBias ? "bust" : "aman" });
     }
 
-    // ── Sabotage: more aggressive when the active player is a threat ──
-    let tempPendingHeat = state.pendingHeat;
+    // ── Sabotage Traps ──
+    let tempPendingTraps = state.pendingTraps;
     let tokens = p.sabotage;
     while (tokens > 0) {
-      if (SABOTAGE_MAX_PER_TARGET > 0 && tempPendingHeat >= SABOTAGE_MAX_PER_TARGET) {
+      if (tempPendingTraps >= 3) {
         break;
       }
 
-      // Check current bet (including the one we just queued)
+      // Check current bet
       const myBetAction = actions.find((a) => a.type === "TOGGLE_BET" && a.player === k) as { bet: string } | undefined;
       const myBet = myBetAction ? myBetAction.bet : state.bets[k];
 
-      // If we bet "bust" and block is enabled, we cannot sabotage.
       if (BLOCK_BET_AND_SABO && myBet === "bust") {
         break;
       }
-      // If we bet "aman", we shouldn't sabotage our own bet.
       if (myBet === "aman") {
         break;
       }
 
       let saboChance: number = BOT.sabotageChance;
-      // Sabotage more if active player is leading
       if (activePlayer.score > p.score + 10) saboChance += 0.2;
-      // Save sabotage if it's early and not threatened
       if (activePlayer.score < p.score - 10) saboChance -= 0.15;
       saboChance = Math.max(0.1, Math.min(0.9, saboChance));
 
       if (rng() < saboChance) {
         actions.push({ type: "ADD_SABO", player: k });
         tokens--;
-        tempPendingHeat += SABOTAGE_HEAT;
+        tempPendingTraps += 1;
       } else {
         break;
       }

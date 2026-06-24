@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { CheckCheck, Coins, Flame, FlameKindling, Hand, Milk, Shield, Sparkles } from "lucide-react";
-import { BET_STAKE, BITES, CHARS, FINAL_MULT, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO, SABOTAGE_HEAT } from "../config/balance";
+import { Coins, Flame, Hand, Milk, Shield, Sparkles, Eye } from "lucide-react";
+import { BET_STAKE, BITES, CHARS, FINAL_MULT, BLOCK_BET_AND_SABO } from "../config/balance";
 import type { Bet, BiteId, GameState } from "../game";
 import { multiplier } from "../game";
 import { color } from "../ui/theme";
@@ -16,7 +16,8 @@ interface Props {
   onConfirm: () => void;
   onUseTameng: (count: number) => void;
   onAcceptHeat: () => void;
-  onSuap: (bite: BiteId) => void;
+  onSuap: (bowlIdx: number) => void;
+  onIntipBowl?: (bowlIdx: number) => void;
   onMinumSusu: () => void;
   onSajikan: () => void;
   onNext: () => void;
@@ -24,14 +25,8 @@ interface Props {
   busy?: boolean; // an eat/drink animation is playing — lock the controls
 }
 
-// Side panel shell — cream card, anchored to a screen edge so the centre stays
-// clear and the 3D character/table remain visible.
 const panel = "pointer-events-auto rounded-2xl bg-card p-4 text-ink shadow-2xl";
 
-/**
- * Heads-up display for the full-screen 3D mode. Instead of one big centre card,
- * controls live in left/right side panels so they never cover the eater.
- */
 export function Hud3D(props: Props) {
   const { state, activeIndex } = props;
   const me = state.players[activeIndex];
@@ -44,16 +39,9 @@ export function Hud3D(props: Props) {
 
 type SubProps = Props & { me: GameState["players"][number] };
 
-function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onUseTameng, onAcceptHeat, onTogglePassiveShield }: SubProps) {
+function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onTogglePassiveShield }: SubProps) {
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
-  const maxShields = Math.min(me.tameng, Math.ceil(state.pendingHeat / TAMENG_BLOCK));
-  const [shieldCount, setShieldCount] = useState(maxShields);
   const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
-
-  // Sync shieldCount when maxShields changes (e.g. spectator queues more heat)
-  useEffect(() => {
-    setShieldCount(maxShields);
-  }, [maxShields]);
 
   // Toggle body class when modal open to prevent 3D floating badges from bleeding through
   useEffect(() => {
@@ -66,94 +54,6 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
       document.body.classList.remove("modal-open");
     };
   }, [showPassiveShieldModal]);
-
-  if (state.blockAsk) {
-    const sambalIncoming = Math.ceil(state.pendingHeat / SABOTAGE_HEAT);
-    return (
-      <div className={`absolute bottom-4 right-4 w-[min(46vw,340px)] ${panel}`}>
-        <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
-        <p className="m-0 mb-2 text-xl font-extrabold text-chili-dark">{me.name}</p>
-        <p className="m-0 mb-3 text-sm font-semibold text-ink">
-          Kena sambal <span className="font-bold text-chili">+{state.pendingHeat} pedas ({sambalIncoming} sambal)</span>.
-        </p>
-
-        {maxShields > 0 ? (
-          <>
-            <div className="mb-3 flex items-center justify-between rounded-xl bg-cream-2/55 p-2">
-              <span className="text-xs font-bold text-ink flex items-center gap-1">
-                <Shield size={14} className="text-steel" /> Gunakan Tameng:
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="tp-btn flex h-7 w-7 items-center justify-center rounded-lg bg-cream-2 text-base font-bold disabled:opacity-40 text-ink"
-                  disabled={shieldCount <= 0}
-                  onClick={() => setShieldCount((prev) => Math.max(0, prev - 1))}
-                >
-                  −
-                </button>
-                <span className="w-10 text-center text-sm font-black text-ink">
-                  {shieldCount} / {me.tameng}
-                </span>
-                <button
-                  type="button"
-                  className="tp-btn flex h-7 w-7 items-center justify-center rounded-lg bg-cream-2 text-base font-bold disabled:opacity-40 text-ink"
-                  disabled={shieldCount >= maxShields}
-                  onClick={() => setShieldCount((prev) => Math.min(maxShields, prev + 1))}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {maxShields > 1 && (
-              <div className="mb-3 flex gap-1.5">
-                <button
-                  type="button"
-                  className={`tp-btn flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
-                    shieldCount === 1 ? "bg-steel text-white" : "bg-cream-2 text-muted"
-                  }`}
-                  onClick={() => setShieldCount(1)}
-                >
-                  Tangkis 1
-                </button>
-                <button
-                  type="button"
-                  className={`tp-btn flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
-                    shieldCount === maxShields ? "bg-steel text-white" : "bg-cream-2 text-muted"
-                  }`}
-                  onClick={() => setShieldCount(maxShields)}
-                >
-                  Tangkis Semua ({maxShields})
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="my-2 mb-3 text-xs text-muted font-medium">
-            Kamu tidak memiliki tameng.
-          </p>
-        )}
-
-        <div className="flex gap-2">
-          <button
-            className="tp-btn flex-1 rounded-xl bg-steel py-3 text-sm font-extrabold text-white disabled:opacity-50"
-            onClick={() => onUseTameng(shieldCount)}
-            disabled={maxShields <= 0 || shieldCount <= 0}
-          >
-            <Shield size={16} className="mr-1.5 inline-block align-[-3px]" />
-            Tangkis −{shieldCount * TAMENG_BLOCK}
-          </button>
-          <button
-            className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-sm font-extrabold text-ink"
-            onClick={onAcceptHeat}
-          >
-            Terima aja
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -169,11 +69,16 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
           </p>
         )}
 
-        <p className="m-0 text-[13px] text-ink">
+        <p className="m-0 text-[13px] text-ink font-medium leading-relaxed">
           {hasHumanSpectators
-            ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh tambah sambal.`
-            : "Lawan-lawan bot diam-diam pasang taruhan & sambal..."}
-          {state.pendingHeat > 0 && <span className="font-bold text-chili"> Sambal: +{state.pendingHeat} pedas.</span>}
+            ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh memasang jebakan Carolina.`
+            : "Lawan-lawan bot diam-diam pasang taruhan & jebakan..."}
+          {state.pendingTraps > 0 && (
+            <span className="font-bold text-chili">
+              {" "}
+              Jebakan Carolina: {state.pendingTraps} mangkok.
+            </span>
+          )}
         </p>
         <button
           className="tp-btn mt-3 w-full rounded-xl bg-flame py-3 text-[15px] font-extrabold text-white"
@@ -189,7 +94,7 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
         </button>
       </div>
 
-      {/* right: spectator bets + sabotage (humans only — bots bet on their own) */}
+      {/* right: spectator bets + sabotage */}
       {state.players.some((p, k) => k !== activeIndex && !p.isBot) && (
       <div className={`absolute bottom-4 right-4 max-h-[70vh] w-[min(46vw,320px)] overflow-y-auto ${panel}`}>
         <p className="m-0 mb-2 text-[13px] font-bold text-muted">Penonton</p>
@@ -198,7 +103,7 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
             if (k === activeIndex || p.isBot) return null;
             const hasBetBust = state.bets[k] === "bust";
             const saboBlockedByBet = BLOCK_BET_AND_SABO && hasBetBust;
-            const capReached = SABOTAGE_MAX_PER_TARGET > 0 && state.pendingHeat >= SABOTAGE_MAX_PER_TARGET;
+            const capReached = state.pendingTraps >= 3;
             const canSabo = p.sabotage > 0 && !saboBlockedByBet && !capReached;
             return (
               <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-2.5 py-2">
@@ -230,14 +135,14 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
                       disabled={!canSabo}
                       title={
                         saboBlockedByBet
-                          ? "Tidak bisa nyabotase jika bertaruh Kepedesan"
+                          ? "Tidak bisa menjebak jika bertaruh Kepedesan"
                           : capReached
-                          ? `Batas sabotase target sudah penuh (${SABOTAGE_MAX_PER_TARGET} pedas)`
+                          ? "Batas jebakan sudah maksimal (3 mangkok)"
                           : undefined
                       }
                     >
                       <Flame size={12} className="mr-1 inline-block align-[-2px]" />
-                      Sambal ({p.sabotage})
+                      Jebak Carolina ({p.sabotage})
                     </button>
                   ) : (
                     <span className="ml-auto text-[11px] text-muted font-bold py-1">
@@ -310,10 +215,41 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
   );
 }
 
-function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }: SubProps) {
+function ActiveHud({ state, me, isFinal, onSuap, onIntipBowl, onMinumSusu, onSajikan, busy }: SubProps) {
   const ch = me.char;
   const charDef = ch ? CHARS[ch] : null;
   const curMult = multiplier(state.heat, ch);
+  const [intipActive, setIntipActive] = useState(false);
+
+  const getChiliStats = (key: BiteId) => {
+    const b = BITES[key];
+    let pointMod = 0;
+    if (charDef) {
+      const anyCharDef = charDef as any;
+      if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
+        pointMod = anyCharDef.pointModPerChili[key];
+      } else {
+        pointMod = anyCharDef.pointMod ?? 0;
+      }
+    }
+    let heatMod = 0;
+    if (charDef) {
+      const anyCharDef = charDef as any;
+      if (anyCharDef.heatModPerChili && key in anyCharDef.heatModPerChili) {
+        heatMod = anyCharDef.heatModPerChili[key];
+      } else {
+        heatMod = anyCharDef.heatMod ?? 0;
+      }
+    }
+
+    const baseMin = b.points[0];
+    const baseMax = b.points[1];
+    const finalMin = Math.max(1, baseMin + pointMod);
+    const finalMax = Math.max(1, baseMax + pointMod);
+    const finalHeat = b.heat + heatMod;
+
+    return { name: b.name, min: finalMin, max: finalMax, heat: finalHeat, colorKey: b.colorKey };
+  };
 
   return (
     <>
@@ -321,7 +257,7 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
       <div className={`absolute bottom-4 left-4 w-[min(42vw,300px)] ${panel}`}>
         <div className="mb-2 flex items-start justify-between">
           <div>
-            <p className="m-0 text-[13px] font-semibold text-muted">Giliran</p>
+            <p className="m-0 text-[13px] font-semibold text-muted font-bold uppercase tracking-wider">Giliran</p>
             <p className="m-0 text-xl font-extrabold text-chili-dark">{me.name}</p>
             {charDef && (
               <div className="flex flex-col gap-1 mt-0.5">
@@ -382,59 +318,85 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
 
       {/* right: actions (bites + susu + sajikan) */}
       <div className={`absolute bottom-4 right-4 w-[min(42vw,260px)] ${panel}`}>
-        <div className="mb-2">
-          <p className="m-0 text-xs font-semibold text-muted">Pilih suapan:</p>
-          {charDef && (
-            <p className="m-0 mt-0.5 text-[11px] font-bold leading-tight" style={{ color: color(charDef.colorKey) }}>
-              ✨ {charDef.name}: {charDef.up} <span className="opacity-80">({charDef.down})</span>
-            </p>
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <p className="m-0 text-xs font-semibold text-muted">Pilih mangkok:</p>
+            {charDef && (
+              <p className="m-0 mt-0.5 text-[10px] font-bold leading-tight" style={{ color: color(charDef.colorKey) }}>
+                {charDef.name}
+              </p>
+            )}
+          </div>
+          {me.tameng > 0 && (
+            <button
+              type="button"
+              className={`tp-btn flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold transition-all border ${
+                intipActive
+                  ? "bg-amber border-amber-400 text-ink scale-102"
+                  : "bg-cream-2 border-line/10 text-muted"
+              }`}
+              onClick={() => setIntipActive((prev) => !prev)}
+              disabled={busy}
+            >
+              <Shield size={10} />
+              Intip: {intipActive ? "YA" : "NO"}
+            </button>
           )}
         </div>
-        <div className="grid gap-2">
-          {(Object.entries(BITES) as [BiteId, (typeof BITES)[BiteId]][]).map(([key, b]) => {
-            let pointMod = 0;
-            if (charDef) {
-              const anyCharDef = charDef as any;
-              if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
-                pointMod = anyCharDef.pointModPerChili[key];
-              } else {
-                pointMod = anyCharDef.pointMod ?? 0;
-              }
+
+        {/* Stack the 3 bowls vertically for the narrow panel */}
+        <div className="grid gap-1.5 mb-2">
+          {[0, 1, 2].map((idx) => {
+            const isRevealed = state.revealedBowls[idx];
+            const chiliType = state.secretBowls[idx];
+            
+            if (isRevealed && chiliType) {
+              const stats = getChiliStats(chiliType);
+              return (
+                <button
+                  key={idx}
+                  className="tp-btn flex items-center justify-between rounded-xl px-3 py-1.5 text-left text-xs font-extrabold text-white relative overflow-hidden"
+                  style={{ background: color(stats.colorKey) }}
+                  onClick={() => onSuap(idx)}
+                  disabled={busy}
+                >
+                  <span className="absolute top-1 right-1 opacity-70">
+                    <Eye size={10} />
+                  </span>
+                  <span>Mangkok {idx + 1}: {stats.name}</span>
+                  <span className="text-[9.5px] font-semibold opacity-90">
+                    +{stats.min}–{stats.max} · 🌶{stats.heat}
+                  </span>
+                </button>
+              );
+            } else {
+              return (
+                <button
+                  key={idx}
+                  className={`tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-extrabold border ${
+                    intipActive
+                      ? "bg-amber/15 border-amber-300 text-amber-900"
+                      : "bg-slate-700 border-slate-600 text-slate-100"
+                  }`}
+                  onClick={() => {
+                    if (intipActive) {
+                      if (onIntipBowl) onIntipBowl(idx);
+                    } else {
+                      onSuap(idx);
+                    }
+                  }}
+                  disabled={busy}
+                >
+                  <span>Mangkok {idx + 1}: Tutup</span>
+                  <span className="text-[9.5px] font-bold opacity-80">
+                    {intipActive ? "Intip🛡️" : "?"}
+                  </span>
+                </button>
+              );
             }
-            let heatMod = 0;
-            if (charDef) {
-              const anyCharDef = charDef as any;
-              if (anyCharDef.heatModPerChili && key in anyCharDef.heatModPerChili) {
-                heatMod = anyCharDef.heatModPerChili[key];
-              } else {
-                heatMod = anyCharDef.heatMod ?? 0;
-              }
-            }
-
-            const baseMin = b.points[0];
-            const baseMax = b.points[1];
-            const finalMin = Math.max(1, baseMin + pointMod);
-            const finalMax = Math.max(1, baseMax + pointMod);
-
-            const finalHeat = b.heat + heatMod;
-
-            return (
-              <button
-                key={key}
-                className="tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-extrabold text-white"
-                style={{ background: color(b.colorKey) }}
-                onClick={() => onSuap(key)}
-                disabled={busy}
-              >
-                <span>{b.name}</span>
-                <span className="text-[11px] font-semibold opacity-95">
-                  +{finalMin}–{finalMax}
-                  {" · "}🌶{finalHeat}
-                </span>
-              </button>
-            );
           })}
         </div>
+
         <div className="mt-2 flex gap-2">
           <button
             className="tp-btn flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-steel py-2.5 text-[13px] font-extrabold text-white"
@@ -481,44 +443,51 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
   }, [onNext]);
 
   return (
-    <div className={`absolute bottom-4 right-4 w-[min(46vw,340px)] ${panel}`}>
-      <div className="text-center">
+    <>
+      <div className={`absolute bottom-4 left-4 w-[min(46vw,340px)] ${panel}`}>
+        <p className="m-0 text-[13px] font-semibold text-muted">Hasil Giliran</p>
+        <p className="m-0 mb-1.5 text-xl font-extrabold text-chili-dark">{me.name}</p>
+
         {busted ? (
-          <>
-            <FlameKindling size={38} className="mx-auto text-chili" />
-            <p className="my-1 text-2xl font-extrabold text-chili-dark">Kepedesan!</p>
-            <p className="m-0 text-[13px] text-muted">{me.name} kepedesan. Poin ronde hangus.</p>
-          </>
+          <p className="m-0 text-sm font-black text-chili">
+            💥 KEPEDESAN! Poin ronde ini hangus.
+          </p>
         ) : (
-          <>
-            <CheckCheck size={38} className="mx-auto text-leaf" />
-            <p className="my-1 text-2xl font-extrabold text-leaf">Aman!</p>
-            <p className="m-0 text-[13px] font-semibold text-ink">
-              {mult > 1 ? `${raw} × ${mult}` : `${raw}`}
-              {hematBonus ? ` + ${hematBonus}` : ""}
-              {final ? ` × ${FINAL_MULT}` : ""} = <span className="font-extrabold text-chili-dark">{gained} poin</span>
+          <div className="text-sm font-semibold text-ink">
+            <p className="m-0">
+              Menyajikan: <span className="font-bold text-leaf">+{gained} poin</span>
             </p>
-          </>
+            <p className="m-0 text-xs text-muted leading-relaxed mt-0.5">
+              Poin dasar {raw} × Pengali {mult}
+              {hematBonus > 0 && ` + Bonus Si Hemat ${hematBonus}`}
+              {final && " (Ronde Pamungkas ×2)"}
+            </p>
+          </div>
         )}
+
+        <button
+          className="tp-btn mt-3 w-full rounded-xl bg-steel py-2.5 text-sm font-extrabold text-white"
+          onClick={onNext}
+        >
+          {isLastTurn ? "Selesai" : `Lanjut (${secondsLeft}s)`}
+        </button>
       </div>
 
       {bets.length > 0 && (
-        <div className="mt-2 grid gap-0.5">
-          {bets.map((b, i) => (
-            <div key={i} className={`text-xs font-semibold ${b.correct ? "text-leaf-dark" : "text-chili-dark"}`}>
-              {b.name} tebak "{b.bet === "bust" ? "kepedesan" : "aman"}" →{" "}
-              {b.correct ? `benar +${BET_STAKE}` : `salah ${b.delta}`}
-            </div>
-          ))}
+        <div className={`absolute bottom-4 right-4 w-[min(46vw,300px)] ${panel}`}>
+          <p className="m-0 mb-2 text-[13px] font-bold text-muted">Hasil Taruhan</p>
+          <div className="grid gap-1.5">
+            {bets.map((b, i) => (
+              <div key={i} className="flex justify-between text-xs font-bold">
+                <span>{b.name}</span>
+                <span className={b.correct ? "text-leaf" : "text-chili"}>
+                  {b.correct ? `Tebak ${b.bet === "aman" ? "Aman" : "Kepedesan"} (+${b.delta})` : `Tebak ${b.bet === "aman" ? "Aman" : "Kepedesan"} (${b.delta})`}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
-
-      <button
-        className="tp-btn mt-3 w-full rounded-xl bg-flame py-3 text-[15px] font-extrabold text-white"
-        onClick={onNext}
-      >
-        {isLastTurn ? "Lihat hasil" : `Lanjut (${secondsLeft}s)`}
-      </button>
-    </div>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { useState, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { BITES } from "../config/balance";
 import type { BiteId } from "../game";
 import { color as token } from "../ui/theme";
 import { bowlPositions, TABLE_RADIUS, TABLE_TOP_Y } from "./seats";
@@ -17,12 +16,13 @@ interface Props {
   activeIndex: number;
   playerCount: number;
   canEat: boolean;
-  onPick: (bite: BiteId) => void;
+  onPick: (bowlIdx: number) => void;
+  secretBowls: BiteId[];
+  revealedBowls: boolean[];
 }
 
-export function Table({ activeIndex, playerCount, canEat, onPick }: Props) {
+export function Table({ activeIndex, playerCount, canEat, onPick, secretBowls, revealedBowls }: Props) {
   const bowls = bowlPositions(activeIndex, playerCount);
-  const bites = Object.keys(BITES) as BiteId[];
 
   return (
     <group>
@@ -43,9 +43,20 @@ export function Table({ activeIndex, playerCount, canEat, onPick }: Props) {
       </mesh>
 
       {/* the 3 chili bowls in front of the active player */}
-      {bites.map((id, i) => (
-        <Bowl key={id} position={bowls[i]} hex={BITE_HEX[id] ?? token(BITES[id].colorKey)} active={canEat} onClick={() => canEat && onPick(id)} />
-      ))}
+      {[0, 1, 2].map((idx) => {
+        const secretChili = secretBowls[idx] ?? "ijo";
+        const revealed = revealedBowls[idx] ?? false;
+        return (
+          <Bowl
+            key={idx}
+            position={bowls[idx]}
+            hex={BITE_HEX[secretChili] ?? token("leaf")}
+            active={canEat}
+            revealed={revealed}
+            onClick={() => canEat && onPick(idx)}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -77,14 +88,32 @@ function CartoonChili({ color }: { color: string }) {
   );
 }
 
+function BowlLid() {
+  return (
+    <group>
+      {/* Lid dome */}
+      <mesh position={[0, 0.04, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[0.33, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#eadfcb" roughness={0.5} metalness={0.1} />
+      </mesh>
+      {/* Handle sphere */}
+      <mesh position={[0, 0.38, 0]} castShadow>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshStandardMaterial color="#6b4226" roughness={0.3} />
+      </mesh>
+    </group>
+  );
+}
+
 interface BowlProps {
   position: { x: number; y: number; z: number };
   hex: string;
   active: boolean;
+  revealed: boolean;
   onClick: () => void;
 }
 
-function Bowl({ position, hex, active, onClick }: BowlProps) {
+function Bowl({ position, hex, active, revealed, onClick }: BowlProps) {
   const [hovered, setHovered] = useState(false);
   const ref = useRef<THREE.Group>(null);
 
@@ -142,29 +171,34 @@ function Bowl({ position, hex, active, onClick }: BowlProps) {
           color="#eadfcb"
           roughness={0.4}
           emissive={hex}
-          emissiveIntensity={hovered && active ? 0.55 : 0}
+          emissiveIntensity={hovered && active && revealed ? 0.55 : 0}
         />
       </mesh>
 
-      {/* Pile of 4 Cartoon Chilis */}
-      <group position={[0, 0.02, 0]}>
-        {/* Chili 1 */}
-        <group position={[-0.08, -0.06, 0.04]} rotation={[Math.PI / 2.3, 0.5, 0.1]}>
-          <CartoonChili color={hex} />
+      {/* Render lid if covered, otherwise chilis */}
+      {!revealed ? (
+        <BowlLid />
+      ) : (
+        /* Pile of 4 Cartoon Chilis */
+        <group position={[0, 0.02, 0]}>
+          {/* Chili 1 */}
+          <group position={[-0.08, -0.06, 0.04]} rotation={[Math.PI / 2.3, 0.5, 0.1]}>
+            <CartoonChili color={hex} />
+          </group>
+          {/* Chili 2 */}
+          <group position={[0.08, -0.06, -0.04]} rotation={[Math.PI / 2.1, -0.6, -1.0]}>
+            <CartoonChili color={hex} />
+          </group>
+          {/* Chili 3 */}
+          <group position={[-0.02, -0.05, -0.08]} rotation={[Math.PI / 2.4, 0.1, 1.4]}>
+            <CartoonChili color={hex} />
+          </group>
+          {/* Chili 4 */}
+          <group position={[0, 0.01, 0]} rotation={[Math.PI / 3.2, 1.1, 0.3]}>
+            <CartoonChili color={hex} />
+          </group>
         </group>
-        {/* Chili 2 */}
-        <group position={[0.08, -0.06, -0.04]} rotation={[Math.PI / 2.1, -0.6, -1.0]}>
-          <CartoonChili color={hex} />
-        </group>
-        {/* Chili 3 */}
-        <group position={[-0.02, -0.05, -0.08]} rotation={[Math.PI / 2.4, 0.1, 1.4]}>
-          <CartoonChili color={hex} />
-        </group>
-        {/* Chili 4 */}
-        <group position={[0, 0.01, 0]} rotation={[Math.PI / 3.2, 1.1, 0.3]}>
-          <CartoonChili color={hex} />
-        </group>
-      </group>
+      )}
     </group>
   );
 }
