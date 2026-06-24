@@ -55,6 +55,18 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
     setShieldCount(maxShields);
   }, [maxShields]);
 
+  // Toggle body class when modal open to prevent 3D floating badges from bleeding through
+  useEffect(() => {
+    if (showPassiveShieldModal) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [showPassiveShieldModal]);
+
   if (state.blockAsk) {
     const sambalIncoming = Math.ceil(state.pendingHeat / SABOTAGE_HEAT);
     return (

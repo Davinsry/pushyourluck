@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Coins, Flame, Shield } from "lucide-react";
 import { BET_STAKE, TAMENG_BLOCK, SABOTAGE_MAX_PER_TARGET, BLOCK_BET_AND_SABO, SABOTAGE_HEAT } from "../config/balance";
 import type { Bet, BetMap, Player } from "../game";
@@ -44,6 +44,18 @@ export function PreturnPhase({
   const maxShields = Math.min(me.tameng, Math.ceil(pendingHeat / TAMENG_BLOCK));
   const [shieldCount, setShieldCount] = useState(maxShields);
   const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
+
+  // Toggle body class when modal open to prevent 3D floating badges from bleeding through
+  useEffect(() => {
+    if (showPassiveShieldModal) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [showPassiveShieldModal]);
 
   // Sync shieldCount when maxShields changes (e.g. spectator queues more heat)
   const [prevMaxShields, setPrevMaxShields] = useState(maxShields);

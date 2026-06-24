@@ -70,6 +70,7 @@ body {
   animation: dynamic-shake 0.08s infinite;
 }
 
-.game-paused .chili-player-badge {
+.game-paused .chili-player-badge,
+.modal-open .chili-player-badge {
   display: none !important;
 }
