@@ -161,6 +161,8 @@ export function OnlinePlay({ room, onExit }: Props) {
                 onConfirm={() => send({ type: "CONFIRM_PRETURN" })}
                 onUseTameng={(count) => send({ type: "USE_TAMENG", count })}
                 onAcceptHeat={() => send({ type: "ACCEPT_HEAT" })}
+                passiveShieldActivated={state.passiveShieldActivated}
+                onTogglePassiveShield={() => send({ type: "TOGGLE_PASSIVE_SHIELD" })}
               />
             )}
 

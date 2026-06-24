@@ -237,7 +237,8 @@ describe("Lidah Baja passive shield", () => {
     s = gameReducer(s, { type: "SUAP", bite: "carolina" }, BUST_ROLL);
     expect(s.phase).toBe("active"); // did not bust!
     expect(s.shieldUsed).toBe(true); // shield is spent
-    expect(s.feedback).toBe("Perut baja nahan! Selamat sekali.");
+    expect(s.roundPts).toBeGreaterThan(0); // points still added!
+    expect(s.feedback).toContain("Perut baja nahan! Selamat sekali.");
 
     // Next suap carolina with BUST_ROLL will bust since shieldUsed is true
     s = gameReducer(s, { type: "SUAP", bite: "carolina" }, BUST_ROLL);

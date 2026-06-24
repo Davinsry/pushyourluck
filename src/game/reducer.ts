@@ -319,12 +319,14 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
 
         if (rollBust(newHeat, rng)) {
           if (!state.shieldUsed && surviveBusts(ch) > 0) {
+            const gain = biteGain(action.bite, ch, rng);
             return {
               ...state,
               players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
               heat: newHeat,
+              roundPts: state.roundPts + gain,
               shieldUsed: true,
-              feedback: "Perut baja nahan! Selamat sekali."
+              feedback: `Perut baja nahan! Selamat sekali. (+${gain} poin)`
             };
           }
           const bustStats = { ...newStats, busts: newStats.busts + 1 };

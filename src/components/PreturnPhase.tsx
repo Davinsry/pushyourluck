@@ -16,6 +16,8 @@ interface Props {
   onUseTameng: (count: number) => void;
   onAcceptHeat: () => void;
   viewerSeat?: number; // online: which seat is looking (gates controls)
+  passiveShieldActivated?: boolean;
+  onTogglePassiveShield?: () => void;
 }
 
 export function PreturnPhase({
@@ -31,6 +33,8 @@ export function PreturnPhase({
   onUseTameng,
   onAcceptHeat,
   viewerSeat,
+  passiveShieldActivated,
+  onTogglePassiveShield,
 }: Props) {
   const me = players[activeIndex];
   const hasHumanSpectators = players.some((p, k) => k !== activeIndex && !p.isBot);
@@ -39,6 +43,7 @@ export function PreturnPhase({
 
   const maxShields = Math.min(me.tameng, Math.ceil(pendingHeat / TAMENG_BLOCK));
   const [shieldCount, setShieldCount] = useState(maxShields);
+  const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
 
   // Sync shieldCount when maxShields changes (e.g. spectator queues more heat)
   const [prevMaxShields, setPrevMaxShields] = useState(maxShields);
@@ -216,7 +221,13 @@ export function PreturnPhase({
       {youAreActive ? (
         <button
           className="tp-btn w-full rounded-[14px] bg-flame py-3.5 text-[17px] font-extrabold text-white"
-          onClick={onConfirm}
+          onClick={() => {
+            if (me.char === "baja" && me.passiveShields > 0 && !me.isBot) {
+              setShowPassiveShieldModal(true);
+            } else {
+              onConfirm();
+            }
+          }}
         >
           Mulai giliran {me.name}
         </button>
@@ -224,6 +235,61 @@ export function PreturnPhase({
         <p className="m-0 rounded-xl bg-cream py-3 text-center text-[14px] font-semibold text-muted">
           Menunggu {me.name} mulai...
         </p>
+      )}
+
+      {/* Passive Shield Confirmation Modal */}
+      {showPassiveShieldModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-[340px] transform rounded-3xl bg-cream p-6 border-2 border-line/20 shadow-2xl text-ink relative flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <div className="text-center">
+              <h3 className="m-0 text-lg font-black text-chili-dark flex items-center justify-center gap-1.5">
+                <Shield size={20} className="text-steel" /> Gunakan Tameng Kebal?
+              </h3>
+              <p className="m-0 text-xs text-muted font-semibold mt-1">
+                Karakter: <span className="text-steel font-bold">Si Lidah Baja</span> (Sisa: {me.passiveShields})
+              </p>
+            </div>
+            
+            <p className="m-0 text-sm text-ink leading-relaxed text-center font-medium">
+              Apakah kamu ingin mengaktifkan <strong>1 Tameng Kebal</strong> untuk ronde ini?
+            </p>
+            
+            <div className="rounded-2xl bg-cream-2/70 border border-line/5 p-3 text-xs text-muted leading-normal">
+              <p className="m-0 mb-1 font-bold text-ink">💡 Cara Kerja:</p>
+              <ul className="m-0 pl-4 list-disc space-y-1">
+                <li>Melindungi otomatis dari <strong>kepedesan (Bust) pertama</strong> ronde ini.</li>
+                <li>Jika kamu selesai makan tanpa Bust, tameng <strong>tetap hangus</strong>.</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-2.5 mt-1">
+              <button
+                className="tp-btn flex-1 rounded-xl bg-flame py-3 text-sm font-extrabold text-white hover:scale-102 transition-transform"
+                onClick={() => {
+                  if (!passiveShieldActivated && onTogglePassiveShield) {
+                    onTogglePassiveShield();
+                  }
+                  setShowPassiveShieldModal(false);
+                  onConfirm();
+                }}
+              >
+                Ya, Aktifkan
+              </button>
+              <button
+                className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-sm font-extrabold text-ink hover:bg-cream-3 transition-colors"
+                onClick={() => {
+                  if (passiveShieldActivated && onTogglePassiveShield) {
+                    onTogglePassiveShield();
+                  }
+                  setShowPassiveShieldModal(false);
+                  onConfirm();
+                }}
+              >
+                Tidak
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

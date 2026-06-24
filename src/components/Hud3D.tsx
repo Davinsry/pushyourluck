@@ -48,6 +48,7 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
   const maxShields = Math.min(me.tameng, Math.ceil(state.pendingHeat / TAMENG_BLOCK));
   const [shieldCount, setShieldCount] = useState(maxShields);
+  const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
 
   // Sync shieldCount when maxShields changes (e.g. spectator queues more heat)
   useEffect(() => {
@@ -63,18 +64,6 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
         <p className="m-0 mb-3 text-sm font-semibold text-ink">
           Kena sambal <span className="font-bold text-chili">+{state.pendingHeat} pedas ({sambalIncoming} sambal)</span>.
         </p>
-
-        {me.char === "baja" && me.passiveShields > 0 && (
-          <label className="mb-3 flex items-center gap-2 cursor-pointer select-none rounded-xl border border-line bg-cream-2/40 px-3 py-2 text-[13px] font-bold text-ink">
-            <input
-              type="checkbox"
-              checked={state.passiveShieldActivated}
-              onChange={onTogglePassiveShield}
-              className="h-4 w-4 accent-chili"
-            />
-            <span>Aktifkan Tameng Kebal (Sisa: {me.passiveShields})</span>
-          </label>
-        )}
 
         {maxShields > 0 ? (
           <>
@@ -168,18 +157,6 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
           </p>
         )}
 
-        {me.char === "baja" && me.passiveShields > 0 && (
-          <label className="mb-3 flex items-center gap-2 cursor-pointer select-none rounded-xl border border-line bg-cream-2/40 px-3 py-2 text-[13px] font-bold text-ink">
-            <input
-              type="checkbox"
-              checked={state.passiveShieldActivated}
-              onChange={onTogglePassiveShield}
-              className="h-4 w-4 accent-chili"
-            />
-            <span>Aktifkan Tameng Kebal (Sisa: {me.passiveShields})</span>
-          </label>
-        )}
-
         <p className="m-0 text-[13px] text-ink">
           {hasHumanSpectators
             ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh tambah sambal.`
@@ -188,7 +165,13 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
         </p>
         <button
           className="tp-btn mt-3 w-full rounded-xl bg-flame py-3 text-[15px] font-extrabold text-white"
-          onClick={onConfirm}
+          onClick={() => {
+            if (me.char === "baja" && me.passiveShields > 0 && !me.isBot) {
+              setShowPassiveShieldModal(true);
+            } else {
+              onConfirm();
+            }
+          }}
         >
           Mulai giliran {me.name}
         </button>
@@ -255,6 +238,61 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
           })}
         </div>
       </div>
+      )}
+
+      {/* Passive Shield Confirmation Modal */}
+      {showPassiveShieldModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-[340px] transform rounded-3xl bg-cream p-6 border-2 border-line/20 shadow-2xl text-ink relative flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <div className="text-center">
+              <h3 className="m-0 text-lg font-black text-chili-dark flex items-center justify-center gap-1.5">
+                <Shield size={20} className="text-steel" /> Gunakan Tameng Kebal?
+              </h3>
+              <p className="m-0 text-xs text-muted font-semibold mt-1">
+                Karakter: <span className="text-steel font-bold">Si Lidah Baja</span> (Sisa: {me.passiveShields})
+              </p>
+            </div>
+            
+            <p className="m-0 text-sm text-ink leading-relaxed text-center font-medium">
+              Apakah kamu ingin mengaktifkan <strong>1 Tameng Kebal</strong> untuk ronde ini?
+            </p>
+            
+            <div className="rounded-2xl bg-cream-2/70 border border-line/5 p-3 text-xs text-muted leading-normal">
+              <p className="m-0 mb-1 font-bold text-ink">💡 Cara Kerja:</p>
+              <ul className="m-0 pl-4 list-disc space-y-1">
+                <li>Melindungi otomatis dari <strong>kepedesan (Bust) pertama</strong> ronde ini.</li>
+                <li>Jika kamu selesai makan tanpa Bust, tameng <strong>tetap hangus</strong>.</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-2.5 mt-1">
+              <button
+                className="tp-btn flex-1 rounded-xl bg-flame py-3 text-sm font-extrabold text-white hover:scale-102 transition-transform"
+                onClick={() => {
+                  if (!state.passiveShieldActivated && onTogglePassiveShield) {
+                    onTogglePassiveShield();
+                  }
+                  setShowPassiveShieldModal(false);
+                  onConfirm();
+                }}
+              >
+                Ya, Aktifkan
+              </button>
+              <button
+                className="tp-btn flex-1 rounded-xl bg-cream-2 py-3 text-sm font-extrabold text-ink hover:bg-cream-3 transition-colors"
+                onClick={() => {
+                  if (state.passiveShieldActivated && onTogglePassiveShield) {
+                    onTogglePassiveShield();
+                  }
+                  setShowPassiveShieldModal(false);
+                  onConfirm();
+                }}
+              >
+                Tidak
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
