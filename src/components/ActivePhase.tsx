@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Hand, Milk, Sparkles, Shield, Eye } from "lucide-react";
-import { BITES, CHARS, FINAL_MULT } from "../config/balance";
+import { Hand, Milk, Sparkles, Shield } from "lucide-react";
+import { CHARS, FINAL_MULT } from "../config/balance";
 import type { BiteId, Player } from "../game";
 import { multiplier } from "../game";
 import { color } from "../ui/theme";
@@ -14,11 +13,9 @@ interface Props {
   feedback: string;
   isFinal: boolean;
   onSuap: (bowlIdx: number) => void;
-  onIntipBowl?: (bowlIdx: number) => void;
   onMinumSusu: () => void;
   onSajikan: () => void;
   secretBowls: BiteId[];
-  revealedBowls: boolean[];
   readOnly?: boolean; // online: you're watching someone else's turn
   busy?: boolean; // an eat/drink animation is playing — lock the controls
   shieldUsed?: boolean; // Lidah Baja's passive shield used this round
@@ -31,11 +28,8 @@ export function ActivePhase({
   feedback,
   isFinal,
   onSuap,
-  onIntipBowl,
   onMinumSusu,
   onSajikan,
-  secretBowls,
-  revealedBowls,
   readOnly = false,
   busy = false,
   shieldUsed = false,
@@ -43,38 +37,6 @@ export function ActivePhase({
   const ch = player.char;
   const charDef = ch ? CHARS[ch] : null;
   const curMult = multiplier(heat, ch);
-  const [intipActive, setIntipActive] = useState(false);
-
-  // Helper to get modifiers for chilis (for display purposes on revealed chilis)
-  const getChiliStats = (key: BiteId) => {
-    const b = BITES[key];
-    let pointMod = 0;
-    if (charDef) {
-      const anyCharDef = charDef as any;
-      if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
-        pointMod = anyCharDef.pointModPerChili[key];
-      } else {
-        pointMod = anyCharDef.pointMod ?? 0;
-      }
-    }
-    let heatMod = 0;
-    if (charDef) {
-      const anyCharDef = charDef as any;
-      if (anyCharDef.heatModPerChili && key in anyCharDef.heatModPerChili) {
-        heatMod = anyCharDef.heatModPerChili[key];
-      } else {
-        heatMod = anyCharDef.heatMod ?? 0;
-      }
-    }
-
-    const baseMin = b.points[0];
-    const baseMax = b.points[1];
-    const finalMin = Math.max(1, baseMin + pointMod);
-    const finalMax = Math.max(1, baseMax + pointMod);
-    const finalHeat = b.heat + heatMod;
-
-    return { name: b.name, min: finalMin, max: finalMax, heat: finalHeat, colorKey: b.colorKey };
-  };
 
   return (
     <>
@@ -144,88 +106,26 @@ export function ActivePhase({
                 </p>
               )}
             </div>
-            
-            {/* Toggle Mode Intip */}
-            {player.tameng > 0 && (
-              <button
-                type="button"
-                className={`tp-btn flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold transition-all border ${
-                  intipActive
-                    ? "bg-amber border-amber-400 text-ink shadow-sm scale-102"
-                    : "bg-cream-2 border-line/10 text-muted"
-                }`}
-                onClick={() => setIntipActive((prev) => !prev)}
-                disabled={busy}
-              >
-                <Shield size={12} className={intipActive ? "text-ink animate-pulse" : "text-muted"} />
-                Mode Intip: {intipActive ? "AKTIF" : "MATI"}
-              </button>
-            )}
           </div>
 
           <div className="mb-4 grid grid-cols-3 gap-2.5">
             {[0, 1, 2].map((idx) => {
-              const isRevealed = revealedBowls[idx];
-              const chiliType = secretBowls[idx];
-              
-              if (isRevealed && chiliType) {
-                const stats = getChiliStats(chiliType);
-                return (
-                  <button
-                    key={idx}
-                    className="tp-btn rounded-2xl p-2 text-center text-white flex flex-col justify-between items-center min-h-[110px] transition-all border-2 border-transparent scale-102 shadow-md relative overflow-hidden"
-                    style={{ background: color(stats.colorKey) }}
-                    onClick={() => {
-                      onSuap(idx);
-                    }}
-                    disabled={busy}
-                  >
-                    <span className="absolute top-1 right-1 bg-white/25 rounded-full p-0.5" title="Terungkap">
-                      <Eye size={10} className="text-white" />
-                    </span>
+              return (
+                <button
+                  key={idx}
+                  className="tp-btn rounded-2xl p-2 text-center flex flex-col justify-between items-center min-h-[110px] transition-all border-2 bg-slate-700 border-slate-600 hover:bg-slate-650 text-slate-100"
+                  onClick={() => onSuap(idx)}
+                  disabled={busy}
+                >
+                  <span className="text-[10px] font-bold tracking-wider opacity-75 uppercase">Mangkok {idx + 1}</span>
+                  
+                  <div className="my-1.5 flex flex-col items-center">
+                    <span className="text-xl font-bold">?</span>
+                  </div>
 
-                    <span className="text-[10px] font-bold tracking-wider opacity-85 uppercase">Mangkok {idx + 1}</span>
-                    <span className="text-sm font-black leading-snug mt-1">{stats.name}</span>
-                    <span className="mt-2 text-[10px] font-semibold opacity-95 leading-normal">
-                      +{stats.min}–{stats.max} poin
-                      <br />
-                      pedas +{stats.heat}
-                    </span>
-                  </button>
-                );
-              } else {
-                return (
-                  <button
-                    key={idx}
-                    className={`tp-btn rounded-2xl p-2 text-center flex flex-col justify-between items-center min-h-[110px] transition-all border-2 ${
-                      intipActive
-                        ? "bg-amber/15 border-amber-300 hover:bg-amber/25 text-amber-900"
-                        : "bg-slate-700 border-slate-600 hover:bg-slate-650 text-slate-100"
-                    }`}
-                    onClick={() => {
-                      if (intipActive) {
-                        if (onIntipBowl) onIntipBowl(idx);
-                      } else {
-                        onSuap(idx);
-                      }
-                    }}
-                    disabled={busy}
-                  >
-                    <span className="text-[10px] font-bold tracking-wider opacity-75 uppercase">Mangkok {idx + 1}</span>
-                    
-                    <div className="my-1.5 flex flex-col items-center">
-                      <span className="text-xl font-bold">?</span>
-                      {intipActive && (
-                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 text-amber-800">
-                          Intip (−1🛡️)
-                        </span>
-                      )}
-                    </div>
-
-                    <span className="text-[10px] font-bold opacity-75">Tutup</span>
-                  </button>
-                );
-              }
+                  <span className="text-[10px] font-bold opacity-75">Tutup</span>
+                </button>
+              );
             })}
           </div>
 
@@ -250,3 +150,4 @@ export function ActivePhase({
     </>
   );
 }
+

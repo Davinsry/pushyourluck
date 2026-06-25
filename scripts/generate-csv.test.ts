@@ -53,10 +53,6 @@ describe("CSV Data Generator", () => {
                 state = gameReducer(state, act, rng);
               }
               state = gameReducer(state, { type: "CONFIRM_PRETURN" }, rng);
-              if (state.blockAsk) {
-                const blockAct = botBlockDecision(state);
-                state = gameReducer(state, blockAct, rng);
-              }
             } else if (state.phase === "active") {
               const activeAct = botActiveDecision(state);
               state = gameReducer(state, activeAct, rng);

@@ -30,14 +30,14 @@ export function OnlinePlay({ room, onExit }: Props) {
   useEffect(() => {
     if (state.phase === "active" && limit > 0) {
       setSecondsLeft(limit);
-    } else if (state.phase === "preturn" && !state.blockAsk) {
+    } else if (state.phase === "preturn") {
       setSecondsLeft(30);
     }
-  }, [state.turn, state.phase, state.blockAsk, limit]);
+  }, [state.turn, state.phase, limit]);
 
   // Tick the countdown
   useEffect(() => {
-    if (state.phase !== "active" && (state.phase !== "preturn" || state.blockAsk)) return;
+    if (state.phase !== "active" && state.phase !== "preturn") return;
     if (state.phase === "active" && limit <= 0) return;
 
     const phaseLimit = state.phase === "active" ? limit : 30;
@@ -87,7 +87,7 @@ export function OnlinePlay({ room, onExit }: Props) {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [state.phase, state.blockAsk, youSeat, ai, limit, send, room.isHost, room.sendAction]);
+  }, [state.phase, youSeat, ai, limit, send, room.isHost, room.sendAction]);
 
   return (
     <>
@@ -138,7 +138,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 activeEmotes={room.activeEmotes}
               />
             </div>
-            {((state.phase === "active" && limit > 0) || (state.phase === "preturn" && !state.blockAsk)) && (
+            {((state.phase === "active" && limit > 0) || state.phase === "preturn") && (
               <div className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-bg2/90 border border-line/10 shadow-lg backdrop-blur-md text-cream min-w-[105px]">
                 <span className="text-[10px] uppercase tracking-wider text-muted font-bold mb-1.5">Sisa Waktu</span>
                 <TurnTimer secondsLeft={Math.max(0, secondsLeft)} onPause={undefined} />
@@ -152,11 +152,8 @@ export function OnlinePlay({ room, onExit }: Props) {
                 players={state.players}
                 activeIndex={ai}
                 bets={state.bets}
-                usedSabo={state.usedSabo}
-                pendingTraps={state.pendingTraps}
                 viewerSeat={youSeat}
                 onToggleBet={(player, bet) => send({ type: "TOGGLE_BET", player, bet })}
-                onAddSabo={(player) => send({ type: "ADD_SABO", player })}
                 onConfirm={() => send({ type: "CONFIRM_PRETURN" })}
                 passiveShieldActivated={state.passiveShieldActivated}
                 onTogglePassiveShield={() => send({ type: "TOGGLE_PASSIVE_SHIELD" })}
@@ -172,9 +169,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 isFinal={isFinalRonde(state)}
                 readOnly={youSeat !== ai}
                 secretBowls={state.secretBowls}
-                revealedBowls={state.revealedBowls}
                 onSuap={(bowlIdx) => send({ type: "SUAP", bowlIdx })}
-                onIntipBowl={(bowlIdx) => send({ type: "INTIP_BOWL", bowlIdx })}
                 onMinumSusu={() => send({ type: "MINUM_SUSU" })}
                 onSajikan={() => send({ type: "SAJIKAN" })}
                 shieldUsed={state.shieldUsed}

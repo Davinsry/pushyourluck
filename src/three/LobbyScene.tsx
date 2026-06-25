@@ -32,7 +32,6 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
           canEat={false}
           onPick={() => {}}
           secretBowls={["ijo", "ijo", "ijo"]}
-          revealedBowls={[false, false, false]}
         />
 
         {/* Milk Bottle for the active eater in lobby */}

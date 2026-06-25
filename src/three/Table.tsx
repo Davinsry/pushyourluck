@@ -18,10 +18,9 @@ interface Props {
   canEat: boolean;
   onPick: (bowlIdx: number) => void;
   secretBowls: BiteId[];
-  revealedBowls: boolean[];
 }
 
-export function Table({ activeIndex, playerCount, canEat, onPick, secretBowls, revealedBowls }: Props) {
+export function Table({ activeIndex, playerCount, canEat, onPick, secretBowls }: Props) {
   const bowls = bowlPositions(activeIndex, playerCount);
 
   return (
@@ -45,45 +44,16 @@ export function Table({ activeIndex, playerCount, canEat, onPick, secretBowls, r
       {/* the 3 chili bowls in front of the active player */}
       {[0, 1, 2].map((idx) => {
         const secretChili = secretBowls[idx] ?? "ijo";
-        const revealed = revealedBowls[idx] ?? false;
         return (
           <Bowl
             key={idx}
             position={bowls[idx]}
             hex={BITE_HEX[secretChili] ?? token("leaf")}
             active={canEat}
-            revealed={revealed}
             onClick={() => canEat && onPick(idx)}
           />
         );
       })}
-    </group>
-  );
-}
-
-function CartoonChili({ color }: { color: string }) {
-  return (
-    <group scale={1.15}>
-      {/* Chili Body (Pointed bottom) */}
-      <mesh position={[0, -0.04, 0]} castShadow>
-        <coneGeometry args={[0.045, 0.22, 8]} />
-        <meshStandardMaterial color={color} roughness={0.35} metalness={0.05} />
-      </mesh>
-      {/* Chili Base/Shoulder (Rounded top) */}
-      <mesh position={[0, 0.07, 0]} castShadow>
-        <sphereGeometry args={[0.045, 10, 8]} />
-        <meshStandardMaterial color={color} roughness={0.35} />
-      </mesh>
-      {/* Green Stem Cap */}
-      <mesh position={[0, 0.09, 0]}>
-        <cylinderGeometry args={[0.03, 0.045, 0.02, 8]} />
-        <meshStandardMaterial color="#558010" roughness={0.7} />
-      </mesh>
-      {/* Green Stem Tail */}
-      <mesh position={[0.018, 0.13, 0]} rotation={[0, 0, -0.45]}>
-        <cylinderGeometry args={[0.01, 0.01, 0.07, 6]} />
-        <meshStandardMaterial color="#558010" roughness={0.7} />
-      </mesh>
     </group>
   );
 }
@@ -109,11 +79,10 @@ interface BowlProps {
   position: { x: number; y: number; z: number };
   hex: string;
   active: boolean;
-  revealed: boolean;
   onClick: () => void;
 }
 
-function Bowl({ position, hex, active, revealed, onClick }: BowlProps) {
+function Bowl({ position, hex, active, onClick }: BowlProps) {
   const [hovered, setHovered] = useState(false);
   const ref = useRef<THREE.Group>(null);
 
@@ -171,34 +140,13 @@ function Bowl({ position, hex, active, revealed, onClick }: BowlProps) {
           color="#eadfcb"
           roughness={0.4}
           emissive={hex}
-          emissiveIntensity={hovered && active && revealed ? 0.55 : 0}
+          emissiveIntensity={0}
         />
       </mesh>
 
-      {/* Render lid if covered, otherwise chilis */}
-      {!revealed ? (
-        <BowlLid />
-      ) : (
-        /* Pile of 4 Cartoon Chilis */
-        <group position={[0, 0.02, 0]}>
-          {/* Chili 1 */}
-          <group position={[-0.08, -0.06, 0.04]} rotation={[Math.PI / 2.3, 0.5, 0.1]}>
-            <CartoonChili color={hex} />
-          </group>
-          {/* Chili 2 */}
-          <group position={[0.08, -0.06, -0.04]} rotation={[Math.PI / 2.1, -0.6, -1.0]}>
-            <CartoonChili color={hex} />
-          </group>
-          {/* Chili 3 */}
-          <group position={[-0.02, -0.05, -0.08]} rotation={[Math.PI / 2.4, 0.1, 1.4]}>
-            <CartoonChili color={hex} />
-          </group>
-          {/* Chili 4 */}
-          <group position={[0, 0.01, 0]} rotation={[Math.PI / 3.2, 1.1, 0.3]}>
-            <CartoonChili color={hex} />
-          </group>
-        </group>
-      )}
+      {/* Bowl is always covered since there is no peeking */}
+      <BowlLid />
     </group>
   );
 }
+

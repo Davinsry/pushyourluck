@@ -51,14 +51,12 @@ describe("All Character Scenarios", () => {
 
           // Player 0 turn
           state = gameReducer(state, { type: "CONFIRM_PRETURN" }, rng);
-          if (state.blockAsk) {
-            state = gameReducer(state, { type: "ACCEPT_HEAT" }, rng);
-          }
 
           let busted = false;
           for (const bite of sc.seq) {
             if (state.phase === "active") {
-              state = gameReducer(state, { type: "SUAP", bite }, rng);
+              const bowlIdx = state.secretBowls.indexOf(bite);
+              state = gameReducer(state, { type: "SUAP", bowlIdx }, rng);
             }
             if (state.phase === "result" && state.outcome?.busted) {
               busted = true;

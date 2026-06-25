@@ -3,7 +3,7 @@
 //  return the Action a bot would take. Driven on a timer in App so
 //  the moves are watchable. All thresholds live in balance BOT{}.
 // ─────────────────────────────────────────────────────────────
-import { BOT, BLOCK_BET_AND_SABO } from "../config/balance";
+import { BOT } from "../config/balance";
 import type { Action, GameState, Rng } from "./types";
 import { bustChance, multiplier } from "./rules";
 import { activeIndex, isFinalRonde } from "./reducer";
@@ -63,45 +63,9 @@ export function botActiveDecision(state: GameState): Action {
     return { type: "SAJIKAN" };
   }
 
-  // Gather bowl info
-  const revealedIndices: number[] = [];
-  const unrevealedIndices: number[] = [];
-  for (let i = 0; i < 3; i++) {
-    if (state.revealedBowls[i]) {
-      revealedIndices.push(i);
-    } else {
-      unrevealedIndices.push(i);
-    }
-  }
-
-  // ── Decide whether to peek (INTIP_BOWL) ──
-  // If we have shields, and there are unrevealed bowls, and heat is starting to get hot, peek!
-  if (me.tameng > 0 && unrevealedIndices.length > 0 && heat >= 15) {
-    return { type: "INTIP_BOWL", bowlIdx: unrevealedIndices[0] };
-  }
-
-  // ── Choose which bowl to eat (SUAP) ──
-  // 1. If we have a revealed non-carolina bowl, eat it!
-  const revealedSafe = revealedIndices.find(idx => state.secretBowls[idx] === "ijo");
-  if (revealedSafe !== undefined) {
-    return { type: "SUAP", bowlIdx: revealedSafe };
-  }
-  const revealedMedium = revealedIndices.find(idx => state.secretBowls[idx] === "rawit");
-  if (revealedMedium !== undefined) {
-    return { type: "SUAP", bowlIdx: revealedMedium };
-  }
-
-  // 2. If we have unrevealed bowls, eat one of them (since we don't know what it is)
-  if (unrevealedIndices.length > 0) {
-    return { type: "SUAP", bowlIdx: unrevealedIndices[0] };
-  }
-
-  // 3. Fallback: if all bowls are revealed and they are all Carolina, just eat the first one (or we bust, but we have no choice if we don't bank)
-  if (revealedIndices.length > 0) {
-    return { type: "SUAP", bowlIdx: revealedIndices[0] };
-  }
-
-  return { type: "SUAP", bowlIdx: 0 };
+  // Choice which bowl to eat (SUAP) - pure blind choice, let's alternate/cycle based on heat or turn
+  const bowlIdx = (state.turn + heat) % 3;
+  return { type: "SUAP", bowlIdx };
 }
 
 /** Legacy block decision, returns fallback CONFIRM_PRETURN. */
@@ -135,37 +99,7 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
     }
 
     // ── Sabotage Traps ──
-    let tempPendingTraps = state.pendingTraps;
-    let tokens = p.sabotage;
-    while (tokens > 0) {
-      if (tempPendingTraps >= 3) {
-        break;
-      }
-
-      // Check current bet
-      const myBetAction = actions.find((a) => a.type === "TOGGLE_BET" && a.player === k) as { bet: string } | undefined;
-      const myBet = myBetAction ? myBetAction.bet : state.bets[k];
-
-      if (BLOCK_BET_AND_SABO && myBet === "bust") {
-        break;
-      }
-      if (myBet === "aman") {
-        break;
-      }
-
-      let saboChance: number = BOT.sabotageChance;
-      if (activePlayer.score > p.score + 10) saboChance += 0.2;
-      if (activePlayer.score < p.score - 10) saboChance -= 0.15;
-      saboChance = Math.max(0.1, Math.min(0.9, saboChance));
-
-      if (rng() < saboChance) {
-        actions.push({ type: "ADD_SABO", player: k });
-        tokens--;
-        tempPendingTraps += 1;
-      } else {
-        break;
-      }
-    }
+    // Sabotage trapping removed
   });
   return actions;
 }

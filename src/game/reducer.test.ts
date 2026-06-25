@@ -33,46 +33,6 @@ describe("setup → draft → play", () => {
   });
 });
 
-describe("sabotage and peeking", () => {
-  it("queues traps then applies them on turn start", () => {
-    let s = startedGame();
-    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
-    expect(s.pendingTraps).toBe(1);
-    expect(s.players[1].sabotage).toBe(0);
-
-    // Shuffle bowls and apply trap:
-    // With shuffle, sequence:
-    // i=2: j = floor(0.1*3) = 0 -> swap ijo & carolina -> ["carolina", "rawit", "ijo"]
-    // i=1: j = floor(0.1*2) = 0 -> swap carolina & rawit -> ["rawit", "carolina", "ijo"]
-    // Trap at pickIdx = floor(0.1 * 2) = 0 -> targetIndex = 0 (rawit) -> replaces with carolina -> ["carolina", "carolina", "ijo"]
-    const seqRng = seq([0.1, 0.1, 0.1, 0.0]);
-    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, seqRng);
-    expect(s.phase).toBe("active");
-    expect(s.secretBowls[0]).toBe("carolina");
-    expect(s.secretBowls[1]).toBe("carolina");
-    expect(s.secretBowls[2]).toBe("ijo");
-  });
-
-  it("allows a spectator to stack multiple sabotage traps", () => {
-    let s = startedGame();
-    s.players[1].sabotage = 3;
-    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
-    s = gameReducer(s, { type: "ADD_SABO", player: 1 }, SAFE);
-    expect(s.pendingTraps).toBe(2);
-    expect(s.players[1].sabotage).toBe(1);
-  });
-
-  it("uses shield to peek at a bowl", () => {
-    let s = startedGame();
-    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
-    s.players[0].tameng = 2;
-    s.secretBowls = ["ijo", "rawit", "carolina"];
-    s = gameReducer(s, { type: "INTIP_BOWL", bowlIdx: 1 }, SAFE);
-    expect(s.revealedBowls[1]).toBe(true);
-    expect(s.players[0].tameng).toBe(1);
-    expect(s.feedback).toContain("Mengintip Mangkok 2: isinya ternyata Cabe Cabe Rawit");
-  });
-});
 
 describe("eating and banking", () => {
   it("accrues points on a safe bite and banks them", () => {

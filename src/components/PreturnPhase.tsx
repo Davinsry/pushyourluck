@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import { Coins, Flame, Shield } from "lucide-react";
-import { BET_STAKE, BLOCK_BET_AND_SABO } from "../config/balance";
+import { Coins, Shield } from "lucide-react";
+import { BET_STAKE } from "../config/balance";
 import type { Bet, BetMap, Player } from "../game";
 
 interface Props {
   players: Player[];
   activeIndex: number;
   bets: BetMap;
-  usedSabo: number[];
-  pendingTraps: number;
   onToggleBet: (player: number, bet: Bet) => void;
-  onAddSabo: (player: number) => void;
   onConfirm: () => void;
   viewerSeat?: number; // online: which seat is looking (gates controls)
   passiveShieldActivated?: boolean;
@@ -21,10 +18,7 @@ export function PreturnPhase({
   players,
   activeIndex,
   bets,
-  usedSabo: _usedSabo,
-  pendingTraps,
   onToggleBet,
-  onAddSabo,
   onConfirm,
   viewerSeat,
   passiveShieldActivated,
@@ -57,24 +51,14 @@ export function PreturnPhase({
       <p className="m-0 mb-1 text-2xl font-extrabold text-chili-dark">{me.name}</p>
       <p className="m-0 mb-3 text-[13px] text-ink">
         {hasHumanSpectators
-          ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh memasang jebakan Carolina.`
-          : `Lawan-lawan bot diam-diam pasang taruhan & jebakan...`}
-        {pendingTraps > 0 && (
-          <span className="font-bold text-chili">
-            {" "}
-            Jebakan Carolina: {pendingTraps} mangkok.
-          </span>
-        )}
+          ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}).`
+          : `Lawan-lawan bot diam-diam pasang taruhan...`}
       </p>
 
       <div className="mb-3.5 grid gap-2.5">
         {players.map((p, k) => {
           if (k === activeIndex || p.isBot) return null;
           if (online && k !== viewerSeat) return null; // online: only bet for yourself
-          const hasBetBust = bets[k] === "bust";
-          const saboBlockedByBet = BLOCK_BET_AND_SABO && hasBetBust;
-          const capReached = pendingTraps >= 3;
-          const canSabo = p.sabotage > 0 && !saboBlockedByBet && !capReached;
           return (
             <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-3 py-2.5">
               <div className="mb-2 text-sm font-bold">{p.name}</div>
@@ -97,28 +81,6 @@ export function PreturnPhase({
                   <Coins size={13} className="mr-1 inline-block align-[-2px]" />
                   Kepedesan
                 </button>
-                {p.sabotage > 0 ? (
-                  <button
-                    className="tp-btn ml-auto rounded-full px-3 py-1.5 text-[13px] font-bold text-chili-dark disabled:opacity-40"
-                    style={{ background: "#FBE0D6" }}
-                    onClick={() => onAddSabo(k)}
-                    disabled={!canSabo}
-                    title={
-                      saboBlockedByBet
-                        ? "Tidak bisa menjebak jika bertaruh Kepedesan"
-                        : capReached
-                        ? "Batas jebakan sudah maksimal (3 mangkok)"
-                        : undefined
-                    }
-                  >
-                    <Flame size={13} className="mr-1 inline-block align-[-2px]" />
-                    Jebak Carolina ({p.sabotage})
-                  </button>
-                ) : (
-                  <span className="ml-auto text-xs text-muted font-bold py-1.5">
-                    Sambal habis
-                  </span>
-                )}
               </div>
             </div>
           );
@@ -201,3 +163,4 @@ export function PreturnPhase({
     </div>
   );
 }
+

@@ -3,7 +3,7 @@
 //  + action + rng always produces the same next state, so it can
 //  be driven from React (useGame) or from tests.
 // ─────────────────────────────────────────────────────────────
-import { BET_STAKE, BITES, CYCLES, SHOP, SUSU_COOL, BLOCK_BET_AND_SABO } from "../config/balance";
+import { BET_STAKE, BITES, CYCLES, SHOP, SUSU_COOL } from "../config/balance";
 import type { Action, BetResult, BiteId, CharacterId, GameState, Mode, Outcome, Player, Rng, ShopItem } from "./types";
 import {
   biteGain,
@@ -80,13 +80,8 @@ export function initialState(rng: Rng): GameState {
     passiveShieldActivated: false,
     feedback: "",
     outcome: null,
-    pendingHeat: 0,
-    usedSabo: [],
     bets: {},
-    blockAsk: false,
     secretBowls: [],
-    revealedBowls: [false, false, false],
-    pendingTraps: 0,
   };
 }
 
@@ -101,13 +96,8 @@ function freshTurn(s: GameState): GameState {
     passiveShieldActivated: false,
     feedback: "",
     outcome: null,
-    pendingHeat: 0,
-    usedSabo: [],
     bets: {},
-    blockAsk: false,
     secretBowls: [],
-    revealedBowls: [false, false, false],
-    pendingTraps: 0,
   };
 }
 
@@ -125,7 +115,7 @@ function advanceTurn(s: GameState): GameState {
   return freshTurn({ ...s, turn: nt });
 }
 
-/** Move from preturn into the eating phase. Secretly roll and trap the bowls. */
+/** Move from preturn into the eating phase. Secretly roll the bowls. */
 function startActive(s: GameState, rng: Rng): GameState {
   const pIdx = activeIndex(s);
   const me = s.players[pIdx];
@@ -149,34 +139,15 @@ function startActive(s: GameState, rng: Rng): GameState {
   // Roll secret bowls
   const secretBowls = shuffleBowls(rng);
 
-  // Apply traps
-  let trapsLeft = s.pendingTraps;
-  while (trapsLeft > 0) {
-    const nonCarolinaIndices: number[] = [];
-    for (let i = 0; i < 3; i++) {
-      if (secretBowls[i] !== "carolina") {
-        nonCarolinaIndices.push(i);
-      }
-    }
-    if (nonCarolinaIndices.length === 0) break;
-    const pickIdx = Math.floor(rng() * nonCarolinaIndices.length);
-    const targetIdx = nonCarolinaIndices[pickIdx];
-    secretBowls[targetIdx] = "carolina";
-    trapsLeft--;
-  }
-
   return {
     ...s,
     players,
     phase: "active",
-    blockAsk: false,
     heat: 0,
     shieldUsed: !usePassive,
     passiveShieldActivated: false,
     feedback: "",
     secretBowls,
-    revealedBowls: [false, false, false],
-    pendingTraps: 0,
   };
 }
 
@@ -195,7 +166,9 @@ function resolve(
       const player = Number(k);
       const bet = v!;
       const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-      return { player, name: s.players[player].name, bet, correct, delta: correct ? BET_STAKE : -BET_STAKE };
+      const isKompor = s.players[player].char === "kompor";
+      const stake = isKompor ? BET_STAKE * 2 : BET_STAKE;
+      return { player, name: s.players[player].name, bet, correct, delta: correct ? stake : -stake };
     });
 
     const players = s.players.map((p, i) => {
@@ -205,7 +178,9 @@ function resolve(
       let correctBet = false;
       if (bet) {
         const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-        score += correct ? BET_STAKE : -BET_STAKE;
+        const isKompor = p.char === "kompor";
+        const stake = isKompor ? BET_STAKE * 2 : BET_STAKE;
+        score += correct ? stake : -stake;
         if (correct) correctBet = true;
       }
       
@@ -300,47 +275,8 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
         passiveShieldActivated: !state.passiveShieldActivated,
       };
     }
-    case "ADD_SABO": {
-      const p = state.players[action.player];
-      if (p.sabotage <= 0) return state;
-
-      // Max 3 traps can be queued (since there are only 3 bowls)
-      if (state.pendingTraps >= 3) return state;
-
-      // Prevent betting "bust" and sabotaging the same player
-      if (BLOCK_BET_AND_SABO && state.bets[action.player] === "bust") {
-        return state;
-      }
-
-      return {
-        ...state,
-        players: state.players.map((pl, i) => (i === action.player ? { ...pl, sabotage: pl.sabotage - 1 } : pl)),
-        usedSabo: [...state.usedSabo, action.player],
-        pendingTraps: state.pendingTraps + 1,
-      };
-    }
     case "CONFIRM_PRETURN": {
       return startActive(state, rng);
-    }
-    case "USE_TAMENG": {
-      return state;
-    }
-    case "ACCEPT_HEAT":
-      return state;
-
-    // ── active (eating) ──
-    case "INTIP_BOWL": {
-      const pIdx = activeIndex(state);
-      const me = state.players[pIdx];
-      if (me.tameng <= 0) return state;
-      if (state.revealedBowls[action.bowlIdx]) return state; // Already revealed
-
-      return {
-        ...state,
-        players: state.players.map((p, i) => (i === pIdx ? { ...p, tameng: p.tameng - 1 } : p)),
-        revealedBowls: state.revealedBowls.map((rev, idx) => idx === action.bowlIdx ? true : rev),
-        feedback: `Mengintip Mangkok ${action.bowlIdx + 1}: isinya ternyata Cabe ${BITES[state.secretBowls[action.bowlIdx]].name}!`,
-      };
     }
     case "SUAP": {
         const pIdx = activeIndex(state);
@@ -361,9 +297,8 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
           maxHeat: Math.max(oldStats.maxHeat, newHeat),
         };
 
-        // Shuffle the bowls completely and reset peeks
+        // Shuffle the bowls completely
         const nextSecretBowls = shuffleBowls(rng);
-        const nextRevealedBowls = [false, false, false];
 
         if (rollBust(newHeat, rng)) {
           if (!state.shieldUsed && surviveBusts(ch) > 0) {
@@ -376,7 +311,6 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
               shieldUsed: true,
               feedback: `Perut baja nahan! Selamat sekali. (+${gain} poin)`,
               secretBowls: nextSecretBowls,
-              revealedBowls: nextRevealedBowls,
             };
           }
           const bustStats = { ...newStats, busts: newStats.busts + 1 };
@@ -386,7 +320,6 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
               heat: newHeat,
               players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: bustStats } : p)),
               secretBowls: nextSecretBowls,
-              revealedBowls: nextRevealedBowls,
             },
             true,
             0,
@@ -401,7 +334,6 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
           roundPts: state.roundPts + gain,
           feedback: `Nyam ${BITES[bite].name}! +${gain} poin`,
           secretBowls: nextSecretBowls,
-          revealedBowls: nextRevealedBowls,
         };
     }
     case "MINUM_SUSU": {
@@ -445,7 +377,7 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
       const price = SHOP[action.item];
       const buyer = state.players[action.player];
       if (!buyer || buyer.score < price) return state;
-      const field: Record<ShopItem, keyof Player> = { susu: "susu", tameng: "tameng", cabai: "sabotage" };
+      const field: Record<ShopItem, keyof Player> = { susu: "susu" };
       const key = field[action.item];
       return {
         ...state,
@@ -493,13 +425,9 @@ export function actionAllowed(state: GameState, seat: number, a: Action): boolea
     case "CHOOSE_CHAR":
       return state.screen === "draft" && state.draftIdx === seat;
     case "TOGGLE_BET":
-    case "ADD_SABO":
       return a.player === seat && a.player !== activeIndex(state);
     case "CONFIRM_PRETURN":
-    case "USE_TAMENG":
-    case "ACCEPT_HEAT":
     case "SUAP":
-    case "INTIP_BOWL":
     case "MINUM_SUSU":
     case "SAJIKAN":
     case "NEXT":

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Coins, Flame, Milk, Shield, ShoppingCart } from "lucide-react";
+import { Coins, Milk, ShoppingCart } from "lucide-react";
 import { SHOP } from "../config/balance";
 import type { Player, ShopItem } from "../game";
 import { playerColor } from "../ui/theme";
@@ -14,8 +14,6 @@ interface Props {
 
 const ITEMS: { id: ShopItem; label: string; icon: typeof Milk; kit: keyof Player }[] = [
   { id: "susu", label: "Susu", icon: Milk, kit: "susu" },
-  { id: "tameng", label: "Tameng", icon: Shield, kit: "tameng" },
-  { id: "cabai", label: "Sambal", icon: Flame, kit: "sabotage" },
 ];
 
 /** Between-ronde shop: spend points on Susu / Tameng / Sambal (cabai). */
@@ -65,7 +63,7 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
                 <Coins size={15} /> {p.score}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {ITEMS.map(({ id, label, icon: Icon, kit }) => {
                 const itemPrice = SHOP[id];
                 const afford = p.score >= itemPrice;
@@ -118,13 +116,7 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
 
             {/* Item Profile Card */}
             <div className="flex flex-col items-center gap-2 rounded-2xl bg-cream-2 border border-line/5 py-4 px-2">
-              <div 
-                className={`p-3 rounded-full ${
-                  confirming.itemId === "susu" ? "bg-sky-100 text-sky-600" :
-                  confirming.itemId === "tameng" ? "bg-amber-100 text-amber-600" :
-                  "bg-red-100 text-red-600"
-                }`}
-              >
+              <div className="p-3 rounded-full bg-sky-100 text-sky-600">
                 <IconComponent size={28} />
               </div>
               <span className="text-base font-extrabold">{activeItem.label}</span>

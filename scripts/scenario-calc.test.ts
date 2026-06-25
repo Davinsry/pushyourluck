@@ -65,15 +65,13 @@ describe("Mathematical Scenario Calculator", () => {
           // Now it's the target player's turn
           // Start the turn
           state = gameReducer(state, { type: "CONFIRM_PRETURN" }, rng);
-          if (state.blockAsk) {
-            state = gameReducer(state, { type: "ACCEPT_HEAT" }, rng);
-          }
 
           // Feed the predefined sequence of chilis
           let busted = false;
           for (const bite of seq) {
             if (state.phase === "active") {
-              state = gameReducer(state, { type: "SUAP", bite }, rng);
+              const bowlIdx = state.secretBowls.indexOf(bite);
+              state = gameReducer(state, { type: "SUAP", bowlIdx }, rng);
             }
             if (state.phase === "result" && state.outcome?.busted) {
               busted = true;

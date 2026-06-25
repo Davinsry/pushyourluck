@@ -61,12 +61,6 @@ describe("Character Balance Simulation", () => {
               }
               // Confirm preturn
               state = gameReducer(state, { type: "CONFIRM_PRETURN" }, rng);
-              
-              // If asked whether to block
-              if (state.blockAsk) {
-                const blockAct = botBlockDecision(state);
-                state = gameReducer(state, blockAct, rng);
-              }
             } else if (state.phase === "active") {
               const activeAct = botActiveDecision(state);
               state = gameReducer(state, activeAct, rng);

@@ -8,12 +8,8 @@ export const CYCLES = 4; // rondes (turns) each player gets
 export const STARTING_SCORE = 0; // points each player starts with (earn by playing)
 export const TURN_SECONDS = 60; // per-turn time limit; running out skips the turn
 
-// Shop (opens after each ronde) — prices in points. "cabai" = a sabotage token.
-export const SHOP = { susu: 8, tameng: 10, cabai: 6 } as const;
-export const SABOTAGE_HEAT = 15; // +heat per spectator "tambah sambal"
-export const TAMENG_BLOCK = 15; // 1 tameng blocks exactly 15 heat (1 sabotage)
-export const SABOTAGE_MAX_PER_TARGET = 45; // max total queued heat onto 1 player (0 = unlimited)
-export const BLOCK_BET_AND_SABO = true; // prevent betting "bust" and sabotaging the same player
+// Shop (opens after each ronde) — prices in points.
+export const SHOP = { susu: 8 } as const;
 export const SUSU_COOL = 25; // heat removed by drinking susu
 export const BET_STAKE = 5; // spectator bet payout: correct +5, wrong −5
 export const FINAL_MULT = 2; // score multiplier on the final (pamungkas) ronde
@@ -67,9 +63,8 @@ export const CHARS = {
     name: "Si Tukang Kompor",
     tag: "Pengganggu",
     colorKey: "flame",
-    up: "Mulai dengan 3 jatah Sabotase (karakter lain 1) untuk menjebak mangkok lawan dengan Cabe Carolina.",
+    up: "Mendapat hadiah taruhan ganda (+10 poin alih-alih +5) jika tebakannya benar saat menjadi penonton.",
     down: "Pengali skor mentok ×1.5.",
-    sabotage: 3,
     maxMult: 1.5,
   },
   hemat: {
@@ -86,9 +81,9 @@ export const CHARS = {
     name: "Si Perisai",
     tag: "Tahan serangan",
     colorKey: "amber",
-    up: "Mulai dengan 2 tameng (karakter lain 1) untuk mengintip isi mangkok tersembunyi.",
+    up: "Setiap suapan yang dimakan, kenaikan tingkat pedas dikurangi 5 poin.",
     down: "Poin tiap suap −2.",
-    tameng: 2,
+    heatMod: -5,
     pointMod: -2,
   },
   pendingin: {
@@ -103,7 +98,7 @@ export const CHARS = {
 } as const;
 
 // Default starting kit for every player (characters can override per-field).
-export const STARTING_KIT = { tameng: 1, susu: 1, sabotage: 1 } as const;
+export const STARTING_KIT = { tameng: 0, susu: 1, sabotage: 0 } as const;
 
 // How long the eat/drink hand animation runs (ms). Controls also stay locked
 // for this long so a player can't spam actions mid-animation.

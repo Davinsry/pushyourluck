@@ -404,7 +404,7 @@ export default function App() {
     if (state.phase === "active" && !activePlayer?.isBot) {
       currentLimit = TURN_SECONDS;
       timerType = "active";
-    } else if (state.phase === "preturn" && !state.blockAsk) {
+    } else if (state.phase === "preturn") {
       currentLimit = 30;
       timerType = "preturn";
     }
@@ -418,7 +418,7 @@ export default function App() {
     if (timerType) {
       setSecondsLeft(currentLimit);
     }
-  }, [state.turn, state.phase, state.screen, state.blockAsk, timerType, currentLimit]);
+  }, [state.turn, state.phase, state.screen, timerType, currentLimit]);
 
   // Tick the countdown; running out dispatches the corresponding skip/confirm/close action.
   useEffect(() => {
@@ -449,25 +449,23 @@ export default function App() {
     if (!online || !room.gameState) return;
     const scr = room.gameState.screen;
     const p = room.gameState.phase;
-    const blockAsk = room.gameState.blockAsk;
     
     if (scr === "shop") {
       setOnlineSecondsLeft(20);
     } else if (p === "active" && onlineLimit > 0) {
       setOnlineSecondsLeft(onlineLimit);
-    } else if (p === "preturn" && !blockAsk) {
+    } else if (p === "preturn") {
       setOnlineSecondsLeft(30);
     }
-  }, [online, room.gameState?.turn, room.gameState?.phase, room.gameState?.screen, room.gameState?.blockAsk, onlineLimit]);
+  }, [online, room.gameState?.turn, room.gameState?.phase, room.gameState?.screen, onlineLimit]);
 
   useEffect(() => {
     if (!online || !room.gameState) return;
     const scr = room.gameState.screen;
     const p = room.gameState.phase;
-    const blockAsk = room.gameState.blockAsk;
     const ai = getGameActiveIndex(room.gameState);
     
-    if (scr !== "shop" && p !== "active" && (p !== "preturn" || blockAsk)) return;
+    if (scr !== "shop" && p !== "active" && p !== "preturn") return;
     if (p === "active" && onlineLimit <= 0) return;
 
     const phaseLimit = scr === "shop" ? 20 : (p === "active" ? onlineLimit : 30);
@@ -529,7 +527,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [online, room.gameState?.screen, room.gameState?.phase, room.gameState?.blockAsk, room.youSeat, room.gameState ? getGameActiveIndex(room.gameState) : -1, onlineLimit, room.isHost]);
+  }, [online, room.gameState?.screen, room.gameState?.phase, room.youSeat, room.gameState ? getGameActiveIndex(room.gameState) : -1, onlineLimit, room.isHost]);
 
   // Outcome / game-over SFX are driven by state transitions so we don't have
   // to guess the post-dispatch result synchronously.
@@ -621,14 +619,7 @@ export default function App() {
       }
     });
   };
-  const intipBowl = (bowlIdx: number) => {
-    play("click");
-    if (online) {
-      room.sendAction({ type: "INTIP_BOWL", bowlIdx });
-    } else {
-      dispatch({ type: "INTIP_BOWL", bowlIdx });
-    }
-  };
+
   const minum = () => animateThen("milk", undefined, () => dispatch({ type: "MINUM_SUSU" }));
 
   useEffect(() => () => { if (busyTimer.current) clearTimeout(busyTimer.current); }, []);
@@ -760,7 +751,7 @@ export default function App() {
           {/* top-right HUD controls */}
           <div className="absolute right-4 top-4 z-50 pointer-events-auto flex items-center gap-2">
             {((room.gameState.settings.turnTimerLimit && room.gameState.settings.turnTimerLimit > 0 && room.gameState.phase === "active") ||
-              (room.gameState.phase === "preturn" && !room.gameState.blockAsk) ||
+              room.gameState.phase === "preturn" ||
               room.gameState.screen === "shop") && (
               <TurnTimer secondsLeft={onlineSecondsLeft} onPause={undefined} />
             )}
@@ -785,10 +776,6 @@ export default function App() {
                 play("click");
                 room.sendAction({ type: "TOGGLE_BET", player, bet });
               }}
-              onAddSabo={(player) => {
-                play("sabotage");
-                room.sendAction({ type: "ADD_SABO", player });
-              }}
               onTogglePassiveShield={() => {
                 play("click");
                 room.sendAction({ type: "TOGGLE_PASSIVE_SHIELD" });
@@ -797,16 +784,7 @@ export default function App() {
                 play("click");
                 room.sendAction({ type: "CONFIRM_PRETURN" });
               }}
-              onUseTameng={(count) => {
-                play("click");
-                room.sendAction({ type: "USE_TAMENG", count });
-              }}
-              onAcceptHeat={() => {
-                play("click");
-                room.sendAction({ type: "ACCEPT_HEAT" });
-              }}
               onSuap={suap}
-              onIntipBowl={intipBowl}
               onMinumSusu={() => {
                 if (isHumanActiveTurn) {
                   animateThen("milk", undefined, () => room.sendAction({ type: "MINUM_SUSU" }));
@@ -930,10 +908,6 @@ export default function App() {
               play("click");
               dispatch({ type: "TOGGLE_BET", player, bet });
             }}
-            onAddSabo={(player) => {
-              play("sabotage");
-              dispatch({ type: "ADD_SABO", player });
-            }}
             onTogglePassiveShield={() => {
               play("click");
               dispatch({ type: "TOGGLE_PASSIVE_SHIELD" });
@@ -942,16 +916,7 @@ export default function App() {
               play("click");
               dispatch({ type: "CONFIRM_PRETURN" });
             }}
-            onUseTameng={(count) => {
-              play("click");
-              dispatch({ type: "USE_TAMENG", count });
-            }}
-            onAcceptHeat={() => {
-              play("click");
-              dispatch({ type: "ACCEPT_HEAT" });
-            }}
             onSuap={suap}
-            onIntipBowl={intipBowl}
             onMinumSusu={minum}
             onSajikan={() => dispatch({ type: "SAJIKAN" })}
             busy={busy}

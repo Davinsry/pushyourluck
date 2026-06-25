@@ -58,10 +58,6 @@ describe("Chili Bite Statistics", () => {
                 state = gameReducer(state, act, rng);
               }
               state = gameReducer(state, { type: "CONFIRM_PRETURN" }, rng);
-              if (state.blockAsk) {
-                const blockAct = botBlockDecision(state);
-                state = gameReducer(state, blockAct, rng);
-              }
             } else if (state.phase === "active") {
               const activeSeat = state.turn % state.players.length;
               const activeChar = state.players[activeSeat].char!;

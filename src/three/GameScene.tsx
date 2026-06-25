@@ -68,7 +68,6 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
           canEat={canEat}
           onPick={onPick}
           secretBowls={state.secretBowls}
-          revealedBowls={state.revealedBowls}
         />
 
         {/* milk bottle for the active player — full until they drink it */}

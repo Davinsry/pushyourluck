@@ -15,8 +15,8 @@ export type Screen =
   | "gameover"
   | "history";
 
-/** Buyable shop items (cabai = a sabotage / "tambah sambal" token). */
-export type ShopItem = "susu" | "tameng" | "cabai";
+/** Buyable shop items. */
+export type ShopItem = "susu";
 export type Phase = "preturn" | "active" | "result";
 
 /** solo = 1 human vs bots; local = pass-and-play, all human. */
@@ -94,15 +94,10 @@ export interface GameState {
   outcome: Outcome | null;
 
   // preturn (spectator) phase
-  pendingHeat: number; // sabotage heat queued onto the active player
-  usedSabo: number[]; // spectator indices who already sabotaged
   bets: BetMap;
-  blockAsk: boolean; // showing the "use your tameng?" prompt
 
   // Opsi A: Mangkok Misteri (Blind Draw)
   secretBowls: BiteId[]; // secret chilis in the 3 bowls
-  revealedBowls: boolean[]; // whether each bowl has been peeked/revealed
-  pendingTraps: number; // pending traps (Carolinas) queued onto the active player
 }
 
 export type Action =
@@ -117,12 +112,8 @@ export type Action =
   | { type: "START_DRAFT" }
   | { type: "CHOOSE_CHAR"; char: CharacterId }
   | { type: "TOGGLE_BET"; player: number; bet: Bet }
-  | { type: "ADD_SABO"; player: number }
   | { type: "CONFIRM_PRETURN" }
-  | { type: "USE_TAMENG"; count: number }
-  | { type: "ACCEPT_HEAT" }
   | { type: "SUAP"; bowlIdx: number }
-  | { type: "INTIP_BOWL"; bowlIdx: number }
   | { type: "MINUM_SUSU" }
   | { type: "SAJIKAN" }
   | { type: "NEXT" }

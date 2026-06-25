@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Coins, Flame, Hand, Milk, Shield, Sparkles, Eye } from "lucide-react";
-import { BET_STAKE, BITES, CHARS, FINAL_MULT, BLOCK_BET_AND_SABO } from "../config/balance";
-import type { Bet, BiteId, GameState } from "../game";
+import { Coins, Hand, Milk, Shield, Sparkles } from "lucide-react";
+import { BET_STAKE, CHARS, FINAL_MULT } from "../config/balance";
+import type { Bet, GameState } from "../game";
 import { multiplier } from "../game";
 import { color } from "../ui/theme";
 import { HeatMeter } from "./HeatMeter";
@@ -12,12 +12,8 @@ interface Props {
   isFinal: boolean;
   isLastTurn: boolean;
   onToggleBet: (player: number, bet: Bet) => void;
-  onAddSabo: (player: number) => void;
   onConfirm: () => void;
-  onUseTameng: (count: number) => void;
-  onAcceptHeat: () => void;
   onSuap: (bowlIdx: number) => void;
-  onIntipBowl?: (bowlIdx: number) => void;
   onMinumSusu: () => void;
   onSajikan: () => void;
   onNext: () => void;
@@ -39,7 +35,7 @@ export function Hud3D(props: Props) {
 
 type SubProps = Props & { me: GameState["players"][number] };
 
-function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm, onTogglePassiveShield }: SubProps) {
+function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePassiveShield }: SubProps) {
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
   const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
 
@@ -71,14 +67,8 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
 
         <p className="m-0 text-[13px] text-ink font-medium leading-relaxed">
           {hasHumanSpectators
-            ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}), dan boleh memasang jebakan Carolina.`
-            : "Lawan-lawan bot diam-diam pasang taruhan & jebakan..."}
-          {state.pendingTraps > 0 && (
-            <span className="font-bold text-chili">
-              {" "}
-              Jebakan Carolina: {state.pendingTraps} mangkok.
-            </span>
-          )}
+            ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}).`
+            : "Lawan-lawan bot diam-diam pasang taruhan..."}
         </p>
         <button
           className="tp-btn mt-3 w-full rounded-xl bg-flame py-3 text-[15px] font-extrabold text-white"
@@ -94,17 +84,13 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
         </button>
       </div>
 
-      {/* right: spectator bets + sabotage */}
+      {/* right: spectator bets */}
       {state.players.some((p, k) => k !== activeIndex && !p.isBot) && (
       <div className={`absolute bottom-4 right-4 max-h-[70vh] w-[min(46vw,320px)] overflow-y-auto ${panel}`}>
         <p className="m-0 mb-2 text-[13px] font-bold text-muted">Penonton</p>
         <div className="grid gap-2">
           {state.players.map((p, k) => {
             if (k === activeIndex || p.isBot) return null;
-            const hasBetBust = state.bets[k] === "bust";
-            const saboBlockedByBet = BLOCK_BET_AND_SABO && hasBetBust;
-            const capReached = state.pendingTraps >= 3;
-            const canSabo = p.sabotage > 0 && !saboBlockedByBet && !capReached;
             return (
               <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-2.5 py-2">
                 <div className="mb-1.5 text-sm font-bold">{p.name}</div>
@@ -127,28 +113,6 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
                     <Coins size={12} className="mr-1 inline-block align-[-2px]" />
                     Kepedesan
                   </button>
-                  {p.sabotage > 0 ? (
-                    <button
-                      className="tp-btn ml-auto rounded-full px-2.5 py-1 text-xs font-bold text-chili-dark disabled:opacity-40"
-                      style={{ background: "#FBE0D6" }}
-                      onClick={() => onAddSabo(k)}
-                      disabled={!canSabo}
-                      title={
-                        saboBlockedByBet
-                          ? "Tidak bisa menjebak jika bertaruh Kepedesan"
-                          : capReached
-                          ? "Batas jebakan sudah maksimal (3 mangkok)"
-                          : undefined
-                      }
-                    >
-                      <Flame size={12} className="mr-1 inline-block align-[-2px]" />
-                      Jebak Carolina ({p.sabotage})
-                    </button>
-                  ) : (
-                    <span className="ml-auto text-[11px] text-muted font-bold py-1">
-                      Sambal habis
-                    </span>
-                  )}
                 </div>
               </div>
             );
@@ -215,41 +179,10 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onAddSabo, onConfirm,
   );
 }
 
-function ActiveHud({ state, me, isFinal, onSuap, onIntipBowl, onMinumSusu, onSajikan, busy }: SubProps) {
+function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }: SubProps) {
   const ch = me.char;
   const charDef = ch ? CHARS[ch] : null;
   const curMult = multiplier(state.heat, ch);
-  const [intipActive, setIntipActive] = useState(false);
-
-  const getChiliStats = (key: BiteId) => {
-    const b = BITES[key];
-    let pointMod = 0;
-    if (charDef) {
-      const anyCharDef = charDef as any;
-      if (anyCharDef.pointModPerChili && key in anyCharDef.pointModPerChili) {
-        pointMod = anyCharDef.pointModPerChili[key];
-      } else {
-        pointMod = anyCharDef.pointMod ?? 0;
-      }
-    }
-    let heatMod = 0;
-    if (charDef) {
-      const anyCharDef = charDef as any;
-      if (anyCharDef.heatModPerChili && key in anyCharDef.heatModPerChili) {
-        heatMod = anyCharDef.heatModPerChili[key];
-      } else {
-        heatMod = anyCharDef.heatMod ?? 0;
-      }
-    }
-
-    const baseMin = b.points[0];
-    const baseMax = b.points[1];
-    const finalMin = Math.max(1, baseMin + pointMod);
-    const finalMax = Math.max(1, baseMax + pointMod);
-    const finalHeat = b.heat + heatMod;
-
-    return { name: b.name, min: finalMin, max: finalMax, heat: finalHeat, colorKey: b.colorKey };
-  };
 
   return (
     <>
@@ -285,13 +218,7 @@ function ActiveHud({ state, me, isFinal, onSuap, onIntipBowl, onMinumSusu, onSaj
           </div>
           <div className="text-right text-[11px] font-semibold text-muted">
             <div>
-              <Shield size={12} className="inline-block align-[-2px]" /> {me.tameng}
-            </div>
-            <div>
               <Milk size={12} className="inline-block align-[-2px]" /> {me.susu}
-            </div>
-            <div>
-              <Flame size={12} className="inline-block align-[-2px]" /> {me.sabotage}
             </div>
           </div>
         </div>
@@ -327,73 +254,22 @@ function ActiveHud({ state, me, isFinal, onSuap, onIntipBowl, onMinumSusu, onSaj
               </p>
             )}
           </div>
-          {me.tameng > 0 && (
-            <button
-              type="button"
-              className={`tp-btn flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold transition-all border ${
-                intipActive
-                  ? "bg-amber border-amber-400 text-ink scale-102"
-                  : "bg-cream-2 border-line/10 text-muted"
-              }`}
-              onClick={() => setIntipActive((prev) => !prev)}
-              disabled={busy}
-            >
-              <Shield size={10} />
-              Intip: {intipActive ? "YA" : "NO"}
-            </button>
-          )}
         </div>
 
         {/* Stack the 3 bowls vertically for the narrow panel */}
         <div className="grid gap-1.5 mb-2">
           {[0, 1, 2].map((idx) => {
-            const isRevealed = state.revealedBowls[idx];
-            const chiliType = state.secretBowls[idx];
-            
-            if (isRevealed && chiliType) {
-              const stats = getChiliStats(chiliType);
-              return (
-                <button
-                  key={idx}
-                  className="tp-btn flex items-center justify-between rounded-xl px-3 py-1.5 text-left text-xs font-extrabold text-white relative overflow-hidden"
-                  style={{ background: color(stats.colorKey) }}
-                  onClick={() => onSuap(idx)}
-                  disabled={busy}
-                >
-                  <span className="absolute top-1 right-1 opacity-70">
-                    <Eye size={10} />
-                  </span>
-                  <span>Mangkok {idx + 1}: {stats.name}</span>
-                  <span className="text-[9.5px] font-semibold opacity-90">
-                    +{stats.min}–{stats.max} · 🌶{stats.heat}
-                  </span>
-                </button>
-              );
-            } else {
-              return (
-                <button
-                  key={idx}
-                  className={`tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-extrabold border ${
-                    intipActive
-                      ? "bg-amber/15 border-amber-300 text-amber-900"
-                      : "bg-slate-700 border-slate-600 text-slate-100"
-                  }`}
-                  onClick={() => {
-                    if (intipActive) {
-                      if (onIntipBowl) onIntipBowl(idx);
-                    } else {
-                      onSuap(idx);
-                    }
-                  }}
-                  disabled={busy}
-                >
-                  <span>Mangkok {idx + 1}: Tutup</span>
-                  <span className="text-[9.5px] font-bold opacity-80">
-                    {intipActive ? "Intip🛡️" : "?"}
-                  </span>
-                </button>
-              );
-            }
+            return (
+              <button
+                key={idx}
+                className="tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-extrabold border bg-slate-700 border-slate-600 text-slate-100"
+                onClick={() => onSuap(idx)}
+                disabled={busy}
+              >
+                <span>Mangkok {idx + 1}: Tutup</span>
+                <span className="text-[9.5px] font-bold opacity-80">?</span>
+              </button>
+            );
           })}
         </div>
 
@@ -491,3 +367,4 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
     </>
   );
 }
+
