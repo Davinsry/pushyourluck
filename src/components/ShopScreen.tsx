@@ -53,31 +53,32 @@ export function ShopScreen({ players, cycle, onBuy, onClose, secondsLeft }: Prop
         Ronde {cycle} selesai. Belanja pakai poin sebelum lanjut.
       </p>
 
-      <div className="grid gap-3 overflow-y-auto flex-1 pr-1.5 my-2 min-h-0">
+      <div className="grid gap-2 overflow-y-auto flex-1 pr-1 my-1.5 min-h-0">
         {players.map((p, i) => (
-          <div key={i} className="rounded-2xl border-[1.5px] border-cream-2 bg-cream p-3.5 flex-shrink-0">
-            <div className="mb-2.5 flex items-center gap-2">
-              <span className="inline-block h-3 w-3 rounded-full" style={{ background: playerColor(i) }} />
-              <span className="text-base font-extrabold">{p.name}</span>
-              <span className="ml-auto flex items-center gap-1 text-sm font-bold text-chili-dark">
-                <Coins size={15} /> {p.score}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
+          <div
+            key={i}
+            className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-3 py-2 flex items-center gap-2 flex-shrink-0"
+          >
+            <span className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: playerColor(i) }} />
+            <span className="text-sm font-extrabold truncate">{p.name}</span>
+            <span className="flex items-center gap-1 text-xs font-bold text-chili-dark flex-shrink-0">
+              <Coins size={13} /> {p.score}
+            </span>
+            <div className="ml-auto flex flex-wrap justify-end gap-1.5">
               {ITEMS.map(({ id, label, icon: Icon, kit }) => {
                 const itemPrice = SHOP[id];
                 const afford = p.score >= itemPrice;
                 return (
                   <button
                     key={id}
-                    className="tp-btn flex flex-col items-center gap-0.5 rounded-xl bg-cream-2 px-2 py-2 text-ink disabled:opacity-40"
+                    className="tp-btn flex items-center gap-1.5 rounded-lg bg-cream-2 px-2.5 py-1.5 text-ink disabled:opacity-40"
                     onClick={() => setConfirming({ playerIndex: i, itemId: id, qty: 1 })}
                     disabled={!afford}
                   >
-                    <Icon size={18} />
-                    <span className="text-[13px] font-bold">{label}</span>
+                    <Icon size={15} className="flex-shrink-0" />
+                    <span className="text-[12px] font-bold">{label}</span>
                     <span className="text-[11px] font-semibold text-muted">
-                      {itemPrice} poin · punya {p[kit] as number}
+                      {itemPrice}p · punya {p[kit] as number}
                     </span>
                   </button>
                 );
