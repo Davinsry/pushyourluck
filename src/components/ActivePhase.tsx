@@ -136,15 +136,15 @@ export function ActivePhase({
               
               if (isRevealed) {
                 if (bite === "ijo") {
-                  btnClass = "bg-emerald-950 border-emerald-600 text-emerald-400";
+                  btnClass = "bg-emerald-600 border-emerald-300 text-white";
                   content = "🟢 Ijo";
                   label = "+8 Pedas";
                 } else if (bite === "rawit") {
-                  btnClass = "bg-amber-950 border-amber-600 text-amber-400";
+                  btnClass = "bg-orange-500 border-orange-300 text-white";
                   content = "🔥 Rawit";
                   label = "+15 Pedas";
                 } else if (bite === "carolina") {
-                  btnClass = "bg-red-950 border-red-600 text-red-400 animate-pulse";
+                  btnClass = "bg-red-600 border-red-300 text-white";
                   content = "💀 Reaper";
                   label = "+28 Pedas";
                 }

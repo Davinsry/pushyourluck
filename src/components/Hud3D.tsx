@@ -275,18 +275,18 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, onTeraw
             let btnClass = "bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-650";
             let content = "Tutup";
             let label = "?";
-            
+
             if (isRevealed) {
               if (bite === "ijo") {
-                btnClass = "bg-emerald-950 border-emerald-600 text-emerald-400";
+                btnClass = "bg-emerald-600 border-emerald-300 text-white hover:bg-emerald-500";
                 content = "🟢 Cabe Ijo";
                 label = "+8 Pedas";
               } else if (bite === "rawit") {
-                btnClass = "bg-amber-950 border-amber-600 text-amber-400";
+                btnClass = "bg-orange-500 border-orange-300 text-white hover:bg-orange-400";
                 content = "🔥 Cabe Rawit";
                 label = "+15 Pedas";
               } else if (bite === "carolina") {
-                btnClass = "bg-red-950 border-red-600 text-red-400 animate-pulse";
+                btnClass = "bg-red-600 border-red-300 text-white hover:bg-red-500";
                 content = "💀 Carolina Reaper";
                 label = "+28 Pedas";
               }
