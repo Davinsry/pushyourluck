@@ -59,13 +59,13 @@ export const CHARS = {
     pointModPerChili: { ijo: 1, rawit: 3, carolina: 6 } as const,
     heatModPerChili: { ijo: 2, rawit: 5, carolina: 10 } as const,
   },
-  kompor: {
-    name: "Si Tukang Kompor",
-    tag: "Pengganggu",
-    colorKey: "flame",
-    up: "Mendapat hadiah taruhan ganda (+10 poin alih-alih +5) jika tebakannya benar saat menjadi penonton.",
-    down: "Pengali skor mentok ×1.5.",
-    maxMult: 1.5,
+  terawang: {
+    name: "Si Terawang",
+    tag: "Penerawang",
+    colorKey: "purple",
+    up: "Bisa melihat isi mangkok cabai sebelum makan (2 kali per game).",
+    down: "Menggunakan Terawang mengunci pengali skor di ×1.0 pada giliran tersebut.",
+    terawangCharges: 2,
   },
   hemat: {
     name: "Si Hemat",

@@ -173,6 +173,9 @@ export function OnlinePlay({ room, onExit }: Props) {
                 onMinumSusu={() => send({ type: "MINUM_SUSU" })}
                 onSajikan={() => send({ type: "SAJIKAN" })}
                 shieldUsed={state.shieldUsed}
+                terawangActive={state.terawangActive}
+                terawangUsed={state.terawangUsed}
+                onTerawang={() => send({ type: "TERAWANG" })}
               />
             )}
 

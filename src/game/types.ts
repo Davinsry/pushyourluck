@@ -37,6 +37,7 @@ export interface Player {
   susu: number; // remaining milk
   isBot: boolean; // controlled by the AI (solo mode)
   passiveShields: number; // Lidah Baja's passive shield charges left
+  terawangCharges: number; // Si Terawang's charges left
   stats?: {
     ijoCount: number;
     rawitCount: number;
@@ -96,8 +97,9 @@ export interface GameState {
   // preturn (spectator) phase
   bets: BetMap;
 
-  // Opsi A: Mangkok Misteri (Blind Draw)
   secretBowls: BiteId[]; // secret chilis in the 3 bowls
+  terawangActive: boolean; // Is Terawang currently active (showing the chilis) for the current turn?
+  terawangUsed: boolean; // Did they use Terawang during the current turn?
 }
 
 export type Action =
@@ -122,7 +124,8 @@ export type Action =
   | { type: "RESTART" }
   | { type: "BUY"; player: number; item: ShopItem }
   | { type: "CLOSE_SHOP" }
-  | { type: "TOGGLE_PASSIVE_SHIELD" };
+  | { type: "TOGGLE_PASSIVE_SHIELD" }
+  | { type: "TERAWANG" };
 
 /** Random source — injectable so the reducer stays deterministic in tests. */
 export type Rng = () => number;

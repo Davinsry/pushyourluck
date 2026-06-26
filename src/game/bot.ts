@@ -45,8 +45,8 @@ export function botActiveDecision(state: GameState): Action {
   bankThreshold = Math.max(30, Math.min(75, bankThreshold));
 
   // ── Multiplier awareness: don't bank at ×1 if close to ×1.5 threshold ──
-  const mult = multiplier(heat, ch);
-  const wantsHigherMult = mult < 1.5 && heat >= 35 && heat < 50 && pts >= 8;
+  const mult = multiplier(heat, ch, state.terawangUsed);
+  const wantsHigherMult = !state.terawangUsed && mult < 1.5 && heat >= 35 && heat < 50 && pts >= 8;
 
   // ── Drink susu strategically ──
   if (heat >= BOT.drinkAtHeat && me.susu > 0 && pts >= 6) {
@@ -61,6 +61,26 @@ export function botActiveDecision(state: GameState): Action {
   // ── Bank decision ──
   if (pts > 0 && chance >= bankThreshold && !wantsHigherMult) {
     return { type: "SAJIKAN" };
+  }
+
+  // ── Terawang activation decision ──
+  if (me.char === "terawang" && me.terawangCharges > 0 && !state.terawangActive && heat >= 25) {
+    return { type: "TERAWANG" };
+  }
+
+  // ── Smart bowl selection if Terawang is active ──
+  if (state.terawangActive) {
+    const bowlOfIjo = state.secretBowls.indexOf("ijo");
+    const bowlOfRawit = state.secretBowls.indexOf("rawit");
+    const bowlOfCarolina = state.secretBowls.indexOf("carolina");
+    
+    if (chance >= bankThreshold - 10 && bowlOfIjo !== -1) {
+      return { type: "SUAP", bowlIdx: bowlOfIjo };
+    } else if (chance >= bankThreshold - 25 && bowlOfRawit !== -1) {
+      return { type: "SUAP", bowlIdx: bowlOfRawit };
+    } else if (bowlOfCarolina !== -1) {
+      return { type: "SUAP", bowlIdx: bowlOfCarolina };
+    }
   }
 
   // Choice which bowl to eat (SUAP) - pure blind choice, let's alternate/cycle based on heat or turn
@@ -90,7 +110,7 @@ export function botSpectatorActions(state: GameState, rng: Rng): Action[] {
     if (!state.bets[k]) {
       let bustBias: number = BOT.betBustBias;
       if (activePlayer.char === "rakus") bustBias += 0.15;
-      if (activePlayer.char === "kompor") bustBias += 0.1;
+      if (activePlayer.char === "terawang") bustBias -= 0.1;
       if (activePlayer.char === "baja") bustBias -= 0.15;
       if (activePlayer.char === "hemat") bustBias -= 0.1;
       if (activePlayer.char === "pendingin") bustBias -= 0.1;

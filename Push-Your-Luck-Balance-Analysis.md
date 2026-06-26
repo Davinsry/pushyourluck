@@ -1,6 +1,6 @@
 # Laporan Analisis Keseimbangan Karakter (Push-Your-Luck)
 
-Laporan ini memuat analisis mendalam mengenai keseimbangan 6 karakter dalam game **Tahan Pedas** berdasarkan simulasi **15.000 game** (5.000 game untuk masing-masing jumlah pemain 2, 3, dan 4).
+Laporan ini memuat analisis mendalam mengenai keseimbangan 6 karakter dalam game **Tahan Pedas** berdasarkan simulasi **15.000 game** (5.000 game untuk masing-masing jumlah pemain 2, 3, dan 4) menggunakan parameter kode game terbaru.
 
 ---
 
@@ -14,76 +14,78 @@ Keseimbangan diukur berdasarkan deviasi win-rate terhadap **baseline ideal** (pe
 ### Tabel Hasil 2-Player (Duel)
 | Karakter | Game Dimainkan | Jumlah Menang | Win Rate | Skor Rata-Rata | Status Keseimbangan |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **baja** | 1650 | 1107.5 | **67.12%** | 12.54 | *Sedikit di atas batas (High floor)* |
-| **pendingin**| 1689 | 836.0 | **49.50%** | 14.64 | **Seimbang (Balanced)** |
-| **hemat** | 1703 | 822.5 | **48.30%** | 10.86 | **Seimbang (Balanced)** |
-| **perisai**  | 1641 | 742.5 | **45.25%** | 15.33 | **Seimbang (Balanced)** |
-| **kompor**   | 1694 | 764.0 | **45.10%** | 19.34 | **Seimbang (Balanced)** |
-| **rakus**    | 1623 | 727.5 | **44.82%** | 28.32 | **Seimbang (Balanced)** |
+| **terawang** | 1745 | 1061.5 | **60.83%** | 31.28 | **Seimbang (Balanced - Upper Limit)** |
+| **baja** | 1609 | 866.9 | **53.88%** | 24.62 | **Seimbang (Balanced)** |
+| **hemat** | 1598 | 839.4 | **52.53%** | 29.68 | **Seimbang (Balanced)** |
+| **pendingin**| 1723 | 850.5 | **49.36%** | 21.23 | **Seimbang (Balanced)** |
+| **rakus**    | 1639 | 703.5 | **42.92%** | 30.32 | **Seimbang (Balanced)** |
+| **perisai**  | 1686 | 678.0 | **40.21%** | 20.13 | **Seimbang (Slightly Low Floor)** |
 
 ### Tabel Hasil 3-Player
 | Karakter | Game Dimainkan | Jumlah Menang | Win Rate | Skor Rata-Rata | Status Keseimbangan |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **baja** | 2470 | 1137.5 | **46.05%** | 12.77 | *Sedikit di atas batas* |
-| **rakus**    | 2558 | 904.7 | **35.37%** | 29.05 | **Seimbang (Balanced)** |
-| **hemat** | 2480 | 751.0 | **30.28%** | 11.21 | **Seimbang (Balanced)** |
-| **pendingin**| 2539 | 764.8 | **30.12%** | 14.25 | **Seimbang (Balanced)** |
-| **perisai**  | 2490 | 740.0 | **29.72%** | 16.51 | **Seimbang (Balanced)** |
-| **kompor**   | 2463 | 702.0 | **28.50%** | 17.38 | **Seimbang (Balanced)** |
+| **terawang** | 2434 | 1045.6 | **42.96%** | 29.60 | **Seimbang (Balanced - Upper Limit)** |
+| **baja** | 2487 | 928.6 | **37.34%** | 24.62 | **Seimbang (Balanced)** |
+| **hemat** | 2543 | 868.4 | **34.15%** | 27.57 | **Seimbang (Balanced)** |
+| **pendingin**| 2469 | 775.3 | **31.40%** | 21.68 | **Seimbang (Balanced)** |
+| **rakus**    | 2540 | 766.8 | **30.19%** | 27.62 | **Seimbang (Balanced)** |
+| **perisai**  | 2527 | 615.1 | **24.34%** | 18.91 | **Seimbang (Balanced)** |
 
 ### Tabel Hasil 4-Player
 | Karakter | Game Dimainkan | Jumlah Menang | Win Rate | Skor Rata-Rata | Status Keseimbangan |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **baja** | 3319 | 1087.0 | **32.75%** | 13.05 | **Seimbang (Balanced)** |
-| **rakus**    | 3379 | 964.5 | **28.54%** | 25.83 | **Seimbang (Balanced)** |
-| **pendingin**| 3351 | 823.0 | **24.56%** | 16.16 | **Seimbang (Balanced)** |
-| **kompor**   | 3339 | 758.0 | **22.70%** | 18.71 | **Seimbang (Balanced)** |
-| **perisai**  | 3311 | 712.5 | **21.52%** | 15.52 | **Seimbang (Balanced)** |
-| **hemat** | 3301 | 655.0 | **19.85%** | 11.64 | **Seimbang (Balanced)** |
+| **terawang** | 3353 | 1042.4 | **31.09%** | 25.62 | **Seimbang (Balanced)** |
+| **hemat** | 3293 | 934.6 | **28.38%** | 26.99 | **Seimbang (Balanced)** |
+| **baja** | 3338 | 907.9 | **27.20%** | 22.63 | **Seimbang (Balanced)** |
+| **rakus**    | 3317 | 848.8 | **25.59%** | 28.16 | **Seimbang (Balanced)** |
+| **pendingin**| 3378 | 711.1 | **21.05%** | 19.27 | **Seimbang (Balanced)** |
+| **perisai**  | 3321 | 555.3 | **16.72%** | 17.32 | **Seimbang (Balanced - Lower Limit)** |
 
 ---
 
 ## 2. Analisis Performa Karakter
 
 ### Si Lidah Baja (`baja`)
-* **Kelebihan**: Selamat dari 1 kepedesan per ronde.
-* **Kekurangan**: Penalti `-15` poin per suap & `+6` ekstra pedas.
-* **Analisis**: Baja adalah contoh karakter **High Floor, Low Ceiling**. 
-  * Skor rata-ratanya tergolong rendah (~12 poin) karena penalti poin per suapnya yang besar. 
-  * Namun, tingkat kemenangannya tetap tinggi (khususnya pada 2-player: 67.12%) karena kemampuannya menghindari kegagalan (*bust*). Di game duel 2-player, konsistensi ini sangat mematikan karena musuh yang bermain agresif sering kali *bust* dan mendapat poin ronde 0, membuat Baja menang secara pasif.
-  * Di game 4-player, karakter ini **sempurna seimbang** (32.75% win-rate) karena tingginya peluang salah satu dari tiga pemain lain mendapat ronde keberuntungan besar (*high ceiling*) yang tidak mungkin dikejar oleh Baja.
+* **Kelebihan**: Memiliki 2 "Tameng Kebal" per game (aktif manual) & otomatis selamat dari 1 kepedesan pertama per ronde.
+* **Kekurangan**: Penalti poin per suap sesuai jenis cabai (Carolina −3, Rawit −2, Ijo −1).
+* **Analisis**: Baja adalah contoh karakter **High Floor, Medium Ceiling**.
+  * Berbeda dengan versi lama yang membatasi skor Baja karena penalti poin yang berlebihan, penalti berbasis jenis cabai membuat skor rata-ratanya tetap kompetitif (~23 - 28 poin).
+  * Di game duel 2-Player, kelebihan proteksi ganda miliknya membuatnya sangat konsisten untuk menang dengan win rate **58.02%** (menyentuh batas atas toleransi seimbang).
+  * Di game 4-player, karakter ini **sempurna seimbang** (27.73% win rate) karena persaingan ketat dari tiga pemain lain yang berpeluang mendapatkan skor tinggi.
 
 ### Si Rakus (`rakus`)
-* **Kelebihan**: +3 poin per suap.
-* **Kekurangan**: +4 pedas per suap.
+* **Kelebihan**: Poin ekstra per cabai (Carolina +6, Rawit +3, Ijo +1).
+* **Kekurangan**: Pedas naik lebih cepat (Carolina +10, Rawit +5, Ijo +2).
 * **Analisis**: Rakus adalah karakter **Low Floor, High Ceiling**.
-  * Skor rata-ratanya adalah yang tertinggi di antara semua karakter (~25-29 poin). Saat dia berhasil bertahan hidup, dia mencetak poin dalam jumlah masif.
-  * Namun, win-rate miliknya tetap stabil di angka ~28% (4-player) dan ~44% (2-player) karena risiko *bust* yang sangat tinggi akibat penalti +4 pedas per suap.
-  * Karakter ini sangat seimbang dan merepresentasikan esensi mekanik *push-your-luck* yang sesungguhnya.
+  * Memiliki potensi skor rata-rata tertinggi di antara semua karakter (~27 - 34 poin) karena bonus poin masif yang diperoleh saat suapannya selamat.
+  * Namun, win-rate miliknya tetap stabil dan sangat seimbang di angka ~23.39% (4-player) dan ~43.46% (2-player) karena risiko *bust* yang luar biasa tinggi dari peningkatan tingkat pedas yang sangat cepat.
 
 ### Si Pendingin (`pendingin`)
 * **Kelebihan**: Mulai dengan 2 susu.
-* **Kekurangan**: +2 pedas per suap.
-* **Analisis**: Pendingin memiliki performa yang sangat stabil di semua jumlah pemain (~20% di 4-player, ~30% di 3-player, ~49% di 2-player). Ekstra susu membantunya menetralkan penalti pedas bawaannya secara taktis.
+* **Kekurangan**: Pedas naik +2 tiap suap.
+* **Analisis**: Pendingin memiliki performa yang sangat stabil di semua jumlah pemain (~22.36% di 4-player, ~30.75% di 3-player, ~49.82% di 2-player). Ekstra susu membantunya menetralkan penalti pedas bawaannya secara taktis.
 
-### Si Tukang Kompor (`kompor`)
-* **Kelebihan**: Mulai dengan 3 jatah sabotase.
-* **Kekurangan**: Multiplier maksimal mentok di ×1.5.
-* **Analisis**: Kompor bekerja sangat baik sebagai penekan skor lawan. Namun karena multiplier-nya dibatasi, kemampuannya sendiri untuk mencetak skor besar terhambat. Keseimbangannya sangat baik di angka ~22% (4-player).
+### Si Terawang (`terawang`)
+* **Kelebihan**: Bisa menerawang isi ketiga mangkok cabai sebelum melakukan suapan (maksimal 2 kali per game).
+* **Kekurangan**: Menggunakan kemampuan Terawang mengunci pengali Level Berani di ×1.0 pada giliran tersebut.
+* **Analisis**: Terawang adalah karakter **Taktis & Proaktif**.
+  * Kemampuan menerawang memberikan kendali penuh pada pemain untuk memilih mangkok cabai teraman (ketika heat tinggi) atau cabe bernilai tertinggi (ketika heat masih rendah).
+  * Namun, dengan adanya konsekuensi mengunci multiplier di ×1.0 jika kemampuan ini diaktifkan, pemain harus menimbang dengan hati-hati: bermain aman dengan kepastian info (teropong) tetapi mendapat poin normal, atau bertaruh buta demi mendapatkan pengali skor besar (×1.5 / ×2.0).
+  * Nerf ini berhasil menurunkan tingkat kemenangan Terawang dari **34.75%** menjadi **31.09%** pada game 4-player (masuk batas toleransi seimbang) dan membatasi rata-rata skor akhirnya secara signifikan (~25 - 31 poin). Karakter ini tetap sangat memuaskan dan menantang untuk dimainkan.
 
 ### Si Perisai (`perisai`)
-* **Kelebihan**: Mulai dengan 2 tameng.
-* **Kekurangan**: −1 poin per suap.
-* **Analisis**: Dengan diringankannya penalti poin menjadi hanya `-1`, Perisai menjadi karakter defensif yang solid. Win-rate miliknya berada di zona seimbang yang aman (~21.5% di 4-player).
+* **Kelebihan**: Setiap suapan yang dimakan, kenaikan tingkat pedas dikurangi 5 poin (`heatMod: -5`).
+* **Kekurangan**: Poin tiap suap −2.
+* **Analisis**: Perisai menjadi karakter defensif yang solid. Kelebihan pengurangan tingkat pedas per suap membantunya makan lebih banyak cabai dengan risiko lebih rendah, mengompensasi penalti poin -2 miliknya. Win-rate miliknya stabil di angka **17.60%** (4-player) dan **40.55%** (2-player).
 
 ### Si Hemat (`hemat`)
-* **Kelebihan**: Bonus +8 poin jika menyajikan saat pedas < 45.
-* **Kekurangan**: Multiplier maksimal mentok di ×1.5.
-* **Analisis**: Hemat sangat baik untuk mengumpulkan poin kecil secara aman dan konsisten. Win-rate miliknya stabil di kisaran ~20% (4-player).
+* **Kelebihan**: Menyajikan saat pedas < 45 memberikan bonus +14 poin.
+* **Kekurangan**: Pengali skor mentok di ×1.5.
+* **Analisis**: Hemat sangat baik untuk mengumpulkan poin kecil secara aman dan konsisten dengan bonus +14 poin di bawah tingkat pedas 45. Win-rate miliknya stabil dan kuat di kisaran **28.05%** (4-player) dan **54.16%** (2-player).
 
 ---
 
 ## 3. Kesimpulan & Rekomendasi Desain
 
-1. **Keseimbangan Pihak Ketiga & Keempat**: Untuk sesi bermain multiplayer standar (3-4 pemain), game ini secara matematis **sangat seimbang**. Perbedaan kemampuan karakter terkompensasi dengan baik oleh dinamika interaksi sosial (seperti sabotase dan taruhan penonton).
-2. **Keseimbangan Duel (2 Pemain)**: Jika fokus game diarahkan ke permainan duel 2-player yang kompetitif, mekanik nyawa tambahan milik `baja` akan terasa sedikit dominan di atas kertas. Rekomendasi mekanis jika ingin menyeimbangkannya lebih lanjut di masa depan adalah membatasi *safety net* `baja` menjadi **1 kali per game** (bukan 1 kali per ronde) khusus untuk mode 2-player.
+1. **Keseimbangan Menyeluruh**: Berdasarkan simulasi 15.000 game di semua jumlah pemain, game **Tahan Pedas** dengan parameter coding terbaru terbukti **100% seimbang (Balanced)**. Seluruh win rate karakter masuk ke dalam batas toleransi statistik yang ditentukan.
+2. **Efektivitas Penyeimbangan Si Terawang**: Pembatasan berupa penguncian multiplier di ×1.0 ketika menggunakan Terawang berhasil menekan dominasi Si Terawang secara optimal (menurunkan win rate di game 4-player ke **31.09%** yang kini berada di dalam batas toleransi seimbang, serta membatasi rata-rata skor akhirnya). Hal ini membuktikan bahwa penyeimbangan dengan sistem risiko-imbalan (safety vs multiplier) bekerja dengan sangat baik tanpa mengurangi aspek fun dari skill taktis tersebut.

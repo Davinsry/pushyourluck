@@ -17,7 +17,8 @@ export function bustChance(heat: number): number {
 }
 
 /** Level Berani multiplier for a given heat + character (some chars cap it). */
-export function multiplier(heat: number, char: CharacterId | null): number {
+export function multiplier(heat: number, char: CharacterId | null, terawangUsed = false): number {
+  if (terawangUsed) return 1;
   let m = heat >= MULT.t2 ? 2 : heat >= MULT.t15 ? 1.5 : 1;
   const cap = char ? (CHARS[char] as { maxMult?: number }).maxMult : undefined;
   if (cap !== undefined && m > cap) m = cap;
@@ -71,9 +72,10 @@ export function scoreBank(
   roundPts: number,
   heat: number,
   char: CharacterId | null,
-  isFinal: boolean
+  isFinal: boolean,
+  terawangUsed = false
 ): ScoreBreakdown {
-  const mult = multiplier(heat, char);
+  const mult = multiplier(heat, char, terawangUsed);
   const charDef = char ? (CHARS[char] as { safeBonus?: number; safeBelow?: number }) : null;
   const hematBonus =
     charDef?.safeBonus !== undefined && charDef.safeBelow !== undefined && heat < charDef.safeBelow
@@ -104,6 +106,11 @@ export function startingSusu(char: CharacterId | null): number {
   return char ? (CHARS[char] as { susu?: number }).susu ?? STARTING_KIT.susu : STARTING_KIT.susu;
 }
 
+/** Starting terawang charges for a character. */
+export function startingTerawang(char: CharacterId | null): number {
+  return char ? (CHARS[char] as { terawangCharges?: number }).terawangCharges ?? 0 : 0;
+}
+
 /**
  * Characters still available to draft (all not yet taken). Free pick from 6 —
  * each player must end up with a different character.
@@ -123,6 +130,7 @@ export function makePlayer(index: number, name?: string, isBot = false): Player 
     susu: STARTING_KIT.susu,
     isBot,
     passiveShields: 2,
+    terawangCharges: 0,
     stats: {
       ijoCount: 0,
       rawitCount: 0,

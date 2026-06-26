@@ -39,7 +39,8 @@ describe("multiplier", () => {
     expect(multiplier(MULT.t2, null)).toBe(2);
   });
   it("caps for characters with maxMult", () => {
-    expect(multiplier(MULT.t2, "kompor")).toBe(1.5);
+    expect(multiplier(MULT.t2, "terawang", false)).toBe(2);
+    expect(multiplier(MULT.t2, "terawang", true)).toBe(1);
     expect(multiplier(MULT.t2, "hemat")).toBe(1.5);
   });
 });

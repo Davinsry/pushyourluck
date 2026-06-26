@@ -78,12 +78,6 @@ describe("Character Balance Simulation", () => {
                 if (p.susu === 0 && p.score >= SHOP.susu) {
                   state = gameReducer(state, { type: "BUY", player: i, item: "susu" }, rng);
                   bought = true;
-                } else if (p.tameng === 0 && p.score >= SHOP.tameng) {
-                  state = gameReducer(state, { type: "BUY", player: i, item: "tameng" }, rng);
-                  bought = true;
-                } else if (p.sabotage === 0 && p.score >= SHOP.cabai) {
-                  state = gameReducer(state, { type: "BUY", player: i, item: "cabai" }, rng);
-                  bought = true;
                 }
               }
             }

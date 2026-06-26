@@ -912,6 +912,10 @@ export default function App() {
               play("click");
               dispatch({ type: "TOGGLE_PASSIVE_SHIELD" });
             }}
+            onTerawang={() => {
+              play("click");
+              dispatch({ type: "TERAWANG" });
+            }}
             onConfirm={() => {
               play("click");
               dispatch({ type: "CONFIRM_PRETURN" });

@@ -15,6 +15,7 @@ import {
   startingSabotage,
   startingSusu,
   startingTameng,
+  startingTerawang,
   surviveBusts,
 } from "./rules";
 
@@ -82,6 +83,8 @@ export function initialState(rng: Rng): GameState {
     outcome: null,
     bets: {},
     secretBowls: [],
+    terawangActive: false,
+    terawangUsed: false,
   };
 }
 
@@ -98,6 +101,8 @@ function freshTurn(s: GameState): GameState {
     outcome: null,
     bets: {},
     secretBowls: [],
+    terawangActive: false,
+    terawangUsed: false,
   };
 }
 
@@ -166,8 +171,7 @@ function resolve(
       const player = Number(k);
       const bet = v!;
       const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-      const isKompor = s.players[player].char === "kompor";
-      const stake = isKompor ? BET_STAKE * 2 : BET_STAKE;
+      const stake = BET_STAKE;
       return { player, name: s.players[player].name, bet, correct, delta: correct ? stake : -stake };
     });
 
@@ -178,8 +182,7 @@ function resolve(
       let correctBet = false;
       if (bet) {
         const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-        const isKompor = p.char === "kompor";
-        const stake = isKompor ? BET_STAKE * 2 : BET_STAKE;
+        const stake = BET_STAKE;
         score += correct ? stake : -stake;
         if (correct) correctBet = true;
       }
@@ -247,6 +250,7 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
               sabotage: startingSabotage(action.char),
               tameng: startingTameng(action.char),
               susu: startingSusu(action.char),
+              terawangCharges: startingTerawang(action.char),
             }
           : p
       );
@@ -275,6 +279,20 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
         passiveShieldActivated: !state.passiveShieldActivated,
       };
     }
+    case "TERAWANG": {
+      const pIdx = activeIndex(state);
+      const me = state.players[pIdx];
+      if (me.char !== "terawang" || me.terawangCharges <= 0 || state.terawangActive) return state;
+      return {
+        ...state,
+        players: state.players.map((p, i) =>
+          i === pIdx ? { ...p, terawangCharges: p.terawangCharges - 1 } : p
+        ),
+        terawangActive: true,
+        terawangUsed: true,
+        feedback: "Mata batin terbuka! Isi mangkok terlihat.",
+      };
+    }
     case "CONFIRM_PRETURN": {
       return startActive(state, rng);
     }
@@ -286,7 +304,9 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
         const bite = state.secretBowls[bowlIdx];
         if (!bite) return state; // Safety guard
 
-        const newHeat = state.heat + biteHeat(bite, ch);
+        const s = { ...state, terawangActive: false };
+
+        const newHeat = s.heat + biteHeat(bite, ch);
         
         const oldStats = me.stats ?? { ijoCount: 0, rawitCount: 0, carolinaCount: 0, maxHeat: 0, correctBets: 0, busts: 0 };
         const newStats = {
@@ -301,13 +321,13 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
         const nextSecretBowls = shuffleBowls(rng);
 
         if (rollBust(newHeat, rng)) {
-          if (!state.shieldUsed && surviveBusts(ch) > 0) {
+          if (!s.shieldUsed && surviveBusts(ch) > 0) {
             const gain = biteGain(bite, ch, rng);
             return {
-              ...state,
-              players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
+              ...s,
+              players: s.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
               heat: newHeat,
-              roundPts: state.roundPts + gain,
+              roundPts: s.roundPts + gain,
               shieldUsed: true,
               feedback: `Perut baja nahan! Selamat sekali. (+${gain} poin)`,
               secretBowls: nextSecretBowls,
@@ -316,22 +336,22 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
           const bustStats = { ...newStats, busts: newStats.busts + 1 };
           return resolve(
             {
-              ...state,
+              ...s,
               heat: newHeat,
-              players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: bustStats } : p)),
+              players: s.players.map((p, i) => (i === pIdx ? { ...p, stats: bustStats } : p)),
               secretBowls: nextSecretBowls,
             },
             true,
             0,
-            { raw: 0, mult: 1, hematBonus: 0, final: isFinalRonde(state) }
+            { raw: 0, mult: 1, hematBonus: 0, final: isFinalRonde(s) }
           );
         }
         const gain = biteGain(bite, ch, rng);
         return {
-          ...state,
-          players: state.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
+          ...s,
+          players: s.players.map((p, i) => (i === pIdx ? { ...p, stats: newStats } : p)),
           heat: newHeat,
-          roundPts: state.roundPts + gain,
+          roundPts: s.roundPts + gain,
           feedback: `Nyam ${BITES[bite].name}! +${gain} poin`,
           secretBowls: nextSecretBowls,
         };
@@ -350,7 +370,7 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     case "SAJIKAN": {
       if (state.roundPts === 0) return state;
       const me = state.players[activeIndex(state)];
-      const b = scoreBank(state.roundPts, state.heat, me.char, isFinalRonde(state));
+      const b = scoreBank(state.roundPts, state.heat, me.char, isFinalRonde(state), state.terawangUsed);
       return resolve(state, false, b.gained, b);
     }
 
@@ -361,7 +381,7 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
       // ran out of time: if they have points, auto-bank them; otherwise forfeit.
       if (state.roundPts > 0) {
         const me = state.players[activeIndex(state)];
-        const b = scoreBank(state.roundPts, state.heat, me.char, isFinalRonde(state));
+        const b = scoreBank(state.roundPts, state.heat, me.char, isFinalRonde(state), state.terawangUsed);
         return resolve(
           { ...state, feedback: "Waktu habis! Poin disajikan otomatis." },
           false,

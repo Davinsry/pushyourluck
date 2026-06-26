@@ -1,4 +1,4 @@
-import { Hand, Milk, Sparkles, Shield } from "lucide-react";
+import { Hand, Milk, Sparkles, Shield, Eye } from "lucide-react";
 import { CHARS, FINAL_MULT } from "../config/balance";
 import type { BiteId, Player } from "../game";
 import { multiplier } from "../game";
@@ -19,6 +19,9 @@ interface Props {
   readOnly?: boolean; // online: you're watching someone else's turn
   busy?: boolean; // an eat/drink animation is playing — lock the controls
   shieldUsed?: boolean; // Lidah Baja's passive shield used this round
+  terawangActive?: boolean; // Is Terawang currently peeking the bowls?
+  terawangUsed?: boolean; // Did they use Terawang during the current turn?
+  onTerawang?: () => void;
 }
 
 export function ActivePhase({
@@ -30,13 +33,17 @@ export function ActivePhase({
   onSuap,
   onMinumSusu,
   onSajikan,
+  secretBowls,
   readOnly = false,
   busy = false,
   shieldUsed = false,
+  terawangActive = false,
+  terawangUsed = false,
+  onTerawang,
 }: Props) {
   const ch = player.char;
   const charDef = ch ? CHARS[ch] : null;
-  const curMult = multiplier(heat, ch);
+  const curMult = multiplier(heat, ch, terawangUsed);
 
   return (
     <>
@@ -62,6 +69,16 @@ export function ActivePhase({
                     {shieldUsed 
                       ? `Kebal: Tidak Aktif (Sisa: ${player.passiveShields})` 
                       : `Kebal: Aktif (Sisa: ${player.passiveShields})`}
+                  </span>
+                </div>
+              )}
+              {ch === "terawang" && (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span 
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold shadow-sm bg-purple-100 text-purple-800 border border-purple-200"
+                  >
+                    <Eye size={10} className="text-purple-600" />
+                    Terawang Sisa: {player.terawangCharges}
                   </span>
                 </div>
               )}
@@ -110,26 +127,58 @@ export function ActivePhase({
 
           <div className="mb-4 grid grid-cols-3 gap-2.5">
             {[0, 1, 2].map((idx) => {
+              const bite = secretBowls && secretBowls[idx];
+              const isRevealed = terawangActive && bite;
+              
+              let btnClass = "bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-650";
+              let content = "?";
+              let label = "Tutup";
+              
+              if (isRevealed) {
+                if (bite === "ijo") {
+                  btnClass = "bg-emerald-950 border-emerald-600 text-emerald-400";
+                  content = "🟢 Ijo";
+                  label = "+8 Pedas";
+                } else if (bite === "rawit") {
+                  btnClass = "bg-amber-950 border-amber-600 text-amber-400";
+                  content = "🔥 Rawit";
+                  label = "+15 Pedas";
+                } else if (bite === "carolina") {
+                  btnClass = "bg-red-950 border-red-600 text-red-400 animate-pulse";
+                  content = "💀 Reaper";
+                  label = "+28 Pedas";
+                }
+              }
+
               return (
                 <button
                   key={idx}
-                  className="tp-btn rounded-2xl p-2 text-center flex flex-col justify-between items-center min-h-[110px] transition-all border-2 bg-slate-700 border-slate-600 hover:bg-slate-650 text-slate-100"
+                  className={`tp-btn rounded-2xl p-2 text-center flex flex-col justify-between items-center min-h-[110px] transition-all border-2 ${btnClass}`}
                   onClick={() => onSuap(idx)}
                   disabled={busy}
                 >
                   <span className="text-[10px] font-bold tracking-wider opacity-75 uppercase">Mangkok {idx + 1}</span>
                   
                   <div className="my-1.5 flex flex-col items-center">
-                    <span className="text-xl font-bold">?</span>
+                    <span className="text-base font-extrabold">{content}</span>
                   </div>
 
-                  <span className="text-[10px] font-bold opacity-75">Tutup</span>
+                  <span className="text-[9px] font-bold opacity-80">{label}</span>
                 </button>
               );
             })}
           </div>
 
           <div className="flex gap-2.5">
+            {ch === "terawang" && player.terawangCharges > 0 && !terawangActive && (
+              <button
+                className="tp-btn flex flex-1 items-center justify-center gap-1.5 rounded-[14px] bg-purple-700 py-3.5 text-sm font-extrabold text-white"
+                onClick={onTerawang}
+                disabled={busy}
+              >
+                <Eye size={17} /> Terawang
+              </button>
+            )}
             <button
               className="tp-btn flex flex-1 items-center justify-center gap-1.5 rounded-[14px] bg-steel py-3.5 text-sm font-extrabold text-white"
               onClick={onMinumSusu}
@@ -150,4 +199,3 @@ export function ActivePhase({
     </>
   );
 }
-

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Coins, Hand, Milk, Shield, Sparkles } from "lucide-react";
+import { Coins, Hand, Milk, Shield, Sparkles, Eye } from "lucide-react";
 import { BET_STAKE, CHARS, FINAL_MULT } from "../config/balance";
 import type { Bet, GameState } from "../game";
 import { multiplier } from "../game";
@@ -18,6 +18,7 @@ interface Props {
   onSajikan: () => void;
   onNext: () => void;
   onTogglePassiveShield?: () => void;
+  onTerawang?: () => void;
   busy?: boolean; // an eat/drink animation is playing — lock the controls
 }
 
@@ -172,17 +173,16 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePa
                 Tidak
               </button>
             </div>
-          </div>
         </div>
       )}
     </>
   );
 }
 
-function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }: SubProps) {
+function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, onTerawang, busy }: SubProps) {
   const ch = me.char;
   const charDef = ch ? CHARS[ch] : null;
-  const curMult = multiplier(state.heat, ch);
+  const curMult = multiplier(state.heat, ch, state.terawangUsed);
 
   return (
     <>
@@ -210,6 +210,16 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
                       {state.shieldUsed 
                         ? `Kebal: Tidak Aktif (Sisa: ${me.passiveShields})` 
                         : `Kebal: Aktif (Sisa: ${me.passiveShields})`}
+                    </span>
+                  </div>
+                )}
+                {ch === "terawang" && (
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span 
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold shadow-sm bg-purple-100 text-purple-800 border border-purple-200"
+                    >
+                      <Eye size={10} className="text-purple-600" />
+                      Terawang Sisa: {me.terawangCharges}
                     </span>
                   </div>
                 )}
@@ -256,24 +266,55 @@ function ActiveHud({ state, me, isFinal, onSuap, onMinumSusu, onSajikan, busy }:
           </div>
         </div>
 
-        {/* Stack the 3 bowls vertically for the narrow panel */}
         <div className="grid gap-1.5 mb-2">
           {[0, 1, 2].map((idx) => {
+            const bite = state.secretBowls && state.secretBowls[idx];
+            const isRevealed = state.terawangActive && bite;
+            
+            let btnClass = "bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-650";
+            let content = "Tutup";
+            let label = "?";
+            
+            if (isRevealed) {
+              if (bite === "ijo") {
+                btnClass = "bg-emerald-950 border-emerald-600 text-emerald-400";
+                content = "🟢 Cabe Ijo";
+                label = "+8 Pedas";
+              } else if (bite === "rawit") {
+                btnClass = "bg-amber-950 border-amber-600 text-amber-400";
+                content = "🔥 Cabe Rawit";
+                label = "+15 Pedas";
+              } else if (bite === "carolina") {
+                btnClass = "bg-red-950 border-red-600 text-red-400 animate-pulse";
+                content = "💀 Carolina Reaper";
+                label = "+28 Pedas";
+              }
+            }
+            
             return (
               <button
                 key={idx}
-                className="tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-extrabold border bg-slate-700 border-slate-600 text-slate-100"
+                className={`tp-btn flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-extrabold border ${btnClass}`}
                 onClick={() => onSuap(idx)}
                 disabled={busy}
               >
-                <span>Mangkok {idx + 1}: Tutup</span>
-                <span className="text-[9.5px] font-bold opacity-80">?</span>
+                <span>Mangkok {idx + 1}: {content}</span>
+                <span className="text-[9.5px] font-bold opacity-80">{label}</span>
               </button>
             );
           })}
         </div>
 
         <div className="mt-2 flex gap-2">
+          {ch === "terawang" && me.terawangCharges > 0 && !state.terawangActive && (
+            <button
+              className="tp-btn flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-purple-700 py-2.5 text-[13px] font-extrabold text-white"
+              onClick={onTerawang}
+              disabled={busy}
+            >
+              <Eye size={16} /> Terawang
+            </button>
+          )}
           <button
             className="tp-btn flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-steel py-2.5 text-[13px] font-extrabold text-white"
             onClick={onMinumSusu}
