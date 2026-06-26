@@ -173,6 +173,7 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePa
                 Tidak
               </button>
             </div>
+          </div>
         </div>
       )}
     </>
