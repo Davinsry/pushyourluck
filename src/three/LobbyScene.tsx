@@ -8,8 +8,8 @@ import { Chair } from "./Chair";
 import { seatPosition, seatFacing, HEAD_Y, milkPosition, propFacing } from "./seats";
 import { TableMilkBottle } from "./MilkBottle";
 
-const LOBBY_CHARS = ["baja", "kompor", "pendingin", "hemat"];
-const LOBBY_ACCENTS = ["#3e7cb1", "#f26419", "#4e7410", "#6fa315"];
+const LOBBY_CHARS = ["baja", "terawang", "pendingin", "hemat"];
+const LOBBY_ACCENTS = ["#3e7cb1", "#8e5bd0", "#4e7410", "#6fa315"];
 
 function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: number; bust: boolean }[], activeIndex: number }) {
   const groupRef = useRef<THREE.Group>(null);

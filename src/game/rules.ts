@@ -91,15 +91,6 @@ export function surviveBusts(char: CharacterId | null): number {
   return char ? (CHARS[char] as { surviveBust?: number }).surviveBust ?? 0 : 0;
 }
 
-/** Starting sabotage tokens for a character. */
-export function startingSabotage(char: CharacterId | null): number {
-  return char ? (CHARS[char] as { sabotage?: number }).sabotage ?? STARTING_KIT.sabotage : STARTING_KIT.sabotage;
-}
-
-/** Starting shields for a character. */
-export function startingTameng(char: CharacterId | null): number {
-  return char ? (CHARS[char] as { tameng?: number }).tameng ?? STARTING_KIT.tameng : STARTING_KIT.tameng;
-}
 
 /** Starting milk for a character. */
 export function startingSusu(char: CharacterId | null): number {
@@ -125,8 +116,6 @@ export function makePlayer(index: number, name?: string, isBot = false): Player 
     name: name ?? `Pemain ${index + 1}`,
     score: STARTING_SCORE,
     char: null,
-    sabotage: STARTING_KIT.sabotage,
-    tameng: STARTING_KIT.tameng,
     susu: STARTING_KIT.susu,
     isBot,
     passiveShields: 2,

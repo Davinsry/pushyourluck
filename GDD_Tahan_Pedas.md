@@ -3,7 +3,7 @@
 **Nama Game:** Tahan Pedas  
 **Genre:** Push-Your-Luck Party Game  
 **Format Game:** Digital Prototype (Web-based: React, Tailwind CSS, Three.js)  
-**Target Pemain:** 2 – 4 Pemain (Lokal Pass-and-Play / Online Multiplayer)  
+**Target Pemain:** 2 – 4 Pemain (Lokal Pass-and-Play)  
 
 ---
 
@@ -26,9 +26,7 @@ Game ini dirancang untuk kelompok bermain kasual (*party game*) dengan fokus int
   1. **Pemain Aktif (Eater):** Pemain yang sedang mendapat giliran untuk makan cabai, mengatur tingkat kepedesan, menggunakan item Susu, atau memutuskan untuk mengamankan skor.
   2. **Penonton (Spectators/Bystanders):** Pemain lain yang sedang menunggu giliran. Mereka aktif memasang taruhan (*Bet*) pada keberhasilan pemain aktif untuk mendapatkan poin tambahan.
 * **Mode Bermain:**
-  * **Main Sendiri (Solo Mode):** 1 Pemain manusia melawan AI (bot) dengan perilaku cerdas yang mengambil keputusan secara dinamis berdasarkan ambang batas risiko.
-  * **Main Bareng (Local Pass-and-Play):** 2 - 4 Pemain menggunakan satu perangkat secara bergantian.
-  * **Main Online (Online Multiplayer):** Pemain dapat membuat/bergabung ke room menggunakan kode akses melalui sinkronisasi realtime (Supabase Realtime).
+  * **Main Bareng (Local Pass-and-Play):** 2 - 4 Pemain menggunakan satu perangkat secara bergantian (satu-satunya mode permainan).
 
 ---
 
@@ -144,8 +142,6 @@ Terdapat 3 tingkat kesulitan cabai yang dapat dipilih di meja:
 Setiap pemain memulai game dengan starter kit berupa: **1 Susu** (kecuali Si Pendingin yang memulai dengan 2 Susu). Item tambahan dapat dibeli di toko menggunakan poin yang dikumpulkan:
 * **Susu (Milk Bottle):** Mengurangi kepedesan sebesar -25 (Harga: 8 Poin).
 
-### C. Komponen Sistem & Jaringan
-* **Game Engine Reducer:** Pengelola state utama game yang murni (*pure function reducer*) untuk memastikan sinkronisasi state yang sama persis antar pemain.
-* **AI Bot Brain Engine:** Algoritma bot otomatis yang mengambil keputusan berdasarkan ambang batas risiko (*heuristic threshold*) kepedesan.
-* **Supabase Realtime Channel:** Komponen backend serverless untuk menyiarkan aksi (*action broadcast*) dan mendeteksi kehadiran pemain (*presence list*) saat bermain online.
+### C. Komponen Sistem
+* **Game Engine Reducer:** Pengelola state utama game yang murni (*pure function reducer*) untuk memastikan alur game yang konsisten bagi semua pemain.
 * **Synth Sound Engine:** Generator efek suara sintesis (SFX makan, minum susu, tersedak, dan latar musik) tanpa memerlukan file audio aset eksternal yang besar.

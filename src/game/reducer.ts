@@ -12,9 +12,7 @@ import {
   makePlayer,
   rollBust,
   scoreBank,
-  startingSabotage,
   startingSusu,
-  startingTameng,
   startingTerawang,
   surviveBusts,
 } from "./rules";
@@ -247,8 +245,6 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
           ? {
               ...makePlayer(i, p.name, p.isBot),
               char: action.char,
-              sabotage: startingSabotage(action.char),
-              tameng: startingTameng(action.char),
               susu: startingSusu(action.char),
               terawangCharges: startingTerawang(action.char),
             }

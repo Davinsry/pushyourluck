@@ -37,7 +37,6 @@ export const BITES = {
 //   surviveBust : free busts survived per ronde (Lidah Baja)
 //   pointMod    : flat points added/removed per bite
 //   heatMod     : extra heat added per bite
-//   sabotage    : starting "tambah sambal" tokens
 //   maxMult     : caps the Level Berani multiplier
 //   safeBonus / safeBelow : flat bonus when banking under a heat threshold
 export const CHARS = {
@@ -98,7 +97,7 @@ export const CHARS = {
 } as const;
 
 // Default starting kit for every player (characters can override per-field).
-export const STARTING_KIT = { tameng: 0, susu: 1, sabotage: 0 } as const;
+export const STARTING_KIT = { susu: 1 } as const;
 
 // How long the eat/drink hand animation runs (ms). Controls also stay locked
 // for this long so a player can't spam actions mid-animation.

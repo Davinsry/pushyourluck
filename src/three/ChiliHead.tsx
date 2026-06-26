@@ -126,18 +126,12 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
         </>
       )}
 
-      {/* kompor (Si Tukang Kompor): little stove-burner/fire horns */}
-      {char === "kompor" && (
-        <>
-          <mesh position={[-0.32, 0.58, 0.18]} rotation={[0.3, 0, 0.2]} castShadow>
-            <coneGeometry args={[0.07, 0.22, 8]} />
-            <meshStandardMaterial color="#f26419" emissive="#f26419" emissiveIntensity={0.6} roughness={0.3} />
-          </mesh>
-          <mesh position={[0.32, 0.58, 0.18]} rotation={[0.3, 0, -0.2]} castShadow>
-            <coneGeometry args={[0.07, 0.22, 8]} />
-            <meshStandardMaterial color="#f26419" emissive="#f26419" emissiveIntensity={0.6} roughness={0.3} />
-          </mesh>
-        </>
+      {/* terawang (Si Terawang): floating glowing purple crystal ball */}
+      {char === "terawang" && (
+        <mesh position={[0, 0.62, 0.1]} castShadow>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshStandardMaterial color="#8e5bd0" emissive="#8e5bd0" emissiveIntensity={0.8} roughness={0.1} />
+        </mesh>
       )}
 
       {/* hemat (Si Hemat): round frames/glasses */}

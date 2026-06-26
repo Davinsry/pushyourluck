@@ -16,7 +16,7 @@ import { HEAD_Y, milkPosition, propFacing, seatFacing, seatPosition } from "./se
 const ACCENT: Record<string, string> = {
   baja: "#3e7cb1",
   rakus: "#d7263d",
-  kompor: "#f26419",
+  terawang: "#8e5bd0",
   hemat: "#6fa315",
   perisai: "#f6a609",
   pendingin: "#4e7410",

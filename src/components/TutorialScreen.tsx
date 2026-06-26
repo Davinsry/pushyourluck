@@ -1,6 +1,5 @@
 import {
   ArrowLeft,
-  Bot,
   CheckCheck,
   Coins,
   Flame,
@@ -60,8 +59,7 @@ export function TutorialScreen({ onBack }: Props) {
         </Section>
 
         <Section icon={<Users size={18} />} title="1. Persiapan & Mode Game">
-          Pilih mode bermain: <B>Main Sendiri</B> (lawan bot <Bot size={12} className="inline align-[-1px]" />), 
-          <B>Main Bareng</B> (2–4 orang secara lokal pas-dan-main), atau <B>Main Online</B> (membuat/masuk room). 
+          Permainan dimainkan secara lokal (<B>Main Bareng</B>) untuk 2–4 orang secara bergantian perangkat (pas-dan-main). 
           Tentukan namamu di awal (bisa diacak dengan dadu, tersimpan di Pengaturan). Tiap pemain kemudian <B>memilih 1 karakter unik</B> dari {Object.keys(CHARS).length} pilihan secara bergantian.
         </Section>
 
@@ -97,7 +95,7 @@ export function TutorialScreen({ onBack }: Props) {
             <div>• Pedas <B>≥ {MULT.t15}</B> → Poin Sajian <B>×1.5</B></div>
             <div>• Pedas <B>≥ {MULT.t2}</B> → Poin Sajian <B>×2.0</B></div>
           </div>
-          <p className="m-0 mt-1">*Catatan: Karakter tertentu (Si Tukang Kompor & Si Hemat) memiliki batas pengali skor maksimum ×1.5.</p>
+          <p className="m-0 mt-1">*Catatan: Karakter tertentu (Si Hemat) memiliki batas pengali skor maksimum ×1.5.</p>
         </Section>
 
         <Section icon={<Milk size={18} />} title="5. Item & Kegunaannya">
@@ -130,12 +128,9 @@ export function TutorialScreen({ onBack }: Props) {
           <p className="m-0 mt-1.5 text-chili-dark font-semibold">*Membeli item akan mengurangi total skor kemenanganmu, jadi belanjalah dengan bijak!</p>
         </Section>
 
-        <Section icon={<Sparkles size={18} />} title="8. Ronde Pamungkas & Emote">
-          <p className="m-0 mb-1.5">
-            <B>Ronde Terakhir (Pamungkas):</B> Semua poin yang disajikan di ronde terakhir akan dikalikan <B>×{FINAL_MULT}</B> — kesempatan emas untuk melakukan comeback!
-          </p>
+        <Section icon={<Sparkles size={18} />} title="8. Ronde Pamungkas">
           <p className="m-0">
-            <B>Emote Panel:</B> Di mode online, kamu bisa mengekspresikan diri atau meledek temanmu dengan tombol emote panel di sisi kanan tengah layar.
+            <B>Ronde Terakhir (Pamungkas):</B> Semua poin yang disajikan di ronde terakhir akan dikalikan <B>×{FINAL_MULT}</B> — kesempatan emas untuk melakukan comeback!
           </p>
         </Section>
 

@@ -32,8 +32,6 @@ export interface Player {
   name: string;
   score: number;
   char: CharacterId | null;
-  sabotage: number; // remaining "tambah sambal" tokens
-  tameng: number; // remaining shields
   susu: number; // remaining milk
   isBot: boolean; // controlled by the AI (solo mode)
   passiveShields: number; // Lidah Baja's passive shield charges left
