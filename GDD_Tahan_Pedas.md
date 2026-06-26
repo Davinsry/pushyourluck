@@ -43,9 +43,9 @@ Poin dapat diperoleh melalui tiga cara:
 ## 4. Challenge
 
 Tantangan utama dalam game ini berpusat pada pengelolaan risiko dan pengambilan keputusan di bawah tekanan:
-* **Ketidakpastian Risiko (Risk of Busting):** Setiap gigitan cabai meningkatkan tingkat kepedesan. Peluang *bust* meningkat secara linear seiring bertambahnya kepedesan. Pemain harus menebak peluang secara intuitif (misalnya, *"Apakah saya berani mengambil risiko 35% bust untuk Cabe Carolina?"*).
+* **Ketidakpastian Risiko (Risk of Busting):** Setiap gigitan cabai meningkatkan tingkat kepedesan. Peluang *bust* meningkat secara linear seiring bertambahnya kepedesan. Pemain harus menebak peluang secara intuitif (misalnya, *"Apakah saya berani menambah kepedesan ke 28% peluang bust demi Cabe Carolina?"*).
 * **Manajemen Ekonomi Poin (Shop vs Score):** Toko item dibuka di antara ronde. Pemain harus mengorbankan poin kemenangan yang sudah mereka kumpulkan untuk membeli Susu (8 poin) demi ketahanan di ronde berikutnya. Terlalu banyak belanja akan mengurangi skor akhir, tetapi terlalu hemat bisa membuat pemain rentan mengalami *bust*.
-* **Batas Waktu (Turn Timer):** Pemain memiliki batas waktu 60 detik per giliran. Kehabisan waktu akan memaksa giliran berakhir; jika pemain sudah mengumpulkan poin pada giliran tersebut, sistem akan otomatis melakukan *Sajikan* (Bank) untuk menyelamatkan poin pemain. Jika belum mengumpulkan poin, poin giliran dianggap hangus.
+* **Batas Waktu (Turn Timer):** Fase makan memiliki batas waktu **60 detik** per giliran. Kehabisan waktu akan memaksa giliran berakhir; jika pemain sudah mengumpulkan poin pada giliran tersebut, sistem akan otomatis melakukan *Sajikan* (Bank) untuk menyelamatkan poin pemain. Jika belum mengumpulkan poin, poin giliran dianggap hangus. Fase lain juga memiliki timer agar permainan tetap mengalir: **fase taruhan (preturn) 30 detik** (otomatis lanjut) dan **Toko 60 detik** (otomatis ditutup).
 
 ---
 
@@ -58,11 +58,11 @@ Tantangan utama dalam game ini berpusat pada pengelolaan risiko dan pengambilan 
 
 #### **Fase 1: Preturn (Fase Taruhan)**
 * Penonton dapat memasang taruhan: **Aman** atau **Bust** (Kepedesan).
-* Khusus untuk **Si Lidah Baja**, pemain diberikan pilihan di awal gilirannya untuk mengaktifkan **Tameng Kebal** (jika masih memiliki sisa kuota, maks 2 per game) untuk melindungi dari kegagalan (*Bust*) pertama pada giliran tersebut.
+* Khusus untuk **Si Lidah Baja**, pemain diberikan pilihan di awal gilirannya untuk mengaktifkan **Tameng Kebal** (jika masih memiliki sisa kuota, maks 2 per game). Tameng harus diaktifkan secara manual — bukan otomatis. Saat aktif, pemain selamat dari *Bust* pertama pada giliran tersebut, dan 1 kuota tameng terpakai (terpakai juga meskipun giliran berakhir tanpa *bust*).
 
 #### **Fase 2: Active (Fase Makan)**
 Pemain Aktif dapat memilih satu dari aksi berikut berulang kali selama belum *bust* atau *bank*:
-* **Suap (Bite):** Memilih salah satu dari 3 mangkok cabai di meja. Memberikan poin acak dan menambah kepedesan. Setelah makan, sistem melakukan kocokan peluang (*bust roll*). Jika gagal, pemain mengalami *Bust* (giliran berakhir, poin ronde 0).
+* **Suap (Bite):** Memilih salah satu dari 3 mangkok cabai di meja. **Isi setiap mangkok tertutup (rahasia) dan diacak ulang setiap kali pemain makan**, sehingga bagi pemain biasa pemilihan mangkok bersifat untung-untungan (peluang sama untuk Ijo/Rawit/Carolina) — inilah inti *push-your-luck*. Cabai yang didapat memberikan poin acak sesuai jenisnya dan menambah kepedesan. Setelah makan, sistem melakukan kocokan peluang (*bust roll*). Jika gagal, pemain mengalami *Bust* (giliran berakhir, poin ronde 0).
 * **Minum Susu:** Mengurangi kepedesan sebesar **-25**. Dapat dilakukan selama pemain memiliki item Susu di inventarisnya. Aksi ini aman dan tidak memicu *bust roll*.
 * **Terawang:** Khusus untuk **Si Terawang**, pemain dapat mengaktifkan kemampuan ini secara manual (maksimal 2 kali per game) untuk menyingkap isi ketiga mangkok secara visual sebelum memilih mana yang akan disuap.
 * **Sajikan (Bank/Sajikan):** Mengunci poin ronde yang telah dikumpulkan. Poin dikalikan dengan *Level Berani* dan ditambah bonus karakter, lalu ditambahkan ke skor permanen. Giliran berakhir dengan aman.
@@ -98,7 +98,7 @@ Terdapat 6 pilihan karakter unik yang memberikan kelebihan (*upside*) dan kekura
 
 | Karakter | Nama Karakter | Kelebihan (Upside) | Kekurangan (Downside) |
 | :---: | :--- | :--- | :--- |
-| 🔩 | **Si Lidah Baja** | Memiliki 2 "Tameng Kebal" per game (diaktifkan manual di awal giliran) & otomatis selamat dari *bust* pertama setiap ronde. | Penalti poin tiap suap sesuai cabai (Carolina -3, Rawit -2, Ijo -1). |
+| 🔩 | **Si Lidah Baja** | Memiliki 2 "Tameng Kebal" per game. Diaktifkan manual di awal giliran; saat aktif, pemain selamat dari *bust* pertama pada giliran tersebut (1 tameng terpakai per giliran, total 2× per game). | Penalti poin tiap suap sesuai cabai (Carolina -3, Rawit -2, Ijo -1). |
 | ❄️ | **Si Pendingin** | Mulai dengan 2 Susu (standar 1). | Kepedesan bertambah ekstra +2 tiap suap. |
 | 🛡️ | **Si Perisai** | Setiap suapan yang dimakan, kenaikan tingkat pedas dikurangi 5 poin. | Poin tiap suap berkurang -2. |
 | 😋 | **Si Rakus** | Poin ekstra per cabai (Carolina +6, Rawit +3, Ijo +1). | Pedas bertambah ekstra (Carolina +10, Rawit +5, Ijo +2) tiap suap. |
@@ -120,8 +120,8 @@ Game ini memiliki ruang permainan (*game space*) yang membagi interaksi menjadi 
 ### B. Dimensi Ruang 3D (Imersif Layer)
 Menggunakan React Three Fiber (Web GL) untuk menyajikan visualisasi meja makan interaktif:
 * **Circular Table Space:** Pemain diposisikan melingkar mengelilingi meja makan kayu. Posisi sudut kursi dihitung dinamis dengan rumus:
-  $$\theta = \frac{2\pi}{N} \times i$$
-  Di mana $N$ adalah jumlah pemain, and $i$ adalah indeks pemain.
+  $$\theta = \frac{\pi}{2} + \frac{2\pi}{N} \times i$$
+  Di mana $N$ adalah jumlah pemain dan $i$ adalah indeks pemain. Offset $\frac{\pi}{2}$ membuat pemain pertama (indeks 0) menghadap kamera di sisi depan (+z).
 * **Clickable 3D Bowls:** Cabai disajikan dalam mangkuk-mangkuk 3D yang dapat diklik langsung oleh pemain untuk memicu aksi makan.
 * **Responsive Avatar (Chili-Head):** Karakter digambarkan sebagai kepala cabai 3D bergaya *low-poly* yang akan mengeluarkan efek partikel keringat (*sweat*), uap (*steam*), hingga api membara (*fire*) seiring meningkatnya meter kepedesan.
 * **Camera Rig:** Kamera bergerak secara dinamis (*lerp*) berpindah sudut pandang fokus ke wajah karakter yang sedang aktif makan.
@@ -133,7 +133,7 @@ Menggunakan React Three Fiber (Web GL) untuk menyajikan visualisasi meja makan i
 Komponen-komponen utama yang digunakan dalam game ini meliputi:
 
 ### A. Cabai (Bahan Utama)
-Terdapat 3 tingkat kesulitan cabai yang dapat dipilih di meja:
+Terdapat 3 tingkat kesulitan cabai yang tersembunyi di dalam mangkok. Isi mangkok dirahasiakan dan diacak ulang tiap suap, sehingga pemain biasa tidak dapat memilih jenis cabainya (hanya **Si Terawang** yang bisa mengintip & memilih):
 1. **Cabe Ijo:** Poin: [4 - 7] | Efek Pedas: +8
 2. **Cabe Rawit:** Poin: [8 - 12] | Efek Pedas: +15
 3. **Cabe Carolina:** Poin: [15 - 22] | Efek Pedas: +28

@@ -26,6 +26,7 @@ const ACCENT: Record<string, string> = {
 export interface ActionAnim {
   kind: "bite" | "milk";
   bite?: BiteId;
+  bowlIdx?: number; // which bowl (0/1/2) the player clicked — drives the hand target
   nonce: number; // start time (performance.now) — changes to retrigger
 }
 

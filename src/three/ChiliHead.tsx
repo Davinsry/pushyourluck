@@ -215,16 +215,14 @@ const REST = new THREE.Vector3(0.52, -0.7, 0.42);
 const MOUTH = new THREE.Vector3(0, -0.16, 0.56);
 
 // Three separate bowl targets (local space) — left, centre, right.
-// The bowls are spread ±0.75 along the local-X perpendicular, so we mirror that.
-const BOWL_LEFT   = new THREE.Vector3(-0.65, -0.82, 1.15);  // ijo (leftmost)
-const BOWL_CENTER = new THREE.Vector3( 0.00, -0.82, 1.15);  // rawit (centre)
-const BOWL_RIGHT  = new THREE.Vector3( 0.65, -0.82, 1.15);  // carolina (rightmost)
+// The bowls are spread ±0.75 along the local-X perpendicular (see seats.ts
+// bowlPositions), so index 0 = left, 1 = centre, 2 = right. The hand must reach
+// for the bowl the player actually clicked, NOT the (shuffled) chili inside it.
+const BOWL_LEFT   = new THREE.Vector3(-0.65, -0.82, 1.15);  // bowl index 0 (leftmost)
+const BOWL_CENTER = new THREE.Vector3( 0.00, -0.82, 1.15);  // bowl index 1 (centre)
+const BOWL_RIGHT  = new THREE.Vector3( 0.65, -0.82, 1.15);  // bowl index 2 (rightmost)
 
-const BOWL_MAP: Record<BiteId, THREE.Vector3> = {
-  ijo: BOWL_LEFT,
-  rawit: BOWL_CENTER,
-  carolina: BOWL_RIGHT,
-};
+const BOWL_BY_INDEX = [BOWL_LEFT, BOWL_CENTER, BOWL_RIGHT];
 
 // Milk glass position (to the side, where the bottle sits on the table).
 const GLASS_POS = new THREE.Vector3(1.05, -0.55, 0.5);
@@ -303,8 +301,9 @@ function Hand({ anim, active }: { anim: ActionAnim | null; active: boolean }) {
     if (anim) {
       const t = Math.min(1, Math.max(0, (performance.now() - anim.nonce) / ACTION_ANIM_MS));
       if (anim.kind === "bite") {
-        // Pick the bowl target matching the chili type
-        const bowlTarget = (anim.bite && BOWL_MAP[anim.bite]) || BOWL_CENTER;
+        // Reach for the bowl the player clicked (by index), not the chili inside.
+        const bowlTarget =
+          (anim.bowlIdx !== undefined ? BOWL_BY_INDEX[anim.bowlIdx] : undefined) ?? BOWL_CENTER;
         if (t < 0.4) {
           target = seg(REST, bowlTarget, t / 0.4);
         } else if (t < 0.65) {

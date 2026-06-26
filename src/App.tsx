@@ -596,10 +596,15 @@ export default function App() {
 
   // Run an action behind a hand animation: lock controls, play the gesture,
   // then apply the action when the hand finishes.
-  const animateThen = (kind: "bite" | "milk", bite: BiteId | undefined, run: () => void) => {
+  const animateThen = (
+    kind: "bite" | "milk",
+    bite: BiteId | undefined,
+    run: () => void,
+    bowlIdx?: number
+  ) => {
     if (busy) return;
     setBusy(true);
-    setAnim({ kind, bite, nonce: performance.now() });
+    setAnim({ kind, bite, bowlIdx, nonce: performance.now() });
     play(kind === "milk" ? "milk" : "bite");
     busyTimer.current = setTimeout(() => {
       run();
@@ -611,13 +616,18 @@ export default function App() {
   const suap = (bowlIdx: number) => {
     const secretBowls = online ? room.gameState?.secretBowls : state.secretBowls;
     const bite = secretBowls ? secretBowls[bowlIdx] : undefined;
-    animateThen("bite", bite, () => {
-      if (online) {
-        room.sendAction({ type: "SUAP", bowlIdx });
-      } else {
-        dispatch({ type: "SUAP", bowlIdx });
-      }
-    });
+    animateThen(
+      "bite",
+      bite,
+      () => {
+        if (online) {
+          room.sendAction({ type: "SUAP", bowlIdx });
+        } else {
+          dispatch({ type: "SUAP", bowlIdx });
+        }
+      },
+      bowlIdx
+    );
   };
 
   const minum = () => animateThen("milk", undefined, () => dispatch({ type: "MINUM_SUSU" }));
@@ -692,7 +702,7 @@ export default function App() {
                 onPick={(bowlIdx) => {
                   if (isHumanActiveTurn) {
                     const bite = room.gameState?.secretBowls[bowlIdx];
-                    animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bowlIdx }));
+                    animateThen("bite", bite, () => room.sendAction({ type: "SUAP", bowlIdx }), bowlIdx);
                   }
                 }}
                 anim={anim}
