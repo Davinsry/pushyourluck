@@ -95,7 +95,7 @@ export function TutorialScreen({ onBack }: Props) {
             <div>• Pedas <B>≥ {MULT.t15}</B> → Poin Sajian <B>×1.5</B></div>
             <div>• Pedas <B>≥ {MULT.t2}</B> → Poin Sajian <B>×2.0</B></div>
           </div>
-          <p className="m-0 mt-1">*Catatan: Karakter tertentu (Si Hemat) memiliki batas pengali skor maksimum ×1.5.</p>
+          <p className="m-0 mt-1">*Catatan: Si Hemat memiliki batas pengali skor maksimum ×1.5, sedangkan Si Terawang mengunci pengali skor di ×1.0 jika menggunakan kemampuannya.</p>
         </Section>
 
         <Section icon={<Milk size={18} />} title="5. Item & Kegunaannya">
