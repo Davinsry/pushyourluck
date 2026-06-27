@@ -3,8 +3,8 @@
 //  + action + rng always produces the same next state, so it can
 //  be driven from React (useGame) or from tests.
 // ─────────────────────────────────────────────────────────────
-import { BET_STAKE, BITES, CYCLES, SHOP, SUSU_COOL } from "../config/balance";
-import type { Action, BetResult, BiteId, CharacterId, GameState, Mode, Outcome, Player, Rng, ShopItem } from "./types";
+import { BET, BITES, CYCLES, SHOP, SUSU_COOL } from "../config/balance";
+import type { Action, BetResult, BiteId, CharacterId, GameState, Mode, Outcome, Player, Rng, ShopItem, Wager } from "./types";
 import {
   biteGain,
   biteHeat,
@@ -163,25 +163,27 @@ function resolve(
 ): GameState {
   const pIdx = activeIndex(s);
 
+  // Correct → win stake × payout (bust pays more); wrong → lose the stake.
+  const wagerDelta = (w: Wager, correct: boolean) =>
+    correct ? w.amount * (w.bet === "bust" ? BET.payoutBust : BET.payoutAman) : -w.amount;
+
   const betResults: BetResult[] = Object.entries(s.bets)
     .filter(([, v]) => v)
     .map(([k, v]) => {
       const player = Number(k);
-      const bet = v!;
-      const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-      const stake = BET_STAKE;
-      return { player, name: s.players[player].name, bet, correct, delta: correct ? stake : -stake };
+      const w = v!;
+      const correct = (busted && w.bet === "bust") || (!busted && w.bet === "aman");
+      return { player, name: s.players[player].name, bet: w.bet, amount: w.amount, correct, delta: wagerDelta(w, correct) };
     });
 
     const players = s.players.map((p, i) => {
       let score = p.score;
       if (i === pIdx && !busted) score += gained;
-      const bet = s.bets[i];
+      const w = s.bets[i];
       let correctBet = false;
-      if (bet) {
-        const correct = (busted && bet === "bust") || (!busted && bet === "aman");
-        const stake = BET_STAKE;
-        score += correct ? stake : -stake;
+      if (w) {
+        const correct = (busted && w.bet === "bust") || (!busted && w.bet === "aman");
+        score += wagerDelta(w, correct);
         if (correct) correctBet = true;
       }
       
@@ -264,7 +266,21 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     // ── preturn (spectators) ──
     case "TOGGLE_BET": {
       const cur = state.bets[action.player];
-      return { ...state, bets: { ...state.bets, [action.player]: cur === action.bet ? undefined : action.bet } };
+      const cap = Math.min(state.players[action.player]?.score ?? 0, BET.maxWager);
+      if (cap <= 0) return state; // no points → can't wager
+      // tapping the current side again clears the bet
+      if (cur && cur.bet === action.bet) {
+        return { ...state, bets: { ...state.bets, [action.player]: undefined } };
+      }
+      const amount = cur ? Math.min(cur.amount, cap) : Math.min(BET.defaultWager, cap);
+      return { ...state, bets: { ...state.bets, [action.player]: { bet: action.bet, amount } } };
+    }
+    case "SET_BET_AMOUNT": {
+      const cur = state.bets[action.player];
+      if (!cur) return state;
+      const cap = Math.min(state.players[action.player]?.score ?? 0, BET.maxWager);
+      const amount = Math.max(1, Math.min(action.amount, cap));
+      return { ...state, bets: { ...state.bets, [action.player]: { ...cur, amount } } };
     }
     case "TOGGLE_PASSIVE_SHIELD": {
       const pIdx = activeIndex(state);
@@ -441,6 +457,7 @@ export function actionAllowed(state: GameState, seat: number, a: Action): boolea
     case "CHOOSE_CHAR":
       return state.screen === "draft" && state.draftIdx === seat;
     case "TOGGLE_BET":
+    case "SET_BET_AMOUNT":
       return a.player === seat && a.player !== activeIndex(state);
     case "CONFIRM_PRETURN":
     case "SUAP":

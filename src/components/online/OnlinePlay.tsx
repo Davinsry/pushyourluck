@@ -154,6 +154,7 @@ export function OnlinePlay({ room, onExit }: Props) {
                 bets={state.bets}
                 viewerSeat={youSeat}
                 onToggleBet={(player, bet) => send({ type: "TOGGLE_BET", player, bet })}
+                onSetBetAmount={(player, amount) => send({ type: "SET_BET_AMOUNT", player, amount })}
                 onConfirm={() => send({ type: "CONFIRM_PRETURN" })}
                 passiveShieldActivated={state.passiveShieldActivated}
                 onTogglePassiveShield={() => send({ type: "TOGGLE_PASSIVE_SHIELD" })}

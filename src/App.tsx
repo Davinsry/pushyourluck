@@ -786,6 +786,7 @@ export default function App() {
                 play("click");
                 room.sendAction({ type: "TOGGLE_BET", player, bet });
               }}
+              onSetBetAmount={(player, amount) => room.sendAction({ type: "SET_BET_AMOUNT", player, amount })}
               onTogglePassiveShield={() => {
                 play("click");
                 room.sendAction({ type: "TOGGLE_PASSIVE_SHIELD" });
@@ -918,6 +919,7 @@ export default function App() {
               play("click");
               dispatch({ type: "TOGGLE_BET", player, bet });
             }}
+            onSetBetAmount={(player, amount) => dispatch({ type: "SET_BET_AMOUNT", player, amount })}
             onTogglePassiveShield={() => {
               play("click");
               dispatch({ type: "TOGGLE_PASSIVE_SHIELD" });

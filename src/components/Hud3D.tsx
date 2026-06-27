@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Coins, Hand, Milk, Shield, Sparkles, Eye } from "lucide-react";
-import { BET_STAKE, CHARS, FINAL_MULT } from "../config/balance";
+import { Coins, Hand, Milk, Shield, Sparkles, Eye, Lock, EyeOff } from "lucide-react";
+import { BET, CHARS, FINAL_MULT } from "../config/balance";
 import type { Bet, GameState } from "../game";
 import { multiplier } from "../game";
 import { color } from "../ui/theme";
@@ -12,6 +12,7 @@ interface Props {
   isFinal: boolean;
   isLastTurn: boolean;
   onToggleBet: (player: number, bet: Bet) => void;
+  onSetBetAmount?: (player: number, amount: number) => void;
   onConfirm: () => void;
   onSuap: (bowlIdx: number) => void;
   onMinumSusu: () => void;
@@ -36,9 +37,12 @@ export function Hud3D(props: Props) {
 
 type SubProps = Props & { me: GameState["players"][number] };
 
-function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePassiveShield }: SubProps) {
+function PreturnHud({ state, activeIndex, me, onToggleBet, onSetBetAmount, onConfirm, onTogglePassiveShield }: SubProps) {
   const hasHumanSpectators = state.players.some((p, k) => k !== activeIndex && !p.isBot);
   const [showPassiveShieldModal, setShowPassiveShieldModal] = useState(false);
+  // which spectators have locked their (now hidden) bet, so the active player can't peek
+  const [locked, setLocked] = useState<Set<number>>(new Set());
+  const lock = (k: number) => setLocked((s) => new Set(s).add(k));
 
   // Toggle body class when modal open to prevent 3D floating badges from bleeding through
   useEffect(() => {
@@ -68,7 +72,7 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePa
 
         <p className="m-0 text-[13px] text-ink font-medium leading-relaxed">
           {hasHumanSpectators
-            ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}).`
+            ? `Penonton pasang taruhan pakai poinnya sendiri. Hasilnya disembunyikan sampai gilirannya selesai.`
             : "Lawan-lawan bot diam-diam pasang taruhan..."}
         </p>
         <button
@@ -85,36 +89,100 @@ function PreturnHud({ state, activeIndex, me, onToggleBet, onConfirm, onTogglePa
         </button>
       </div>
 
-      {/* right: spectator bets */}
+      {/* right: spectator wagers (hidden from the active player once locked) */}
       {state.players.some((p, k) => k !== activeIndex && !p.isBot) && (
-      <div className={`absolute bottom-4 right-4 max-h-[70vh] w-[min(46vw,320px)] overflow-y-auto ${panel}`}>
-        <p className="m-0 mb-2 text-[13px] font-bold text-muted">Penonton</p>
+      <div className={`absolute bottom-4 right-4 max-h-[78vh] w-[min(46vw,330px)] overflow-y-auto ${panel}`}>
+        <div className="mb-1 flex items-center gap-1.5 text-chili-dark">
+          <EyeOff size={15} />
+          <p className="m-0 text-[13px] font-extrabold">{me.name}, jangan ngintip!</p>
+        </div>
+        <p className="m-0 mb-2.5 text-[11px] text-muted leading-snug">
+          Penonton: taruh poin, lalu tekan Kunci 🔒 supaya rahasia. Benar Aman ×{BET.payoutAman}, benar Kepedesan ×{BET.payoutBust}, salah hangus.
+        </p>
         <div className="grid gap-2">
           {state.players.map((p, k) => {
             if (k === activeIndex || p.isBot) return null;
+            const w = state.bets[k];
+            const cap = Math.min(p.score, BET.maxWager);
+            const isLocked = locked.has(k);
+
+            if (isLocked) {
+              return (
+                <div key={k} className="flex items-center gap-2 rounded-xl border-[1.5px] border-cream-2 bg-cream px-3 py-2.5">
+                  <Lock size={14} className="text-leaf" />
+                  <span className="text-sm font-bold">{p.name}</span>
+                  <span className="ml-auto text-xs font-bold text-muted">🔒 Terkunci</span>
+                </div>
+              );
+            }
+            if (cap <= 0) {
+              return (
+                <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-2.5 py-2 opacity-70">
+                  <div className="text-sm font-bold">{p.name}</div>
+                  <div className="text-[11px] font-semibold text-muted">Poin habis — tidak bisa taruhan.</div>
+                </div>
+              );
+            }
+
+            const amount = w ? w.amount : 0;
+            const win = w ? amount * (w.bet === "bust" ? BET.payoutBust : BET.payoutAman) : 0;
             return (
               <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-2.5 py-2">
-                <div className="mb-1.5 text-sm font-bold">{p.name}</div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className="text-sm font-bold">{p.name}</span>
+                  <span className="ml-auto flex items-center gap-1 text-[11px] font-bold text-chili-dark">
+                    <Coins size={11} /> {p.score}
+                  </span>
+                </div>
+                <div className="mb-1.5 flex gap-1.5">
                   <button
-                    className={`tp-btn rounded-full px-2.5 py-1 text-xs font-bold ${
-                      state.bets[k] === "aman" ? "bg-leaf text-white" : "bg-cream-2 text-muted"
+                    className={`tp-btn flex-1 rounded-full px-2 py-1 text-xs font-bold ${
+                      w?.bet === "aman" ? "bg-leaf text-white" : "bg-cream-2 text-muted"
                     }`}
                     onClick={() => onToggleBet(k, "aman")}
                   >
-                    <Coins size={12} className="mr-1 inline-block align-[-2px]" />
                     Aman
                   </button>
                   <button
-                    className={`tp-btn rounded-full px-2.5 py-1 text-xs font-bold ${
-                      state.bets[k] === "bust" ? "bg-chili text-white" : "bg-cream-2 text-muted"
+                    className={`tp-btn flex-1 rounded-full px-2 py-1 text-xs font-bold ${
+                      w?.bet === "bust" ? "bg-chili text-white" : "bg-cream-2 text-muted"
                     }`}
                     onClick={() => onToggleBet(k, "bust")}
                   >
-                    <Coins size={12} className="mr-1 inline-block align-[-2px]" />
                     Kepedesan
                   </button>
                 </div>
+                {w && (
+                  <>
+                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <button
+                        className="h-7 w-7 rounded-full bg-cream-2 font-black text-base disabled:opacity-30"
+                        onClick={() => onSetBetAmount?.(k, amount - 1)}
+                        disabled={amount <= 1}
+                      >
+                        −
+                      </button>
+                      <div className="text-center">
+                        <div className="text-lg font-black leading-none">{amount}</div>
+                        <div className="text-[9px] font-bold uppercase tracking-wide text-muted">poin</div>
+                      </div>
+                      <button
+                        className="h-7 w-7 rounded-full bg-cream-2 font-black text-base disabled:opacity-30"
+                        onClick={() => onSetBetAmount?.(k, amount + 1)}
+                        disabled={amount >= cap}
+                      >
+                        +
+                      </button>
+                      <span className="ml-1 text-[11px] font-bold text-leaf">menang +{win}</span>
+                    </div>
+                    <button
+                      className="tp-btn w-full rounded-lg bg-steel py-1.5 text-xs font-extrabold text-white flex items-center justify-center gap-1"
+                      onClick={() => lock(k)}
+                    >
+                      <Lock size={12} /> Kunci taruhan
+                    </button>
+                  </>
+                )}
               </div>
             );
           })}
@@ -396,10 +464,12 @@ function ResultHud({ state, activeIndex, isLastTurn, onNext }: Props & { isLastT
           <p className="m-0 mb-2 text-[13px] font-bold text-muted">Hasil Taruhan</p>
           <div className="grid gap-1.5">
             {bets.map((b, i) => (
-              <div key={i} className="flex justify-between text-xs font-bold">
-                <span>{b.name}</span>
+              <div key={i} className="flex items-center justify-between gap-2 text-xs font-bold">
+                <span className="truncate">
+                  {b.name} <span className="text-muted">({b.bet === "aman" ? "Aman" : "Kepedesan"} {b.amount})</span>
+                </span>
                 <span className={b.correct ? "text-leaf" : "text-chili"}>
-                  {b.correct ? `Tebak ${b.bet === "aman" ? "Aman" : "Kepedesan"} (+${b.delta})` : `Tebak ${b.bet === "aman" ? "Aman" : "Kepedesan"} (${b.delta})`}
+                  {b.correct ? `✓ +${b.delta}` : `✗ ${b.delta}`}
                 </span>
               </div>
             ))}

@@ -35,7 +35,7 @@ Game ini dirancang untuk kelompok bermain kasual (*party game*) dengan fokus int
 Tujuan utama dari setiap pemain adalah **mengumpulkan poin sebanyak-banyaknya di akhir game (setelah 4 ronde)** untuk menjadi pemenang (Juara Makan Pedas).
 Poin dapat diperoleh melalui tiga cara:
 1. **Makan Cabai secara Konsisten:** Mengambil keputusan berani untuk terus makan cabai bernilai tinggi, lalu mengamankan skor (*Sajikan/Bank*) di saat yang tepat dengan memanfaatkan pengali skor *Level Berani* (hingga 2.0x).
-2. **Taruhan Penonton (Spectator Betting):** Menebak dengan tepat apakah pemain aktif akan berhasil menyimpan poin (*Aman*) atau gagal (*Bust*). Setiap tebakan benar memberikan +5 poin, sementara tebakan salah mengurangi -5 poin. Skor minimum dibatasi di angka 0.
+2. **Taruhan Penonton (Spectator Betting):** Penonton mempertaruhkan **poinnya sendiri** (maks 20 per taruhan, tidak melebihi poin yang dimiliki) dengan menebak *Aman* atau *Kepedesan/Bust*. Tebakan benar dibayar sesuai poin yang dipasang: **Aman ×1**, **Kepedesan ×2** (lebih berani → lebih besar); tebakan salah → poin taruhan hangus. Taruhan **disembunyikan** dari pemain aktif sampai gilirannya selesai. Skor minimum dibatasi di angka 0.
 3. **Efisiensi Belanja & Bonus Karakter:** Membeli item Susu di Toko dengan cerdas (8 poin) tanpa menguras poin kemenangan secara berlebihan, serta memaksimalkan bonus khusus karakter (seperti Si Hemat yang mendapat +14 poin tambahan jika menyajikan saat pedas di bawah 45).
 
 ---
@@ -57,7 +57,8 @@ Tantangan utama dalam game ini berpusat pada pengelolaan risiko dan pengambilan 
 3. Giliran Pemain Aktif dibagi menjadi 3 fase:
 
 #### **Fase 1: Preturn (Fase Taruhan)**
-* Penonton dapat memasang taruhan: **Aman** atau **Bust** (Kepedesan).
+* Penonton memasang taruhan **Aman** atau **Kepedesan/Bust** sambil memilih **jumlah poin** yang dipertaruhkan (dari poin miliknya sendiri), lalu **mengunci** taruhan agar rahasia.
+* **Taruhan disembunyikan** dari pemain aktif (ia diminta tidak melihat/menghadap belakang) supaya tidak bisa "main aman" demi mengerjai penonton — menjaga ketegangan push-your-luck tetap murni. Skor di papan **tidak berubah** sampai giliran selesai.
 * Khusus untuk **Si Lidah Baja**, pemain diberikan pilihan di awal gilirannya untuk mengaktifkan **Tameng Kebal** (jika masih memiliki sisa kuota, maks 2 per game). Tameng harus diaktifkan secara manual — bukan otomatis. Saat aktif, pemain selamat dari *Bust* pertama pada giliran tersebut, dan 1 kuota tameng terpakai (terpakai juga meskipun giliran berakhir tanpa *bust*).
 
 #### **Fase 2: Active (Fase Makan)**
@@ -69,9 +70,9 @@ Pemain Aktif dapat memilih satu dari aksi berikut berulang kali selama belum *bu
 
 #### **Fase 3: Result (Fase Hasil)**
 * Menampilkan ringkasan hasil giliran (Poin yang diperoleh, pengali, apakah terjadi *bust*).
-* Memproses taruhan penonton:
-  * Tebakan Benar: Skor Penonton +5 poin.
-  * Tebakan Salah: Skor Penonton -5 poin, skor tidak bisa turun di bawah 0.
+* **Membuka (reveal) seluruh taruhan penonton** sekaligus dan menyelesaikannya:
+  * Tebakan Benar: Skor Penonton **+ (poin dipasang × pengali)** — Aman ×1, Kepedesan ×2.
+  * Tebakan Salah: Skor Penonton **− poin yang dipasang**, dan skor tidak bisa turun di bawah 0.
 * Memindahkan giliran ke pemain berikutnya.
 
 ### B. Aturan Khusus Ronde Pamungkas (Ronde 4)

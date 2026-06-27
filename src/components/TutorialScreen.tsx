@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import {
-  BET_STAKE,
+  BET,
   BITES,
   CHARS,
   FINAL_MULT,
@@ -65,7 +65,7 @@ export function TutorialScreen({ onBack }: Props) {
 
         <Section icon={<Hand size={18} />} title="2. Giliran Bermain (3 Fase)">
           <p className="m-0 mb-1.5">
-            <B>a. Fase Penonton (30 Detik):</B> Pemain lain menebak nasibmu: <span className="font-bold text-leaf-dark">Aman</span> atau <span className="font-bold text-chili-dark">Kepedesan</span> (tebakan benar mendapat +{BET_STAKE} poin, tebakan salah kehilangan −{BET_STAKE} poin).
+            <B>a. Fase Penonton (30 Detik):</B> Pemain lain memasang taruhan <span className="font-bold text-leaf-dark">poinnya sendiri</span> pada nasibmu: <span className="font-bold text-leaf-dark">Aman</span> atau <span className="font-bold text-chili-dark">Kepedesan</span>. Tebakan disembunyikan darimu sampai giliranmu selesai. Benar Aman membayar ×{BET.payoutAman}, benar Kepedesan ×{BET.payoutBust} (lebih berani, lebih besar); salah → taruhan hangus.
           </p>
           <p className="m-0 mb-1.5">
             <B>b. Fase Makan (60 Detik):</B> Kamu bergantian menyuap cabe. Setiap suap memberimu poin dan meningkatkan pedas. Jika pedas tinggi, ada risiko kepedesan (bust) berdasarkan peluang acak. Gunakan <Milk size={12} className="inline align-[-1px]" /> <B>Minum Susu</B> untuk menurunkan pedas −{SUSU_COOL}.

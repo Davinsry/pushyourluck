@@ -22,11 +22,17 @@ export type Phase = "preturn" | "active" | "result";
 /** solo = 1 human vs bots; local = pass-and-play, all human. */
 export type Mode = "solo" | "local";
 
-/** A spectator's wager on the active player's outcome. */
+/** A spectator's wager direction on the active player's outcome. */
 export type Bet = "aman" | "bust";
 
+/** A spectator's full wager: which way, and how many of their own points staked. */
+export interface Wager {
+  bet: Bet;
+  amount: number;
+}
+
 /** bets keyed by player index → their wager (undefined = no bet). */
-export type BetMap = Record<number, Bet | undefined>;
+export type BetMap = Record<number, Wager | undefined>;
 
 export interface Player {
   name: string;
@@ -51,8 +57,9 @@ export interface BetResult {
   player: number;
   name: string;
   bet: Bet;
+  amount: number; // points the spectator staked
   correct: boolean;
-  delta: number;
+  delta: number; // net change applied (+win or −stake)
 }
 
 /** Everything needed to render the result phase. */
@@ -112,6 +119,7 @@ export type Action =
   | { type: "START_DRAFT" }
   | { type: "CHOOSE_CHAR"; char: CharacterId }
   | { type: "TOGGLE_BET"; player: number; bet: Bet }
+  | { type: "SET_BET_AMOUNT"; player: number; amount: number }
   | { type: "CONFIRM_PRETURN" }
   | { type: "SUAP"; bowlIdx: number }
   | { type: "MINUM_SUSU" }

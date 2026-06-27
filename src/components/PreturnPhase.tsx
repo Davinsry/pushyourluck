@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Coins, Shield } from "lucide-react";
-import { BET_STAKE } from "../config/balance";
+import { BET } from "../config/balance";
 import type { Bet, BetMap, Player } from "../game";
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   activeIndex: number;
   bets: BetMap;
   onToggleBet: (player: number, bet: Bet) => void;
+  onSetBetAmount?: (player: number, amount: number) => void;
   onConfirm: () => void;
   viewerSeat?: number; // online: which seat is looking (gates controls)
   passiveShieldActivated?: boolean;
@@ -19,6 +20,7 @@ export function PreturnPhase({
   activeIndex,
   bets,
   onToggleBet,
+  onSetBetAmount,
   onConfirm,
   viewerSeat,
   passiveShieldActivated,
@@ -51,7 +53,7 @@ export function PreturnPhase({
       <p className="m-0 mb-1 text-2xl font-extrabold text-chili-dark">{me.name}</p>
       <p className="m-0 mb-3 text-[13px] text-ink">
         {hasHumanSpectators
-          ? `Penonton: tebak nasib ${me.name} (benar +${BET_STAKE}, salah −${BET_STAKE}).`
+          ? `Penonton: taruh poinmu pada nasib ${me.name}. Benar Aman ×${BET.payoutAman}, benar Kepedesan ×${BET.payoutBust}, salah hangus.`
           : `Lawan-lawan bot diam-diam pasang taruhan...`}
       </p>
 
@@ -61,11 +63,16 @@ export function PreturnPhase({
           if (online && k !== viewerSeat) return null; // online: only bet for yourself
           return (
             <div key={k} className="rounded-xl border-[1.5px] border-cream-2 bg-cream px-3 py-2.5">
-              <div className="mb-2 text-sm font-bold">{p.name}</div>
+              <div className="mb-2 flex items-center gap-2 text-sm font-bold">
+                {p.name}
+                <span className="ml-auto flex items-center gap-1 text-xs text-chili-dark">
+                  <Coins size={12} /> {p.score}
+                </span>
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   className={`tp-btn rounded-full px-3 py-1.5 text-[13px] font-bold ${
-                    bets[k] === "aman" ? "bg-leaf text-white" : "bg-cream-2 text-muted"
+                    bets[k]?.bet === "aman" ? "bg-leaf text-white" : "bg-cream-2 text-muted"
                   }`}
                   onClick={() => onToggleBet(k, "aman")}
                 >
@@ -74,7 +81,7 @@ export function PreturnPhase({
                 </button>
                 <button
                   className={`tp-btn rounded-full px-3 py-1.5 text-[13px] font-bold ${
-                    bets[k] === "bust" ? "bg-chili text-white" : "bg-cream-2 text-muted"
+                    bets[k]?.bet === "bust" ? "bg-chili text-white" : "bg-cream-2 text-muted"
                   }`}
                   onClick={() => onToggleBet(k, "bust")}
                 >
@@ -82,6 +89,28 @@ export function PreturnPhase({
                   Kepedesan
                 </button>
               </div>
+              {bets[k] && (
+                <div className="mt-2 flex items-center gap-3">
+                  <button
+                    className="h-7 w-7 rounded-full bg-cream-2 font-black disabled:opacity-30"
+                    onClick={() => onSetBetAmount?.(k, bets[k]!.amount - 1)}
+                    disabled={bets[k]!.amount <= 1}
+                  >
+                    −
+                  </button>
+                  <span className="text-base font-black">{bets[k]!.amount} poin</span>
+                  <button
+                    className="h-7 w-7 rounded-full bg-cream-2 font-black disabled:opacity-30"
+                    onClick={() => onSetBetAmount?.(k, bets[k]!.amount + 1)}
+                    disabled={bets[k]!.amount >= Math.min(p.score, BET.maxWager)}
+                  >
+                    +
+                  </button>
+                  <span className="ml-auto text-xs font-bold text-leaf">
+                    menang +{bets[k]!.amount * (bets[k]!.bet === "bust" ? BET.payoutBust : BET.payoutAman)}
+                  </span>
+                </div>
+              )}
             </div>
           );
         })}

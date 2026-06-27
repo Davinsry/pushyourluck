@@ -11,8 +11,17 @@ export const TURN_SECONDS = 60; // per-turn time limit; running out skips the tu
 // Shop (opens after each ronde) — prices in points.
 export const SHOP = { susu: 8 } as const;
 export const SUSU_COOL = 25; // heat removed by drinking susu
-export const BET_STAKE = 5; // spectator bet payout: correct +5, wrong −5
 export const FINAL_MULT = 2; // score multiplier on the final (pamungkas) ronde
+
+// Spectator wager: each spectator stakes some of their OWN points (hidden from
+// the active player until the turn resolves). Correct → win stake × payout;
+// wrong → lose the stake. "Bust" is the underdog so it pays more than "aman".
+export const BET = {
+  maxWager: 20, // cap on a single wager (also limited by the bettor's score)
+  defaultWager: 5, // pre-filled amount when a side is first picked
+  payoutAman: 1, // correct "aman" → +amount × 1
+  payoutBust: 2, // correct "bust" → +amount × 2 (riskier, pays more)
+} as const;
 
 /** bustChance% = clamp(heat - offset, 0, cap) */
 export const BUST = { offset: 0, cap: 100 } as const;

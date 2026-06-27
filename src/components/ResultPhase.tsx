@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CheckCheck, Flame } from "lucide-react";
-import { BET_STAKE, FINAL_MULT } from "../config/balance";
+import { FINAL_MULT } from "../config/balance";
 import type { Outcome } from "../game";
 
 interface Props {
@@ -61,8 +61,8 @@ export function ResultPhase({ outcome, playerName, isLastTurn, onNext, canAdvanc
               key={i}
               className={`text-[13px] font-semibold ${b.correct ? "text-leaf-dark" : "text-chili-dark"}`}
             >
-              {b.name} tebak "{b.bet === "bust" ? "kepedesan" : "aman"}" →{" "}
-              {b.correct ? `benar +${BET_STAKE}` : `salah ${b.delta}`}
+              {b.name} taruh {b.amount} di "{b.bet === "bust" ? "kepedesan" : "aman"}" →{" "}
+              {b.correct ? `menang +${b.delta}` : `kalah ${b.delta}`}
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BET_STAKE, STARTING_SCORE, SUSU_COOL } from "../config/balance";
+import { BET, STARTING_SCORE, SUSU_COOL } from "../config/balance";
 import { gameReducer, initialState, type GameState } from "./index";
 import type { Action, Rng } from "./types";
 
@@ -48,15 +48,50 @@ describe("eating and banking", () => {
   });
 });
 
-describe("spectator bets settle on resolve", () => {
-  it("pays a correct 'aman' bet", () => {
-    let s = startedGame();
-    s = gameReducer(s, { type: "TOGGLE_BET", player: 1, bet: "aman" }, SAFE);
+describe("spectator wagers settle on resolve", () => {
+  // give the spectator (seat 1) some points to stake first
+  const withChips = (score: number) => {
+    const s = startedGame();
+    s.players[1] = { ...s.players[1], score };
+    return s;
+  };
+
+  it("a correct 'aman' wager wins amount × payoutAman", () => {
+    let s = withChips(30);
+    s = gameReducer(s, { type: "TOGGLE_BET", player: 1, bet: "aman" }, SAFE); // amount = defaultWager
+    s = gameReducer(s, { type: "SET_BET_AMOUNT", player: 1, amount: 10 }, SAFE);
     s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
     s.secretBowls = ["ijo", "rawit", "carolina"];
-    s = gameReducer(s, { type: "SUAP", bowlIdx: 0 }, SAFE);
+    s = gameReducer(s, { type: "SUAP", bowlIdx: 0 }, SAFE); // safe → banks → "aman" correct
     s = gameReducer(s, { type: "SAJIKAN" }, SAFE);
-    expect(s.players[1].score).toBe(STARTING_SCORE + BET_STAKE);
+    expect(s.players[1].score).toBe(30 + 10 * BET.payoutAman);
+  });
+
+  it("a correct 'bust' wager pays more (× payoutBust)", () => {
+    let s = withChips(30);
+    s = gameReducer(s, { type: "TOGGLE_BET", player: 1, bet: "bust" }, BUST_ROLL);
+    s = gameReducer(s, { type: "SET_BET_AMOUNT", player: 1, amount: 10 }, BUST_ROLL);
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, BUST_ROLL);
+    s.secretBowls = ["ijo", "rawit", "carolina"];
+    s = gameReducer(s, { type: "SUAP", bowlIdx: 2 }, BUST_ROLL); // busts → "bust" correct
+    expect(s.players[1].score).toBe(30 + 10 * BET.payoutBust);
+  });
+
+  it("a wrong wager loses the staked amount", () => {
+    let s = withChips(30);
+    s = gameReducer(s, { type: "TOGGLE_BET", player: 1, bet: "bust" }, SAFE);
+    s = gameReducer(s, { type: "SET_BET_AMOUNT", player: 1, amount: 10 }, SAFE);
+    s = gameReducer(s, { type: "CONFIRM_PRETURN" }, SAFE);
+    s.secretBowls = ["ijo", "rawit", "carolina"];
+    s = gameReducer(s, { type: "SUAP", bowlIdx: 0 }, SAFE); // safe → "bust" wrong
+    s = gameReducer(s, { type: "SAJIKAN" }, SAFE);
+    expect(s.players[1].score).toBe(30 - 10);
+  });
+
+  it("cannot wager with no points", () => {
+    let s = withChips(0);
+    s = gameReducer(s, { type: "TOGGLE_BET", player: 1, bet: "aman" }, SAFE);
+    expect(s.bets[1]).toBeUndefined();
   });
 });
 
