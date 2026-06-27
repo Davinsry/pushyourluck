@@ -71,11 +71,86 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
         <meshStandardMaterial color="#4e7410" roughness={0.7} />
       </mesh>
 
-      {/* character-colour headband to tell players apart */}
-      <mesh position={[0, 0.28, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.5, 0.07, 8, 24]} />
-        <meshStandardMaterial color={accent} roughness={0.5} />
-      </mesh>
+      {/* ── Per-character head topper (replaces the old uniform headband) ── */}
+      {/* baja: tough preman spiky black hair */}
+      {char === "baja" &&
+        [-0.3, -0.12, 0.06, 0.24, 0.36].map((x, i) => (
+          <mesh key={i} position={[x, 0.44 - Math.abs(x) * 0.15, -0.04]} rotation={[-0.25, 0, x * 1.1]}>
+            <coneGeometry args={[0.1, 0.3, 6]} />
+            <meshStandardMaterial color="#15110d" roughness={0.85} />
+          </mesh>
+        ))}
+
+      {/* rakus: messy brown hair tufts */}
+      {char === "rakus" &&
+        [[-0.24, 0.45, 0.08], [-0.02, 0.52, 0.0], [0.22, 0.46, 0.06], [-0.1, 0.46, -0.22], [0.12, 0.45, -0.2]].map(
+          ([x, y, z], i) => (
+            <mesh key={i} position={[x, y, z]}>
+              <sphereGeometry args={[0.17, 8, 8]} />
+              <meshStandardMaterial color="#4a2f17" roughness={0.95} />
+            </mesh>
+          )
+        )}
+
+      {/* terawang: mystic turban wrap (accent colour) + jewel */}
+      {char === "terawang" && (
+        <group>
+          <mesh position={[0, 0.33, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.49, 0.13, 10, 24]} />
+            <meshStandardMaterial color={accent} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.46, -0.02]}>
+            <sphereGeometry args={[0.36, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            <meshStandardMaterial color={accent} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.36, 0.49]}>
+            <sphereGeometry args={[0.05, 10, 10]} />
+            <meshStandardMaterial color="#ffd24a" emissive="#aa7a00" emissiveIntensity={0.6} metalness={0.6} roughness={0.3} />
+          </mesh>
+        </group>
+      )}
+
+      {/* hemat: neat green beret sitting straight on the crown (accent colour) */}
+      {char === "hemat" && (
+        <group position={[0, 0.4, 0]}>
+          {/* flat-ish beret cap covering the crown */}
+          <mesh scale={[1, 0.62, 1]}>
+            <sphereGeometry args={[0.5, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            <meshStandardMaterial color={accent} roughness={0.75} />
+          </mesh>
+          {/* little nub on top */}
+          <mesh position={[0, 0.16, 0]}>
+            <sphereGeometry args={[0.04, 8, 8]} />
+            <meshStandardMaterial color={accent} roughness={0.6} />
+          </mesh>
+        </group>
+      )}
+
+      {/* perisai: defender helmet dome (accent colour); chili stem acts as the crest */}
+      {char === "perisai" && (
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.49, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2.05]} />
+          <meshStandardMaterial color={accent} metalness={0.6} roughness={0.35} />
+        </mesh>
+      )}
+
+      {/* pendingin: winter beanie (accent) + white folded brim + pom-pom */}
+      {char === "pendingin" && (
+        <group>
+          <mesh position={[0, 0.36, 0]}>
+            <sphereGeometry args={[0.5, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2.1]} />
+            <meshStandardMaterial color={accent} roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.5, 0.09, 10, 24]} />
+            <meshStandardMaterial color="#eef4ff" roughness={0.9} />
+          </mesh>
+          <mesh position={[0.12, 0.72, 0]}>
+            <sphereGeometry args={[0.11, 12, 12]} />
+            <meshStandardMaterial color="#eef4ff" roughness={1} />
+          </mesh>
+        </group>
+      )}
 
       {/* eyes */}
       <mesh position={[-0.2, 0.08, 0.48]}>
@@ -111,6 +186,9 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
           <meshStandardMaterial color="#c0c0c0" metalness={0.9} roughness={0.1} />
         </mesh>
       )}
+
+      {/* baja (Si Lidah Baja): a lit cigarette dangling from the corner of the mouth */}
+      {char === "baja" && <Cigarette />}
 
       {/* rakus (Si Rakus): chubby cheeks */}
       {char === "rakus" && (
@@ -281,6 +359,72 @@ function HandGlass({ full }: { full: boolean }) {
           <meshStandardMaterial color="#fbf6ee" roughness={0.6} />
         </mesh>
       )}
+    </group>
+  );
+}
+
+/** A lit cigarette dangling from the corner of Si Lidah Baja's mouth, with a
+ *  glowing ember and a few smoke puffs that rise and fade. */
+function Cigarette() {
+  const puffs = useRef<(THREE.Mesh | null)[]>([]);
+  const ember = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    const now = performance.now() / 1000;
+    // smoke puffs rise from the tip and fade out, looping
+    puffs.current.forEach((m, i) => {
+      if (!m) return;
+      const t = ((now * 0.4 + i / 4) % 1 + 1) % 1; // 0..1
+      m.position.y = t * 0.55;
+      m.position.x = Math.sin((t + i) * 5) * 0.05;
+      m.position.z = Math.cos((t + i) * 4) * 0.02;
+      m.scale.setScalar(0.03 + t * 0.09);
+      const mat = m.material as THREE.MeshStandardMaterial;
+      mat.opacity = Math.sin(t * Math.PI) * 0.4; // fade in then out as it rises
+    });
+    // ember flicker
+    if (ember.current) {
+      const mat = ember.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 2.4 + Math.sin(now * 12) * 0.8 + Math.random() * 0.3;
+    }
+  });
+
+  return (
+    <group>
+      {/* cigarette stick, tilted out from the mouth corner */}
+      <group position={[0.17, -0.2, 0.46]} rotation={[1.32, 0, -0.55]}>
+        {/* filter (mouth end) */}
+        <mesh position={[0, 0.03, 0]}>
+          <cylinderGeometry args={[0.021, 0.021, 0.06, 10]} />
+          <meshStandardMaterial color="#c9a35e" roughness={0.7} />
+        </mesh>
+        {/* paper body */}
+        <mesh position={[0, 0.16, 0]}>
+          <cylinderGeometry args={[0.019, 0.019, 0.2, 10]} />
+          <meshStandardMaterial color="#f3efe6" roughness={0.6} />
+        </mesh>
+        {/* charred tip just before the ember */}
+        <mesh position={[0, 0.265, 0]}>
+          <cylinderGeometry args={[0.02, 0.018, 0.03, 10]} />
+          <meshStandardMaterial color="#2a2018" roughness={0.9} />
+        </mesh>
+        {/* glowing ember */}
+        <mesh ref={ember} position={[0, 0.285, 0]}>
+          <cylinderGeometry args={[0.018, 0.021, 0.02, 10]} />
+          <meshStandardMaterial color="#ff4d12" emissive="#ff5a1e" emissiveIntensity={2.6} />
+        </mesh>
+        <pointLight position={[0, 0.3, 0]} color="#ff6a28" intensity={0.3} distance={0.9} />
+      </group>
+
+      {/* smoke puffs rising in head-local up (= world up) from near the ember tip */}
+      <group position={[0.3, -0.16, 0.62]}>
+        {[0, 1, 2, 3].map((i) => (
+          <mesh key={i} ref={(el) => (puffs.current[i] = el)}>
+            <sphereGeometry args={[1, 8, 8]} />
+            <meshStandardMaterial color="#d2d2d2" transparent opacity={0.25} depthWrite={false} />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 }
