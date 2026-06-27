@@ -26,6 +26,8 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
       {/* Table */}
       <Suspense fallback={null}>
         <Room />
+        {/* warm teplok key light (rotates with the scene, centred on the gardu) */}
+        <pointLight position={[0, 1.75, 0]} intensity={1.7} color="#ffb24d" distance={9} decay={1.4} />
         <Table
           activeIndex={activeIndex}
           playerCount={4}
@@ -65,10 +67,14 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
                 char={char}
               />
               <Chair />
-              {/* body */}
-              <mesh position={[0, -0.95, 0]} castShadow>
-                <cylinderGeometry args={[0.4, 0.55, 1.1, 16]} />
-                <meshStandardMaterial color={bodyColor} roughness={0.8} />
+              {/* seated cross-legged body (matches the in-game lesehan pose) */}
+              <mesh position={[0, -HEAD_Y + 0.17, 0]} castShadow receiveShadow>
+                <cylinderGeometry args={[0.62, 0.66, 0.3, 16]} />
+                <meshStandardMaterial color={bodyColor} roughness={0.85} />
+              </mesh>
+              <mesh position={[0, -HEAD_Y + 0.5, 0]} castShadow>
+                <cylinderGeometry args={[0.32, 0.46, 0.58, 16]} />
+                <meshStandardMaterial color={bodyColor} roughness={0.85} />
               </mesh>
             </group>
           );
@@ -139,16 +145,17 @@ export function LobbyScene() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-10 pointer-events-none" style={{ background: "linear-gradient(135deg, #fbfbfa 0%, #edeae4 100%)" }}>
+    <div className="fixed inset-0 z-10 pointer-events-none" style={{ background: "#0a0f1a" }}>
       <Canvas
         shadows
         dpr={[1, 1.2]} // cap pixel ratio for performance in menu backgrounds
-        camera={{ position: [0, 3.2, 7.5], fov: 46 }}
+        camera={{ position: [0, 2.4, 7.5], fov: 46 }}
       >
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[4, 8, 5]} intensity={1.1} castShadow shadow-mapSize={[512, 512]} />
-        <pointLight position={[0, 3.0, 0]} intensity={0.5} color="#f6a609" />
-        <fog attach="fog" args={["#edeae4", 16, 30]} />
+        <color attach="background" args={["#0a0f1a"]} />
+        <fog attach="fog" args={["#0a0f1a", 12, 30]} />
+        {/* night ambience matching the in-game stage */}
+        <ambientLight intensity={0.24} color="#5a6b8c" />
+        <directionalLight position={[-6, 9, -4]} intensity={0.35} color="#8fa6d8" castShadow shadow-mapSize={[512, 512]} />
 
         <LobbySceneGroup eaterStates={eaterStates} activeIndex={activeIndex} />
       </Canvas>

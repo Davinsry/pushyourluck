@@ -39,8 +39,9 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
       tmp.copy(CALM).lerp(HOT, redness);
       skin.current.color.lerp(tmp, Math.min(1, dt * 6));
     }
-    // Brows knit downward as it gets spicier.
-    const brow = t * 0.6;
+    // Brows knit downward as it gets spicier; Si Rakus always wears an angry slant.
+    const angryBase = char === "rakus" ? 0.5 : 0;
+    const brow = t * 0.6 + angryBase;
     if (browL.current) browL.current.rotation.z = -brow;
     if (browR.current) browR.current.rotation.z = brow;
     // Mouth opens with heat.
@@ -189,20 +190,6 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
 
       {/* baja (Si Lidah Baja): a lit cigarette dangling from the corner of the mouth */}
       {char === "baja" && <Cigarette />}
-
-      {/* rakus (Si Rakus): chubby cheeks */}
-      {char === "rakus" && (
-        <>
-          <mesh position={[-0.45, -0.12, 0.3]} castShadow>
-            <sphereGeometry args={[0.16, 12, 12]} />
-            <meshStandardMaterial color="#e8b98c" roughness={0.8} />
-          </mesh>
-          <mesh position={[0.45, -0.12, 0.3]} castShadow>
-            <sphereGeometry args={[0.16, 12, 12]} />
-            <meshStandardMaterial color="#e8b98c" roughness={0.8} />
-          </mesh>
-        </>
-      )}
 
       {/* terawang (Si Terawang): floating glowing purple crystal ball */}
       {char === "terawang" && (
