@@ -1,541 +1,196 @@
 /**
- * A beautiful, spacious 3D Neoclassical diorama room surrounding the dining table,
- * matching the user's reference image:
- *  - Golden-oak parquet flooring.
- *  - Off-white wainscoting walls with decorative raised moldings.
- *  - Curved cream designer sofa with a round white coffee table.
- *  - Classic white TV cabinet with a wall-mounted flat-screen TV.
- *  - A large sliding glass patio door in the center back wall with soft white curtains.
- *  - A classic neoclassical paneled entry door with brass hardware.
- *  - A modern industrial black dome pendant light hanging above the dining table.
+ * Night-time "pos ronda" (Indonesian neighbourhood guard post / gardu) diorama:
+ *  - a raised wooden plank deck the players sit on (lesehan),
+ *  - four corner posts holding a hip/thatch roof,
+ *  - low bamboo railings on the back and sides,
+ *  - a warm hanging "teplok" lantern as the key light,
+ *  - dark ground ringed by a silhouette of forest trees, a moon and a few stars.
+ * Everything is built from primitives — no external assets.
  */
+
+const TRUNK = "#150f0a";
+const LEAF_DARK = "#0d2114";
+const LEAF_DARK2 = "#102a18";
+
+// Fixed (deterministic) forest ring so nothing flickers between frames.
+const TREES = Array.from({ length: 16 }).map((_, i) => {
+  const a = (i / 16) * Math.PI * 2 + (i % 2 ? 0.2 : -0.15);
+  const r = 7.5 + ((i * 37) % 9) * 0.7; // 7.5 .. ~13
+  const s = 0.85 + ((i * 13) % 7) * 0.12; // scale variety
+  return { x: Math.cos(a) * r, z: Math.sin(a) * r, s, tall: 2.6 + ((i * 7) % 5) * 0.5 };
+});
+
+const STARS = [
+  [-6, 7.5, -9], [4, 8.2, -10], [-2, 9, -11], [7, 7, -8],
+  [-8, 8, -7], [1, 9.4, -12], [9, 8.6, -6], [-5, 9.2, -10],
+];
+
 export function Room() {
   return (
     <group>
-      {/* ── FLOOR (Golden-Oak Parquet Planks) ── */}
-      <group position={[0, -0.05, 0]} receiveShadow>
-        {/* Parquet Floor Base */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[17.0, 0.1, 17.8]} />
-          <meshStandardMaterial color="#b45309" roughness={0.95} />
-        </mesh>
-        {/* Parquet Wood Planks Loop */}
-        {Array.from({ length: 26 }).map((_, i) => {
-          const x = -8.2 + i * 0.655;
-          // Alternate warm oak colors for a realistic plank look
-          const plankColor = i % 3 === 0 ? "#ca782d" : i % 3 === 1 ? "#d97706" : "#b45309";
-          return (
-            <mesh key={i} position={[x, 0.06, 0]} receiveShadow>
-              <boxGeometry args={[0.63, 0.02, 17.4]} />
-              <meshStandardMaterial color={plankColor} roughness={0.78} metalness={0.05} />
-            </mesh>
-          );
-        })}
-      </group>
-
-      {/* ── WALLS (Neoclassical Off-white with Wainscoting) ── */}
-      {/* Back Wall */}
-      <mesh position={[0, 3.0, -8.6]} castShadow receiveShadow>
-        <boxGeometry args={[17.0, 6.0, 0.2]} />
-        <meshStandardMaterial color="#f7f6f2" roughness={0.9} />
-      </mesh>
-      {/* Left Wall */}
-      <mesh position={[-8.5, 3.0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.2, 6.0, 17.8]} />
-        <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
-      </mesh>
-      {/* Right Wall */}
-      <mesh position={[8.5, 3.0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.2, 6.0, 17.8]} />
-        <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
+      {/* ── DARK FOREST GROUND ── */}
+      <mesh position={[0, -0.27, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[60, 60]} />
+        <meshStandardMaterial color="#0a1410" roughness={1} />
       </mesh>
 
-      {/* Wainscoting Base Molding (Runs along bottom of all walls) */}
-      <mesh position={[0, 0.25, -8.48]}>
-        <boxGeometry args={[16.6, 0.5, 0.04]} />
-        <meshStandardMaterial color="#fcfbf7" roughness={0.8} />
-      </mesh>
-      <mesh position={[-8.38, 0.25, 0]}>
-        <boxGeometry args={[0.04, 0.5, 17.4]} />
-        <meshStandardMaterial color="#fcfbf7" roughness={0.8} />
-      </mesh>
-      <mesh position={[8.38, 0.25, 0]}>
-        <boxGeometry args={[0.04, 0.5, 17.4]} />
-        <meshStandardMaterial color="#fcfbf7" roughness={0.8} />
-      </mesh>
-
-      {/* Wainscoting Raised Trim Molding (Horizontal chair rail) */}
-      <mesh position={[0, 0.9, -8.47]}>
-        <boxGeometry args={[16.6, 0.06, 0.06]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} />
-      </mesh>
-      <mesh position={[-8.37, 0.9, 0]}>
-        <boxGeometry args={[0.06, 0.06, 17.4]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} />
-      </mesh>
-      <mesh position={[8.37, 0.9, 0]}>
-        <boxGeometry args={[0.06, 0.06, 17.4]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} />
-      </mesh>
-
-      {/* Raised Rectangular Wainscoting Panels (Neoclassical Wall Molding Frames) */}
-      {/* Back Wall Molding Panels */}
-      {[-6.0, -3.8, 3.8, 6.0].map((xOffset, idx) => (
-        <group key={idx} position={[xOffset, 2.2, -8.48]}>
-          {/* Outer Border (thin box framing) */}
-          <mesh>
-            <boxGeometry args={[1.5, 2.0, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
-          </mesh>
-          {/* Inner inset panel */}
-          <mesh position={[0, 0, -0.005]}>
-            <boxGeometry args={[1.4, 1.9, 0.02]} />
-            <meshStandardMaterial color="#f2f0eb" roughness={0.8} />
-          </mesh>
-        </group>
-      ))}
-      {/* Left Wall Molding Panels */}
-      {[-5.0, -2.0, 1.5, 3.8, 6.0].map((zOffset, idx) => (
-        <group key={idx} position={[-8.38, 2.2, zOffset]} rotation={[0, Math.PI / 2, 0]}>
-          <mesh>
-            <boxGeometry args={[1.4, 2.0, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
-          </mesh>
-          <mesh position={[0, 0, -0.005]}>
-            <boxGeometry args={[1.3, 1.9, 0.02]} />
-            <meshStandardMaterial color="#eceae4" roughness={0.8} />
-          </mesh>
-        </group>
-      ))}
-      {/* Right Wall Molding Panels */}
-      {[-5.0, -2.0, 1.5, 3.8, 6.0].map((zOffset, idx) => (
-        <group key={idx} position={[8.38, 2.2, zOffset]} rotation={[0, -Math.PI / 2, 0]}>
-          <mesh>
-            <boxGeometry args={[1.4, 2.0, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
-          </mesh>
-          <mesh position={[0, 0, -0.005]}>
-            <boxGeometry args={[1.3, 1.9, 0.02]} />
-            <meshStandardMaterial color="#eceae4" roughness={0.8} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* ── CENTRAL WINDOW/SLIDING GLASS PATIO DOOR (Back Wall) ── */}
-      <group position={[0, 2.1, -8.5]}>
-        {/* Backdrop (Bright warm sunny garden preview) */}
-        <mesh position={[0, 0, -0.08]}>
-          <boxGeometry args={[5.2, 3.5, 0.02]} />
-          <meshBasicMaterial color="#fdf2e9" />
+      {/* ── RAISED WOODEN DECK (panggung lesehan) ── */}
+      <group position={[0, 0, 0]}>
+        {/* deck base */}
+        <mesh position={[0, -0.13, 0]} receiveShadow castShadow>
+          <boxGeometry args={[8, 0.26, 8]} />
+          <meshStandardMaterial color="#5c3a1e" roughness={0.9} />
         </mesh>
-        {/* Glass panes */}
-        <mesh position={[0, 0, -0.04]}>
-          <boxGeometry args={[5.0, 3.4, 0.04]} />
-          <meshStandardMaterial color="#dbeafe" transparent opacity={0.3} roughness={0.05} metalness={0.2} />
-        </mesh>
-        {/* Outer Frame (Black Metal) */}
-        <mesh>
-          <boxGeometry args={[5.1, 3.5, 0.08]} />
-          <meshStandardMaterial color="#0f172a" roughness={0.5} />
-        </mesh>
-        {/* Inner frame punch-out (to see background) */}
-        <mesh position={[0, 0, 0.01]}>
-          <boxGeometry args={[4.9, 3.3, 0.08]} />
-          <meshStandardMaterial color="#f7f6f2" roughness={0.9} />
-        </mesh>
-        {/* Black dividers */}
-        {[-1.63, 0, 1.63].map((xO, i) => (
-          <mesh key={i} position={[xO, 0, 0.02]}>
-            <boxGeometry args={[0.06, 3.3, 0.06]} />
-            <meshStandardMaterial color="#0f172a" />
+        {/* plank lines on the deck top */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <mesh key={i} position={[-3.6 + i * 0.66, 0.005, 0]} receiveShadow>
+            <boxGeometry args={[0.6, 0.02, 7.8]} />
+            <meshStandardMaterial color={i % 2 ? "#6b4426" : "#5e3b20"} roughness={0.85} />
           </mesh>
         ))}
-        {/* Curtains (Soft vertical waves) */}
-        {/* Left curtains group */}
-        <group position={[-2.8, 0, 0.15]}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <mesh key={i} position={[i * 0.08 - 0.15, 0, Math.sin(i * 1.5) * 0.04]}>
-              <cylinderGeometry args={[0.06, 0.06, 3.4, 8]} />
-              <meshStandardMaterial color="#ffffff" transparent opacity={0.65} roughness={0.9} />
-            </mesh>
-          ))}
-        </group>
-        {/* Right curtains group */}
-        <group position={[2.8, 0, 0.15]}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <mesh key={i} position={[i * 0.08 - 0.15, 0, Math.sin(i * 1.5) * 0.04]}>
-              <cylinderGeometry args={[0.06, 0.06, 3.4, 8]} />
-              <meshStandardMaterial color="#ffffff" transparent opacity={0.65} roughness={0.9} />
-            </mesh>
-          ))}
-        </group>
       </group>
 
-      {/* ── NEOCLASSICAL ENTRY DOOR (Back Wall, Right Side) ── */}
-      <group position={[5.8, 2.0, -8.5]}>
-        {/* White Door Frame */}
-        <mesh position={[0, 0, 0.04]} castShadow>
-          <boxGeometry args={[1.34, 2.66, 0.1]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.6} />
+      {/* ── CORNER POSTS (tiang kayu) ── */}
+      {[[-3.5, -3.5], [3.5, -3.5], [-3.5, 3.5], [3.5, 3.5]].map(([x, z], i) => (
+        <mesh key={i} position={[x, 1.5, z]} castShadow>
+          <boxGeometry args={[0.2, 3.0, 0.2]} />
+          <meshStandardMaterial color="#3f2a16" roughness={0.85} />
         </mesh>
-        {/* Door Frame Inner cut out */}
-        <mesh position={[0, 0, 0.05]}>
-          <boxGeometry args={[1.2, 2.52, 0.1]} />
-          <meshStandardMaterial color="#e2e8f0" roughness={0.8} />
+      ))}
+
+      {/* ── ROOF (atap joglo/limasan sederhana) ── */}
+      <group position={[0, 3.0, 0]}>
+        {/* top beams ring */}
+        <mesh position={[0, 0.1, 0]}>
+          <boxGeometry args={[7.6, 0.18, 0.2]} />
+          <meshStandardMaterial color="#2f2010" roughness={0.85} />
         </mesh>
-        {/* Door Panel */}
-        <mesh position={[0, -0.04, 0.06]} castShadow>
-          <boxGeometry args={[1.18, 2.44, 0.06]} />
-          <meshStandardMaterial color="#fafaf9" roughness={0.7} /> {/* Creamy white wood */}
+        <mesh position={[0, 0.1, 0]}>
+          <boxGeometry args={[0.2, 0.18, 7.6]} />
+          <meshStandardMaterial color="#2f2010" roughness={0.85} />
         </mesh>
-        {/* Panel Moldings (raised boxes on the door) */}
-        {/* Top pane panel */}
-        <mesh position={[0, 0.5, 0.095]}>
-          <boxGeometry args={[0.8, 0.9, 0.015]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.6} />
+        {/* hip roof (4-sided pyramid) */}
+        <mesh position={[0, 1.0, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+          <coneGeometry args={[5.6, 1.8, 4]} />
+          <meshStandardMaterial color="#241405" roughness={0.95} />
         </mesh>
-        {/* Bottom pane panel */}
-        <mesh position={[0, -0.6, 0.095]}>
-          <boxGeometry args={[0.8, 0.9, 0.015]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.6} />
+        {/* roof underside (visible from below) */}
+        <mesh position={[0, 0.72, 0]} rotation={[0, Math.PI / 4, 0]}>
+          <coneGeometry args={[5.4, 1.5, 4]} />
+          <meshStandardMaterial color="#3a2814" roughness={0.95} side={1} />
         </mesh>
-        {/* Brass Door Handle / Knob */}
-        <group position={[-0.45, -0.05, 0.13]}>
-          {/* plate */}
-          <mesh position={[0, 0, -0.01]}>
-            <boxGeometry args={[0.06, 0.22, 0.01]} />
-            <meshStandardMaterial color="#eab308" metalness={0.9} roughness={0.1} /> {/* brass */}
-          </mesh>
-          {/* knob */}
-          <mesh position={[0, 0.04, 0.03]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.06, 8]} />
-            <meshStandardMaterial color="#eab308" metalness={0.9} roughness={0.1} />
-          </mesh>
-          <mesh position={[-0.04, 0.04, 0.06]}>
-            <sphereGeometry args={[0.025, 8, 8]} />
-            <meshStandardMaterial color="#eab308" metalness={0.9} roughness={0.1} />
-          </mesh>
-        </group>
       </group>
 
-      {/* ── DESIGNER CURVED COUCH (Left Side) ── */}
-      <group position={[-5.5, 0, -0.2]} rotation={[0, 0.2, 0]}>
-        {/* Curved Seat Cushions */}
-        {/* Left Segment */}
-        <mesh position={[-0.5, 0.24, 0.8]} rotation={[0, -0.3, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.5, 0.48, 1.2]} />
-          <meshStandardMaterial color="#fafaf9" roughness={0.8} /> {/* Off-white cream fabric */}
-        </mesh>
-        {/* Center Segment */}
-        <mesh position={[-0.8, 0.24, -0.3]} rotation={[0, 0.15, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.4, 0.48, 1.2]} />
-          <meshStandardMaterial color="#fafaf9" roughness={0.8} />
-        </mesh>
-        {/* Right Segment */}
-        <mesh position={[-0.5, 0.24, -1.4]} rotation={[0, 0.6, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.5, 0.48, 1.2]} />
-          <meshStandardMaterial color="#fafaf9" roughness={0.8} />
-        </mesh>
+      {/* ── LOW BAMBOO RAILINGS (back + sides, front left open) ── */}
+      {/* back rail (z = -3.5) */}
+      <Railing position={[0, 0, -3.5]} length={6.8} horizontal />
+      {/* left rail (x = -3.5) */}
+      <Railing position={[-3.5, 0, 0]} length={6.8} />
+      {/* right rail (x = 3.5) */}
+      <Railing position={[3.5, 0, 0]} length={6.8} />
 
-        {/* Curved Backrest */}
-        {/* Left backrest */}
-        <mesh position={[-1.0, 0.65, 0.8]} rotation={[0, -0.3, 0.02]} castShadow>
-          <boxGeometry args={[0.35, 0.8, 1.2]} />
-          <meshStandardMaterial color="#f5f5f4" roughness={0.85} />
-        </mesh>
-        {/* Mid backrest */}
-        <mesh position={[-1.3, 0.65, -0.35]} rotation={[0, 0.15, 0.02]} castShadow>
-          <boxGeometry args={[0.35, 0.8, 1.4]} />
-          <meshStandardMaterial color="#f5f5f4" roughness={0.85} />
-        </mesh>
-        {/* Right backrest */}
-        <mesh position={[-1.0, 0.65, -1.4]} rotation={[0, 0.6, 0.02]} castShadow>
-          <boxGeometry args={[0.35, 0.8, 1.2]} />
-          <meshStandardMaterial color="#f5f5f4" roughness={0.85} />
-        </mesh>
-
-        {/* Accent Round Coffee Table (In front of sofa) */}
-        <group position={[1.4, 0.01, -0.2]}>
-          {/* Top Panel (White Marble) */}
-          <mesh position={[0, 0.22, 0]} castShadow receiveShadow>
-            <cylinderGeometry args={[0.62, 0.62, 0.05, 24]} />
-            <meshStandardMaterial color="#fafaf9" roughness={0.15} />
-          </mesh>
-          {/* Legs */}
-          {[-0.38, 0, 0.38].map((xVal, idx) => (
-            <mesh key={idx} position={[xVal, 0.1, idx === 1 ? 0.38 : -0.22]} castShadow>
-              <cylinderGeometry args={[0.07, 0.07, 0.2, 10]} />
-              <meshStandardMaterial color="#fafaf9" roughness={0.4} />
-            </mesh>
-          ))}
-          {/* Tiny flower vase on coffee table */}
-          <mesh position={[0, 0.28, 0]}>
-            <cylinderGeometry args={[0.05, 0.04, 0.12, 8]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.2} />
-          </mesh>
-          <mesh position={[0, 0.38, 0]}>
-            <sphereGeometry args={[0.06, 8, 8]} />
-            <meshStandardMaterial color="#22c55e" />
-          </mesh>
-        </group>
-      </group>
-
-      {/* ── NEOCLASSICAL WHITE TV CABINET (Right Wall) ── */}
-      <group position={[6.3, 0, -0.6]} rotation={[0, -Math.PI / 2, 0]}>
-        {/* Credenza Console Body */}
-        <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.2, 0.64, 0.7]} />
-          <meshStandardMaterial color="#fafaf9" roughness={0.7} /> {/* Neoclassical cream cabinet */}
-        </mesh>
-        {/* Moldings on Cabinet Front */}
-        {[-1.0, 0, 1.0].map((xVal, idx) => (
-          <group key={idx} position={[xVal, 0.32, 0.355]}>
-            {/* Drawer outer trim */}
-            <mesh>
-              <boxGeometry args={[0.8, 0.44, 0.02]} />
-              <meshStandardMaterial color="#ffffff" roughness={0.5} />
-            </mesh>
-            {/* Small brass pull handle */}
-            <mesh position={[0, 0, 0.015]}>
-              <sphereGeometry args={[0.03, 8, 8]} />
-              <meshStandardMaterial color="#eab308" metalness={0.9} roughness={0.1} />
-            </mesh>
-          </group>
-        ))}
-
-        {/* Polished White Countertop */}
-        <mesh position={[0, 0.66, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.24, 0.04, 0.74]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.15} />
-        </mesh>
-
-        {/* Cabinet base molding trim */}
-        <mesh position={[0, 0.05, 0.02]} castShadow>
-          <boxGeometry args={[3.22, 0.1, 0.72]} />
-          <meshStandardMaterial color="#f5f5f4" roughness={0.8} />
-        </mesh>
-
-        {/* Wall Mounted Flat Screen TV (Behind cabinet, flush with right wall) */}
-        {/* We place it at the same rotation, shifted back in Z-local space (which matches X-world space) */}
-        <group position={[0, 1.7, -0.28]}>
-          {/* Frame */}
-          <mesh castShadow>
-            <boxGeometry args={[2.4, 1.35, 0.08]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.2} />
-          </mesh>
-          {/* Display panel showing painting / dark mirror */}
-          <mesh position={[0, 0, 0.045]}>
-            <boxGeometry args={[2.32, 1.27, 0.01]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.1} metalness={0.3} />
-          </mesh>
-        </group>
-
-        {/* Decorative items on TV cabinet */}
-        {/* Tall flower vase */}
-        <group position={[-1.1, 0.68, 0]}>
-          <mesh position={[0, 0.24, 0]} castShadow>
-            <cylinderGeometry args={[0.1, 0.08, 0.48, 12]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.15} />
-          </mesh>
-          {/* Dry twigs/leaves */}
-          {[-0.08, 0, 0.08].map((xVal, i) => (
-            <mesh key={i} position={[xVal, 0.6, Math.sin(i * 2) * 0.05]} rotation={[0.2 * (i - 1), 0, 0.1 * (i - 1)]}>
-              <cylinderGeometry args={[0.008, 0.008, 0.4, 6]} />
-              <meshStandardMaterial color="#a16207" roughness={0.9} />
-            </mesh>
-          ))}
-        </group>
-        {/* Stack of decor books */}
-        <group position={[1.1, 0.72, 0]}>
-          <mesh position={[0, 0, 0]} castShadow>
-            <boxGeometry args={[0.4, 0.06, 0.32]} />
-            <meshStandardMaterial color="#0284c7" roughness={0.5} />
-          </mesh>
-          <mesh position={[0.02, 0.06, -0.02]} castShadow>
-            <boxGeometry args={[0.38, 0.06, 0.32]} />
-            <meshStandardMaterial color="#b45309" roughness={0.5} />
-          </mesh>
-          <mesh position={[-0.01, 0.12, 0.01]} castShadow>
-            <boxGeometry args={[0.4, 0.06, 0.3]} />
-            <meshStandardMaterial color="#15803d" roughness={0.5} />
-          </mesh>
-        </group>
-      </group>
-
-      {/* ── MODERN/INDUSTRIAL BLACK DOME PENDANT LIGHT (Hanging from ceiling center) ── */}
-      <group position={[0, 3.6, 0]}>
-        {/* Ceiling Canopy (tapered cup at the ceiling Y=6.0, which is +2.4 relative to Y=3.6) */}
-        <mesh position={[0, 2.32, 0]}>
-          <cylinderGeometry args={[0.12, 0.07, 0.16, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} />
-        </mesh>
-
-        {/* Thin Hanging Cord */}
-        {/* Spans from Y = 0.16 (top of lamp neck) to Y = 2.24 (bottom of canopy) */}
-        {/* Height = 2.08, center position is at Y = 1.2 */}
-        <mesh position={[0, 1.2, 0]}>
-          <cylinderGeometry args={[0.006, 0.006, 2.08, 8]} />
+      {/* ── HANGING "TEPLOK" / PETROMAX LANTERN (key light prop) ── */}
+      <group position={[0, 2.45, 0]}>
+        {/* cord to the roof */}
+        <mesh position={[0, 0.45, 0]}>
+          <cylinderGeometry args={[0.01, 0.01, 0.9, 6]} />
           <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
         </mesh>
-
-        {/* Lamp Shade Neck (tapered top collar) */}
-        <mesh position={[0, 0.12, 0]} castShadow>
-          <cylinderGeometry args={[0.06, 0.09, 0.12, 24]} />
-          <meshStandardMaterial color="#222222" roughness={0.6} metalness={0.2} />
+        {/* metal cap */}
+        <mesh position={[0, 0.18, 0]} castShadow>
+          <coneGeometry args={[0.16, 0.16, 12]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.7} roughness={0.4} />
         </mesh>
-
-        {/* Outer Dome Shade (Black) */}
-        <mesh position={[0, 0.06, 0]} castShadow>
-          <sphereGeometry args={[0.42, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#1c1c1c" roughness={0.55} metalness={0.1} />
+        {/* glass body */}
+        <mesh position={[0, 0.02, 0]}>
+          <cylinderGeometry args={[0.12, 0.13, 0.26, 16]} />
+          <meshStandardMaterial color="#fff2c0" transparent opacity={0.35} roughness={0.1} />
         </mesh>
-
-        {/* Inner Dome Shade (Reflective White) */}
-        <mesh position={[0, 0.06, 0]}>
-          <sphereGeometry args={[0.415, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.25} metalness={0.1} side={1} />
+        {/* glowing flame core */}
+        <mesh position={[0, 0.0, 0]}>
+          <sphereGeometry args={[0.08, 12, 12]} />
+          <meshStandardMaterial color="#fff0c0" emissive="#ffb347" emissiveIntensity={3} />
         </mesh>
-
-        {/* Light Bulb (Recessed inside the dome) */}
-        <mesh position={[0, -0.06, 0]}>
-          <sphereGeometry args={[0.07, 16, 16]} />
-          <meshStandardMaterial color="#fffbeb" emissive="#fef08a" emissiveIntensity={2.5} />
+        {/* base */}
+        <mesh position={[0, -0.16, 0]} castShadow>
+          <cylinderGeometry args={[0.13, 0.1, 0.07, 16]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.7} roughness={0.4} />
         </mesh>
-
-        {/* Warm golden light source */}
-        <pointLight position={[0, -0.15, 0]} color="#fef08a" intensity={1.4} distance={10} castShadow shadow-bias={-0.002} />
+        {/* soft glow light from the lantern */}
+        <pointLight position={[0, 0, 0]} color="#ffb24d" intensity={0.8} distance={6} />
       </group>
 
-      {/* ── COZY WALL SCONCE LAMPS (Warm Ambient Glow on Walls) ── */}
-      {/* Back Left sconce */}
-      <group position={[-5.0, 2.6, -8.38]}>
+      {/* ── MOON ── */}
+      <group position={[-9, 9, -13]}>
         <mesh>
-          <sphereGeometry args={[0.06, 8, 8]} />
-          <meshStandardMaterial color="#eab308" metalness={0.9} />
+          <sphereGeometry args={[1.1, 24, 24]} />
+          <meshStandardMaterial color="#e8eefc" emissive="#cdd9f5" emissiveIntensity={1.4} />
         </mesh>
-        <mesh position={[0, 0.12, 0.08]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.16, 8]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.8} />
-        </mesh>
-        <pointLight position={[0, 0.12, 0.12]} color="#fef08a" intensity={0.5} distance={6} />
-      </group>
-      {/* Back Right sconce */}
-      <group position={[3.2, 2.6, -8.38]}>
+        {/* faint halo */}
         <mesh>
-          <sphereGeometry args={[0.06, 8, 8]} />
-          <meshStandardMaterial color="#eab308" metalness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.12, 0.08]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.16, 8]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.8} />
-        </mesh>
-        <pointLight position={[0, 0.12, 0.12]} color="#fef08a" intensity={0.5} distance={6} />
-      </group>
-
-      {/* ── ROOM DECORATIONS (Plants) ── */}
-      {/* Corner potted plant near sliding door */}
-      <group position={[-3.2, 0, -7.8]}>
-        <mesh position={[0, 0.18, 0]}>
-          <cylinderGeometry args={[0.2, 0.14, 0.36, 10]} />
-          <meshStandardMaterial color="#fcfbf7" roughness={0.5} />
-        </mesh>
-        {/* Foliage */}
-        <mesh position={[0, 0.5, 0]} castShadow>
-          <sphereGeometry args={[0.26, 10, 10]} />
-          <meshStandardMaterial color="#166534" roughness={0.7} />
-        </mesh>
-        <mesh position={[-0.1, 0.7, 0.06]} castShadow>
-          <sphereGeometry args={[0.2, 8, 8]} />
-          <meshStandardMaterial color="#15803d" roughness={0.7} />
+          <sphereGeometry args={[1.5, 20, 20]} />
+          <meshStandardMaterial color="#aab8e0" transparent opacity={0.12} />
         </mesh>
       </group>
 
-      {/* ── COZY PVC WOOD CEILING ── */}
-      <group position={[0, 4.4, 0]}>
-        {/* Main Ceiling Board */}
-        <mesh receiveShadow>
-          <boxGeometry args={[17.0, 0.1, 17.8]} />
-          <meshStandardMaterial color="#593c1d" roughness={0.65} /> {/* warm PVC brown */}
+      {/* ── STARS ── */}
+      {STARS.map(([x, y, z], i) => (
+        <mesh key={i} position={[x, y, z]}>
+          <sphereGeometry args={[0.05, 6, 6]} />
+          <meshStandardMaterial color="#ffffff" emissive="#dfe7ff" emissiveIntensity={2} />
         </mesh>
-        {/* PVC Slats / Stripes */}
-        {Array.from({ length: 18 }).map((_, i) => {
-          const x = -8.0 + i * 0.95;
-          return (
-            <mesh key={i} position={[x, -0.052, 0]}>
-              <boxGeometry args={[0.06, 0.015, 17.6]} />
-              <meshStandardMaterial color="#361f0b" roughness={0.7} />
-            </mesh>
-          );
-        })}
-      </group>
+      ))}
 
-      {/* ── NEOCLASSICAL FRONT ARCHWAY FRAME (Portal at Z = 8.7) ── */}
-      <group position={[0, 0, 8.7]}>
-        {/* Left Pillar Frame */}
-        <mesh position={[-6.9, 2.2, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.2, 4.4, 0.2]} />
-          <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
-        </mesh>
-        {/* Left Pillar Baseboard */}
-        <mesh position={[-6.9, 0.25, -0.12]}>
-          <boxGeometry args={[3.0, 0.5, 0.04]} />
-          <meshStandardMaterial color="#fcfbf7" roughness={0.8} />
-        </mesh>
-        {/* Left Pillar Chair Rail */}
-        <mesh position={[-6.9, 0.9, -0.13]}>
-          <boxGeometry args={[3.0, 0.06, 0.06]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
-        </mesh>
-        {/* Left Pillar Molded Panel */}
-        <group position={[-6.9, 2.2, -0.12]}>
-          <mesh>
-            <boxGeometry args={[1.2, 2.0, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+      {/* ── FOREST TREE SILHOUETTES ── */}
+      {TREES.map((tr, i) => (
+        <group key={i} position={[tr.x, 0, tr.z]} scale={tr.s}>
+          {/* trunk */}
+          <mesh position={[0, tr.tall / 2 - 0.2, 0]} castShadow>
+            <cylinderGeometry args={[0.16, 0.24, tr.tall, 7]} />
+            <meshStandardMaterial color={TRUNK} roughness={1} />
           </mesh>
-          <mesh position={[0, 0, -0.005]}>
-            <boxGeometry args={[1.15, 1.9, 0.02]} />
-            <meshStandardMaterial color="#eceae4" roughness={0.8} />
+          {/* foliage */}
+          <mesh position={[0, tr.tall + 0.1, 0]} castShadow>
+            <coneGeometry args={[1.2, 1.8, 8]} />
+            <meshStandardMaterial color={i % 2 ? LEAF_DARK : LEAF_DARK2} roughness={1} />
+          </mesh>
+          <mesh position={[0, tr.tall + 0.9, 0]} castShadow>
+            <coneGeometry args={[0.9, 1.4, 8]} />
+            <meshStandardMaterial color={LEAF_DARK} roughness={1} />
+          </mesh>
+          <mesh position={[0, tr.tall + 1.6, 0]} castShadow>
+            <coneGeometry args={[0.6, 1.1, 8]} />
+            <meshStandardMaterial color={LEAF_DARK2} roughness={1} />
           </mesh>
         </group>
+      ))}
+    </group>
+  );
+}
 
-        {/* Right Pillar Frame */}
-        <mesh position={[6.9, 2.2, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.2, 4.4, 0.2]} />
-          <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
+/** A simple low bamboo railing: two horizontal poles + vertical balusters. */
+function Railing({ position, length, horizontal = false }: { position: [number, number, number]; length: number; horizontal?: boolean }) {
+  const n = 7;
+  const bamboo = "#7a5a2e";
+  return (
+    <group position={position} rotation={[0, horizontal ? 0 : Math.PI / 2, 0]}>
+      {/* top + mid horizontal poles (run along local X) */}
+      {[0.62, 0.34].map((y, i) => (
+        <mesh key={i} position={[0, y, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.04, 0.04, length, 8]} />
+          <meshStandardMaterial color={bamboo} roughness={0.8} />
         </mesh>
-        {/* Right Pillar Baseboard */}
-        <mesh position={[6.9, 0.25, -0.12]}>
-          <boxGeometry args={[3.0, 0.5, 0.04]} />
-          <meshStandardMaterial color="#fcfbf7" roughness={0.8} />
-        </mesh>
-        {/* Right Pillar Chair Rail */}
-        <mesh position={[6.9, 0.9, -0.13]}>
-          <boxGeometry args={[3.0, 0.06, 0.06]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
-        </mesh>
-        {/* Right Pillar Molded Panel */}
-        <group position={[6.9, 2.2, -0.12]}>
-          <mesh>
-            <boxGeometry args={[1.2, 2.0, 0.02]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.7} />
+      ))}
+      {/* vertical balusters */}
+      {Array.from({ length: n }).map((_, i) => {
+        const x = -length / 2 + (i / (n - 1)) * length;
+        return (
+          <mesh key={i} position={[x, 0.31, 0]} castShadow>
+            <cylinderGeometry args={[0.03, 0.03, 0.62, 8]} />
+            <meshStandardMaterial color={bamboo} roughness={0.8} />
           </mesh>
-          <mesh position={[0, 0, -0.005]}>
-            <boxGeometry args={[1.15, 1.9, 0.02]} />
-            <meshStandardMaterial color="#eceae4" roughness={0.8} />
-          </mesh>
-        </group>
-
-        {/* Top Connecting Arch/Lintel Beam */}
-        <mesh position={[0, 4.1, 0]} castShadow>
-          <boxGeometry args={[17.0, 0.6, 0.2]} />
-          <meshStandardMaterial color="#f2f0eb" roughness={0.9} />
-        </mesh>
-        {/* Top Arch Molding Trim */}
-        <mesh position={[0, 3.75, -0.12]}>
-          <boxGeometry args={[17.0, 0.06, 0.04]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} />
-        </mesh>
-      </group>
+        );
+      })}
     </group>
   );
 }

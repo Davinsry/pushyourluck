@@ -118,11 +118,12 @@ Game ini memiliki ruang permainan (*game space*) yang membagi interaksi menjadi 
 * **Scoreboard Samping:** Menampilkan daftar klasemen skor seluruh pemain secara realtime.
 
 ### B. Dimensi Ruang 3D (Imersif Layer)
-Menggunakan React Three Fiber (Web GL) untuk menyajikan visualisasi meja makan interaktif:
-* **Circular Table Space:** Pemain diposisikan melingkar mengelilingi meja makan kayu. Posisi sudut kursi dihitung dinamis dengan rumus:
+Menggunakan React Three Fiber (Web GL) untuk menyajikan visualisasi **pos ronda (gardu) di malam hari** yang interaktif:
+* **Setting & Ambiance:** Latar berupa pos ronda kayu beratap, dikelilingi siluet hutan gelap, dengan langit malam (bulan & bintang). Penerangan utama berasal dari **lampu teplok/petromax** yang menggantung di tengah gardu, memberi cahaya hangat di atas meja sementara sekeliling tetap gelap — membuat efek api/asap/keringat karakter saat kepedasan semakin dramatis.
+* **Lesehan Circular Space:** Pemain duduk **lesehan** (bersila di atas tikar) melingkar mengelilingi sebuah **meja rendah**. Posisi sudut tiap pemain dihitung dinamis dengan rumus:
   $$\theta = \frac{\pi}{2} + \frac{2\pi}{N} \times i$$
   Di mana $N$ adalah jumlah pemain dan $i$ adalah indeks pemain. Offset $\frac{\pi}{2}$ membuat pemain pertama (indeks 0) menghadap kamera di sisi depan (+z).
-* **Clickable 3D Bowls:** Cabai disajikan dalam mangkuk-mangkuk 3D yang dapat diklik langsung oleh pemain untuk memicu aksi makan.
+* **Clickable 3D Bowls:** Cabai disajikan dalam mangkuk-mangkuk 3D di atas meja rendah yang dapat diklik langsung oleh pemain untuk memicu aksi makan.
 * **Responsive Avatar (Chili-Head):** Karakter digambarkan sebagai kepala cabai 3D bergaya *low-poly* yang akan mengeluarkan efek partikel keringat (*sweat*), uap (*steam*), hingga api membara (*fire*) seiring meningkatnya meter kepedesan.
 * **Camera Rig:** Kamera bergerak secara dinamis (*lerp*) berpindah sudut pandang fokus ke wajah karakter yang sedang aktif makan.
 

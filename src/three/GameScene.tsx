@@ -52,12 +52,14 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
       camera={{ position: [0, 4, 7], fov: 50 }}
       className="rounded-[20px]"
     >
-      <color attach="background" args={["#edeae4"]} />
-      <fog attach="fog" args={["#edeae4", 18, 32]} />
+      <color attach="background" args={["#0a0f1a"]} />
+      <fog attach="fog" args={["#0a0f1a", 9, 22]} />
 
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[4, 8, 5]} intensity={1.1} castShadow shadow-mapSize={[1024, 1024]} />
-      <pointLight position={[0, 3.0, 0]} intensity={0.5} color="#f6a609" />
+      {/* night ambience: dim cool moonlight + a warm "teplok" lantern over the table */}
+      <ambientLight intensity={0.24} color="#5a6b8c" />
+      <directionalLight position={[-6, 9, -4]} intensity={0.35} color="#8fa6d8" castShadow shadow-mapSize={[1024, 1024]} />
+      <pointLight position={[0, 1.75, 0]} intensity={1.8} color="#ffb24d" distance={9} decay={1.4} castShadow shadow-mapSize={[1024, 1024]} />
+      <pointLight position={[0, 0.8, 0]} intensity={0.5} color="#ff8a3d" distance={5} />
 
       <CameraRig activeIndex={activeIndex} playerCount={n} />
 
@@ -137,10 +139,14 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
                 char={p.char}
               />
               <Chair />
-              {/* simple body so heads aren't floating — coloured per player */}
-              <mesh position={[0, -0.95, 0]} castShadow>
-                <cylinderGeometry args={[0.4, 0.55, 1.1, 16]} />
-                <meshStandardMaterial color={body} roughness={0.8} />
+              {/* seated cross-legged body so heads aren't floating — coloured per player */}
+              <mesh position={[0, -HEAD_Y + 0.17, 0]} castShadow receiveShadow>
+                <cylinderGeometry args={[0.62, 0.66, 0.3, 16]} />
+                <meshStandardMaterial color={body} roughness={0.85} />
+              </mesh>
+              <mesh position={[0, -HEAD_Y + 0.5, 0]} castShadow>
+                <cylinderGeometry args={[0.32, 0.46, 0.58, 16]} />
+                <meshStandardMaterial color={body} roughness={0.85} />
               </mesh>
             </group>
           );

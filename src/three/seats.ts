@@ -3,10 +3,11 @@
 //  Pure maths (no three.js) so it stays easy to reason about.
 // ─────────────────────────────────────────────────────────────
 
-export const TABLE_RADIUS = 3;
-export const TABLE_TOP_Y = 1; // height of the table surface
-export const SEAT_RADIUS = 4.1; // how far players sit from the centre
-export const HEAD_Y = TABLE_TOP_Y + 1.05; // head height above the floor
+// ── Lesehan layout: players sit cross-legged on the floor around a low table. ──
+export const TABLE_RADIUS = 1.7; // small low "meja lesehan"
+export const TABLE_TOP_Y = 0.45; // low table surface height
+export const SEAT_RADIUS = 2.7; // players sit close, on the floor mats
+export const HEAD_Y = 0.95; // head height when seated cross-legged
 
 export interface Vec3 {
   x: number;
@@ -47,8 +48,8 @@ export function cameraForSeat(index: number, n: number): { pos: Vec3; target: Ve
   const d = seatDir(a);
   const camDist = SEAT_RADIUS + 3.4; // beyond the centre → opposite side
   return {
-    pos: { x: -d.x * (camDist - SEAT_RADIUS), y: TABLE_TOP_Y + 2.6, z: -d.z * (camDist - SEAT_RADIUS) },
-    target: { x: d.x * SEAT_RADIUS, y: HEAD_Y - 0.1, z: d.z * SEAT_RADIUS },
+    pos: { x: -d.x * (camDist - SEAT_RADIUS), y: TABLE_TOP_Y + 2.3, z: -d.z * (camDist - SEAT_RADIUS) },
+    target: { x: d.x * SEAT_RADIUS, y: HEAD_Y - 0.05, z: d.z * SEAT_RADIUS },
   };
 }
 
@@ -57,10 +58,10 @@ export function bowlPositions(index: number, n: number): Vec3[] {
   const a = seatAngle(index, n);
   const d = seatDir(a);
   const perp = { x: -d.z, z: d.x }; // perpendicular, along the table edge
-  const base = { x: d.x * (SEAT_RADIUS - 2.2), z: d.z * (SEAT_RADIUS - 2.2) };
-  return [-0.75, 0, 0.75].map((o) => ({
+  const base = { x: d.x * (SEAT_RADIUS - 1.5), z: d.z * (SEAT_RADIUS - 1.5) };
+  return [-0.4, 0, 0.4].map((o) => ({
     x: base.x + perp.x * o,
-    y: TABLE_TOP_Y + 0.18,
+    y: TABLE_TOP_Y + 0.13,
     z: base.z + perp.z * o,
   }));
 }
@@ -70,11 +71,11 @@ export function milkPosition(index: number, n: number): Vec3 {
   const a = seatAngle(index, n);
   const d = seatDir(a);
   const perp = { x: -d.z, z: d.x };
-  const reach = SEAT_RADIUS - 2.0;
+  const reach = SEAT_RADIUS - 1.5;
   return {
-    x: d.x * reach + perp.x * 1.55,
-    y: TABLE_TOP_Y + 0.13,
-    z: d.z * reach + perp.z * 1.55,
+    x: d.x * reach + perp.x * 0.95,
+    y: TABLE_TOP_Y + 0.1,
+    z: d.z * reach + perp.z * 0.95,
   };
 }
 
