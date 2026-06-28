@@ -3,27 +3,14 @@ import { ArrowLeft, Dices, Volume2, VolumeX } from "lucide-react";
 import { getRandomName } from "../config/randomNames";
 
 interface Props {
-  cycles: number;
   muted: boolean;
-  onSetCycles: (cycles: number) => void;
   onToggleMute: () => void;
   onBack: () => void;
   username: string;
   onSetUsername: (username: string) => void;
 }
 
-export function SettingsScreen({
-  cycles,
-  muted,
-  onSetCycles,
-  onToggleMute,
-  onBack,
-  username,
-  onSetUsername,
-}: Props) {
-  void cycles;
-  void onSetCycles;
-
+export function SettingsScreen({ muted, onToggleMute, onBack, username, onSetUsername }: Props) {
   const [name, setName] = useState(username);
 
   const handleNameChange = (val: string) => {

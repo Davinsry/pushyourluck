@@ -110,7 +110,7 @@ export function TutorialScreen({ onBack }: Props) {
                 <span style={{ color: color(CHARS[k].colorKey) }} className="font-bold">
                   {CHARS[k].name}
                 </span>{" "}
-                <span className="text-[11px] text-muted-foreground bg-cream-2 px-1.5 py-0.5 rounded ml-1 font-semibold">{CHARS[k].tag}</span>
+                <span className="text-[11px] text-muted bg-cream-2 px-1.5 py-0.5 rounded ml-1 font-semibold">{CHARS[k].tag}</span>
                 <div className="mt-0.5 flex flex-col text-[12px]">
                   <span className="text-leaf-dark">▲ Kelebihan: {CHARS[k].up}</span>
                   <span className="text-chili-dark">▼ Kekurangan: {CHARS[k].down}</span>

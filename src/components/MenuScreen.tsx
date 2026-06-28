@@ -28,7 +28,7 @@ export function MenuScreen({ onPickMode, onSettings, onTutorial }: Props) {
       <MenuButton
         icon={<Settings size={26} />}
         title="Pengaturan"
-        subtitle="Jumlah ronde & suara"
+        subtitle="Nama & suara"
         color="var(--c-steel)"
         onClick={onSettings}
       />

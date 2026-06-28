@@ -950,14 +950,9 @@ export default function App() {
 
         {state.screen === "settings" && (
           <SettingsScreen
-            cycles={state.settings.cycles}
             muted={muted}
             username={username}
             onSetUsername={handleSetUsername}
-            onSetCycles={(c) => {
-              play("click");
-              dispatch({ type: "SET_CYCLES", cycles: c });
-            }}
             onToggleMute={toggleMute}
             onBack={() => {
               play("click");
