@@ -54,7 +54,7 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
       className="rounded-[20px]"
     >
       <color attach="background" args={["#0a0f1a"]} />
-      <fog attach="fog" args={["#0a0f1a", 9, 22]} />
+      <fog attach="fog" args={["#0a0f1a", 11, 36]} />
 
       {/* night ambience: dim cool moonlight + a warm "teplok" lantern over the table */}
       <ambientLight intensity={0.24} color="#5a6b8c" />

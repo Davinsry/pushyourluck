@@ -16,7 +16,8 @@ const POLE_X = [-14, -6, 2, 10, 16];
 
 export function Village() {
   return (
-    <group>
+    // Placed on the OPEN front side of the pos (+z) so the camera/POV sees it.
+    <group rotation={[0, Math.PI, 0]}>
       {/* ── dirt road ── */}
       <mesh position={[0, ROAD_Y, ROAD_Z]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[46, 3.2]} />

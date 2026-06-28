@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { ChiliHead } from "./ChiliHead";
 import { Table } from "./Table";
 import { Room } from "./Room";
+import { Village } from "./Village";
 import { Chair } from "./Chair";
 import { seatPosition, seatFacing, HEAD_Y, milkPosition, propFacing } from "./seats";
 import { TableMilkBottle } from "./MilkBottle";
@@ -26,6 +27,7 @@ function LobbySceneGroup({ eaterStates, activeIndex }: { eaterStates: { heat: nu
       {/* Table */}
       <Suspense fallback={null}>
         <Room />
+        <Village />
         {/* warm teplok key light (rotates with the scene, centred on the gardu) */}
         <pointLight position={[0, 1.75, 0]} intensity={1.7} color="#ffb24d" distance={9} decay={1.4} />
         <Table
@@ -149,10 +151,10 @@ export function LobbyScene() {
       <Canvas
         shadows
         dpr={[1, 1.2]} // cap pixel ratio for performance in menu backgrounds
-        camera={{ position: [0, 2.4, 7.5], fov: 46 }}
+        camera={{ position: [0, 3, 9], fov: 46 }}
       >
         <color attach="background" args={["#0a0f1a"]} />
-        <fog attach="fog" args={["#0a0f1a", 12, 30]} />
+        <fog attach="fog" args={["#0a0f1a", 12, 40]} />
         {/* night ambience matching the in-game stage */}
         <ambientLight intensity={0.24} color="#5a6b8c" />
         <directionalLight position={[-6, 9, -4]} intensity={0.35} color="#8fa6d8" castShadow shadow-mapSize={[512, 512]} />

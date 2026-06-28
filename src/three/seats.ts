@@ -46,9 +46,9 @@ export function seatFacing(index: number, n: number): number {
 export function cameraForSeat(index: number, n: number): { pos: Vec3; target: Vec3 } {
   const a = seatAngle(index, n);
   const d = seatDir(a);
-  const camDist = SEAT_RADIUS + 3.4; // beyond the centre → opposite side
+  const camDist = SEAT_RADIUS + 3.9; // beyond the centre → opposite side (slightly back to reveal the village)
   return {
-    pos: { x: -d.x * (camDist - SEAT_RADIUS), y: TABLE_TOP_Y + 2.3, z: -d.z * (camDist - SEAT_RADIUS) },
+    pos: { x: -d.x * (camDist - SEAT_RADIUS), y: TABLE_TOP_Y + 2.35, z: -d.z * (camDist - SEAT_RADIUS) },
     target: { x: d.x * SEAT_RADIUS, y: HEAD_Y - 0.05, z: d.z * SEAT_RADIUS },
   };
 }

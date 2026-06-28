@@ -54,7 +54,7 @@ export function CameraRig({ activeIndex, playerCount }: Props) {
       enableDamping
       dampingFactor={0.12}
       minDistance={3.5}
-      maxDistance={12}
+      maxDistance={20}
       maxPolarAngle={Math.PI * 0.49}
       onStart={() => (dragging.current = true)}
       onEnd={() => (dragging.current = false)}
