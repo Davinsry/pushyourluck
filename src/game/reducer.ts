@@ -207,8 +207,6 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
       return { ...state, screen: "menu" };
     case "OPEN_SETTINGS":
       return { ...state, screen: "settings" };
-    case "OPEN_HISTORY":
-      return { ...state, screen: "history" };
     case "OPEN_TUTORIAL":
       return { ...state, screen: "tutorial" };
     case "SET_CYCLES":

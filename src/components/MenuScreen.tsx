@@ -1,15 +1,14 @@
-import { BookOpen, Settings, Users, History } from "lucide-react";
+import { BookOpen, Settings, Users } from "lucide-react";
 import type { Mode } from "../game";
 
 interface Props {
   onPickMode: (mode: Mode) => void;
   onSettings: () => void;
   onTutorial: () => void;
-  onHistory: () => void;
 }
 
 /** Main menu: local pass-and-play, how-to-play, settings. */
-export function MenuScreen({ onPickMode, onSettings, onTutorial, onHistory }: Props) {
+export function MenuScreen({ onPickMode, onSettings, onTutorial }: Props) {
   return (
     <div className="mt-[18px] grid gap-3">
       <MenuButton
@@ -25,13 +24,6 @@ export function MenuScreen({ onPickMode, onSettings, onTutorial, onHistory }: Pr
         subtitle="Aturan & tutorial dari awal sampai akhir"
         color="var(--c-amber)"
         onClick={onTutorial}
-      />
-      <MenuButton
-        icon={<History size={26} />}
-        title="Riwayat Bermain"
-        subtitle="Data playtesting & analisis pertandingan"
-        color="var(--c-leaf)"
-        onClick={onHistory}
       />
       <MenuButton
         icon={<Settings size={26} />}

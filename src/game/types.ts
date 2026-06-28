@@ -12,8 +12,7 @@ export type Screen =
   | "draft"
   | "play"
   | "shop"
-  | "gameover"
-  | "history";
+  | "gameover";
 
 /** Buyable shop items. */
 export type ShopItem = "susu";
@@ -111,7 +110,6 @@ export type Action =
   | { type: "GO_MENU" }
   | { type: "OPEN_SETTINGS" }
   | { type: "OPEN_TUTORIAL" }
-  | { type: "OPEN_HISTORY" }
   | { type: "SET_CYCLES"; cycles: number }
   | { type: "START_MODE"; mode: Mode }
   | { type: "SET_COUNT"; count: number }
