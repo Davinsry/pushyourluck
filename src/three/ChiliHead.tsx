@@ -220,14 +220,6 @@ export function ChiliHead({ heat, accent, active, bust, anim, char = null }: Pro
         </group>
       )}
 
-      {/* perisai (Si Perisai): shiny forehead visor plate */}
-      {char === "perisai" && (
-        <mesh position={[0, 0.2, 0.48]} rotation={[0.1, 0, 0]} castShadow>
-          <boxGeometry args={[0.48, 0.08, 0.08]} />
-          <meshStandardMaterial color="#f6a609" metalness={0.8} roughness={0.15} />
-        </mesh>
-      )}
-
       {/* pendingin (Si Pendingin): ice-blue earmuffs */}
       {char === "pendingin" && (
         <>

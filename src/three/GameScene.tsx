@@ -9,6 +9,7 @@ import { ChiliHead } from "./ChiliHead";
 import { TableMilkBottle } from "./MilkBottle";
 import { Table } from "./Table";
 import { Room } from "./Room";
+import { Village } from "./Village";
 import { Chair } from "./Chair";
 import { HEAD_Y, milkPosition, propFacing, seatFacing, seatPosition } from "./seats";
 
@@ -65,6 +66,7 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
 
       <Suspense fallback={null}>
         <Room />
+        <Village />
         <Table
           activeIndex={activeIndex}
           playerCount={n}
@@ -92,7 +94,8 @@ export function GameScene({ state, activeIndex, onPick, anim, busy = false, paus
           const isActive = i === activeIndex;
           // headband = which character; body = which player (distinct per seat)
           const accent = p.char ? ACCENT[p.char] ?? token(CHARS[p.char].colorKey) : "#9b8675";
-          const body = playerColor(i);
+          // Si Perisai wears a Pemuda Pancasila orange shirt; others use the per-seat colour.
+          const body = p.char === "perisai" ? "#e8631a" : playerColor(i);
 
           return (
             <group key={i} position={[pos.x, pos.y, pos.z]} rotation={[0, seatFacing(i, n), 0]}>
