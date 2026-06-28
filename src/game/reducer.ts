@@ -24,21 +24,9 @@ export const currentCycle = (s: GameState) => Math.floor(s.turn / playerCount(s)
 export const isFinalRonde = (s: GameState) => currentCycle(s) === s.settings.cycles;
 export const totalTurns = (s: GameState) => playerCount(s) * s.settings.cycles;
 
-const getSavedUsername = () => {
-  if (typeof window !== "undefined" && window.localStorage) {
-    return localStorage.getItem("push_your_luck_username") || "";
-  }
-  return "";
-};
-
 /** Default name for seat `i` given the mode (humans vs bots). */
-const seatName = (i: number, mode: Mode) => {
-  if (i === 0) {
-    const saved = getSavedUsername();
-    if (saved) return saved;
-  }
-  return mode === "solo" ? (i === 0 ? "Kamu" : `Bot ${i}`) : `Pemain ${i + 1}`;
-};
+const seatName = (i: number, mode: Mode) =>
+  mode === "solo" ? (i === 0 ? "Kamu" : `Bot ${i}`) : `Pemain ${i + 1}`;
 
 /** Build `count` players shaped for the mode (solo → seat 0 human, rest bots). */
 function shapePlayers(count: number, mode: Mode, existing: Player[] = []): Player[] {
@@ -419,7 +407,8 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
     case "CLOSE_SHOP":
       return freshTurn({ ...state, screen: "play" });
 
-    // ── replay with the same names/mode/settings (fresh scores + re-draft) ──
+    // ── replay with the same names/count: back to setup (names pre-filled),
+    //    fresh scores + re-pick characters from there ──
     case "RESTART": {
       const players = state.players.map((p, i) => makePlayer(i, p.name, p.isBot));
       return freshTurn({
@@ -428,7 +417,7 @@ export function gameReducer(state: GameState, action: Action, rng: Rng = Math.ra
         turn: 0,
         draftIdx: 0,
         draftOpts: draftOptions([]),
-        screen: "draft",
+        screen: "setup",
       });
     }
 

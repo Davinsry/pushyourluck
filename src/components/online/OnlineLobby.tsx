@@ -9,12 +9,7 @@ interface Props {
 
 /** Create a room or pick from the list of open rooms. */
 export function OnlineLobby({ room, onBack }: Props) {
-  const [name, setName] = useState(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("push_your_luck_username") || "Pemain";
-    }
-    return "Pemain";
-  });
+  const [name, setName] = useState("Pemain");
   const [roomName, setRoomName] = useState("");
 
   // Poll the open-room list while we sit in the lobby.

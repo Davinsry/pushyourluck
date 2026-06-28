@@ -1,4 +1,4 @@
-import { Crown, RotateCcw, Trophy, Flame, Dice5, HelpCircle, Frown } from "lucide-react";
+import { Crown, RotateCcw, Home, Trophy, Flame, Dice5, HelpCircle, Frown } from "lucide-react";
 import { CHARS } from "../config/balance";
 import type { Player } from "../game";
 import { color } from "../ui/theme";
@@ -6,10 +6,11 @@ import { analyzePlaystyle, calculatePlaytestingStats } from "../game";
 
 interface Props {
   players: Player[];
+  onRestart: () => void;
   onReset: () => void;
 }
 
-export function GameOverScreen({ players, onReset }: Props) {
+export function GameOverScreen({ players, onRestart, onReset }: Props) {
   const ranked = players.map((p, i) => ({ ...p, i })).sort((a, b) => b.score - a.score);
   const topScore = ranked[0]?.score ?? 0;
   const winners = ranked.filter((p) => p.score === topScore);
@@ -124,12 +125,20 @@ export function GameOverScreen({ players, onReset }: Props) {
         </div>
       </div>
 
-      <button
-        className="tp-btn flex w-full items-center justify-center gap-2 rounded-[14px] bg-flame py-3.5 text-lg font-extrabold text-white"
-        onClick={onReset}
-      >
-        <RotateCcw size={19} /> Main lagi
-      </button>
+      <div className="flex gap-2.5">
+        <button
+          className="tp-btn flex flex-[1.4] items-center justify-center gap-2 rounded-[14px] bg-flame py-3.5 text-lg font-extrabold text-white"
+          onClick={onRestart}
+        >
+          <RotateCcw size={19} /> Main Lagi
+        </button>
+        <button
+          className="tp-btn flex flex-1 items-center justify-center gap-2 rounded-[14px] bg-cream-2 py-3.5 text-lg font-extrabold text-ink"
+          onClick={onReset}
+        >
+          <Home size={19} /> Menu
+        </button>
+      </div>
     </div>
   );
 }

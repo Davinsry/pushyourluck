@@ -152,19 +152,6 @@ export default function App() {
   const { play, muted, toggleMute } = useSound();
   const [online, setOnline] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [username, setUsername] = useState(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("push_your_luck_username") || "";
-    }
-    return "";
-  });
-
-  const handleSetUsername = (name: string) => {
-    setUsername(name);
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem("push_your_luck_username", name);
-    }
-  };
   const room = useRoom();
 
   // Generate or reset local game ID
@@ -913,9 +900,7 @@ export default function App() {
 
         {state.screen === "intro" && (
           <IntroScreen
-            initialName={username}
-            onStart={(name) => {
-              handleSetUsername(name);
+            onStart={() => {
               play("click");
               dispatch({ type: "GO_MENU" });
             }}
@@ -951,8 +936,6 @@ export default function App() {
         {state.screen === "settings" && (
           <SettingsScreen
             muted={muted}
-            username={username}
-            onSetUsername={handleSetUsername}
             onToggleMute={toggleMute}
             onBack={() => {
               play("click");
@@ -996,6 +979,10 @@ export default function App() {
         {state.screen === "gameover" && (
           <GameOverScreen
             players={state.players}
+            onRestart={() => {
+              play("click");
+              dispatch({ type: "RESTART" });
+            }}
             onReset={() => {
               play("click");
               dispatch({ type: "RESET" });

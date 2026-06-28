@@ -193,7 +193,9 @@ export function OnlinePlay({ room, onExit }: Props) {
         </>
       )}
 
-      {state.screen === "gameover" && <GameOverScreen players={state.players} onReset={onExit} />}
+      {state.screen === "gameover" && (
+        <GameOverScreen players={state.players} onRestart={onExit} onReset={onExit} />
+      )}
     </>
   );
 }

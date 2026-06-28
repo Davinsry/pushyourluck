@@ -13,22 +13,22 @@ export function MenuScreen({ onPickMode, onSettings, onTutorial }: Props) {
     <div className="mt-[18px] grid gap-3">
       <MenuButton
         icon={<Users size={26} />}
-        title="Main Bareng"
+        title="Play"
         subtitle="Pass-and-play 2–4 orang di satu perangkat"
         color="var(--c-flame)"
         onClick={() => onPickMode("local")}
       />
       <MenuButton
         icon={<BookOpen size={26} />}
-        title="Cara Main"
-        subtitle="Aturan & tutorial dari awal sampai akhir"
+        title="Panduan"
+        subtitle="Aturan & tutorial"
         color="var(--c-amber)"
         onClick={onTutorial}
       />
       <MenuButton
         icon={<Settings size={26} />}
         title="Pengaturan"
-        subtitle="Nama & suara"
+        subtitle="Suara"
         color="var(--c-steel)"
         onClick={onSettings}
       />
