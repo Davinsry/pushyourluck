@@ -146,4 +146,4 @@ Setiap pemain memulai game dengan starter kit berupa: **1 Susu** (kecuali Si Pen
 
 ### C. Komponen Sistem
 * **Game Engine Reducer:** Pengelola state utama game yang murni (*pure function reducer*) untuk memastikan alur game yang konsisten bagi semua pemain.
-* **Synth Sound Engine:** Generator efek suara sintesis (SFX makan, minum susu, tersedak, dan latar musik) tanpa memerlukan file audio aset eksternal yang besar.
+* **Synth Sound Engine:** Generator efek suara sintesis untuk SFX (makan, minum susu, tersedak, klik) lewat Web Audio, tanpa file audio. *Musik latar* memakai 2 file lagu royalty-free / no-copyright: menu & lobby "massobeats — ruby" (freetouse.com) dan musik dalam permainan dari NCS (NoCopyrightSounds, YouTube).
